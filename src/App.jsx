@@ -21,7 +21,7 @@ import AuthPage from "./pages/auth/Login/Login";
 // 직원 페이지 (Employee Pages)
 import Consultation from './pages/employee/Consultation/Consultation';
 import PointMall from './pages/employee/PointMall/PointMall';
-
+import Department from './pages/employee/Department/Department';
 
 import { ShieldAlert, Clock } from "lucide-react";
 import * as S from "./App.styles";
@@ -104,6 +104,7 @@ function App() {
                   {/* 직원 라우트 */}
                   {!isAdminMode && (
                     <>
+                      <Route path="department" element={<Department />} />
                       <Route path="consultation" element={<Consultation />} />
                       <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
                       <Route path="pointmall" element={<PointMall />} />
