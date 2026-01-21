@@ -3,6 +3,13 @@ import useStore from "./store/useStore";
 import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout/MainLayout";
 
+
+
+// 관리자 페이지
+import AdminGifticonManagement from './pages/admin/GifticonManagement/GifticonManagement';
+import PurchaseHistory from './pages/admin/GifticonManagement/PurchaseHistory/PurchaseHistory';
+
+
 // 공통 페이지 (Common Pages)
 import LandingPage from "./pages/common/Landing/Landing";
 import FeatureDetails from "./pages/common/FeatureDetails/FeatureDetails";
@@ -13,6 +20,7 @@ import AuthPage from "./pages/auth/Login/Login";
 
 // 직원 페이지 (Employee Pages)
 import Consultation from './pages/employee/Consultation/Consultation';
+import PointMall from './pages/employee/PointMall/PointMall';
 
 
 import { ShieldAlert, Clock } from "lucide-react";
@@ -86,13 +94,19 @@ function App() {
               ) : (
                 <Routes>
                   {/* 관리자 라우트 */}
-                  {isAdminMode && <></>}
+                  {isAdminMode && <>
+                    <Route path="gifticons" element={<AdminGifticonManagement />}
+                    />
+                    <Route path="gifticons/history" element={<PurchaseHistory />}
+                    />
+                  </>}
 
                   {/* 직원 라우트 */}
                   {!isAdminMode && (
                     <>
                       <Route path="consultation" element={<Consultation />} />
                       <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
+                      <Route path="pointmall" element={<PointMall />} />
                     </>
                   )}
                 </Routes>
