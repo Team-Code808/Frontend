@@ -11,6 +11,10 @@ import NotFound from "./pages/common/NotFound/NotFound";
 // 인증 페이지 (Auth Pages)
 import AuthPage from "./pages/auth/Login/Login";
 
+// 직원 페이지 (Employee Pages)
+import Consultation from './pages/employee/Consultation/Consultation';
+
+
 import { ShieldAlert, Clock } from "lucide-react";
 import * as S from "./App.styles";
 
@@ -85,7 +89,12 @@ function App() {
                   {isAdminMode && <></>}
 
                   {/* 직원 라우트 */}
-                  {!isAdminMode && <></>}
+                  {!isAdminMode && (
+                    <>
+                      <Route path="consultation" element={<Consultation />} />
+                      <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
+                    </>
+                  )}
                 </Routes>
               )}
             </MainLayout>
