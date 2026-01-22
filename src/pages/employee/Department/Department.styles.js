@@ -318,9 +318,9 @@ export const StatusPill = styled.span`
   border-radius: 9999px;
   font-weight: 700;
   
-  ${props => props.status === '업무 중' && 'background-color: #f0fdf4; color: #16a34a;'}
-  ${props => props.status === '자리비움' && 'background-color: #fff7ed; color: #ea580c;'}
-  ${props => props.status === '휴가 중' && 'background-color: #f1f5f9; color: #94a3b8;'}
+  ${props => props.$status === '업무 중' && 'background-color: #f0fdf4; color: #16a34a;'}
+  ${props => props.$status === '자리비움' && 'background-color: #fff7ed; color: #ea580c;'}
+  ${props => props.$status === '휴가 중' && 'background-color: #f1f5f9; color: #94a3b8;'}
 `;
 
 export const RoleText = styled.p`

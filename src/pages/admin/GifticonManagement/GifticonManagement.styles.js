@@ -32,18 +32,18 @@ export const BulkButton = styled.button`
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
   background: ${props => {
-    if (props.variant === 'activate') return 'rgba(34, 197, 94, 0.1)';
-    if (props.variant === 'deactivate') return 'rgba(239, 68, 68, 0.1)';
+    if (props.$variant === 'activate') return 'rgba(34, 197, 94, 0.1)';
+    if (props.$variant === 'deactivate') return 'rgba(239, 68, 68, 0.1)';
     return 'rgba(79, 70, 229, 0.1)';
   }};
   color: ${props => {
-    if (props.variant === 'activate') return '#22c55e';
-    if (props.variant === 'deactivate') return '#ef4444';
+    if (props.$variant === 'activate') return '#22c55e';
+    if (props.$variant === 'deactivate') return '#ef4444';
     return '#6366f1';
   }};
   border: 1px solid ${props => {
-    if (props.variant === 'activate') return 'rgba(34, 197, 94, 0.3)';
-    if (props.variant === 'deactivate') return 'rgba(239, 68, 68, 0.3)';
+    if (props.$variant === 'activate') return 'rgba(34, 197, 94, 0.3)';
+    if (props.$variant === 'deactivate') return 'rgba(239, 68, 68, 0.3)';
     return 'rgba(79, 70, 229, 0.3)';
   }};
   border-radius: 8px;
@@ -54,13 +54,13 @@ export const BulkButton = styled.button`
 
   &:hover {
     background: ${props => {
-      if (props.variant === 'activate') return 'rgba(34, 197, 94, 0.15)';
-      if (props.variant === 'deactivate') return 'rgba(239, 68, 68, 0.15)';
+      if (props.$variant === 'activate') return 'rgba(34, 197, 94, 0.15)';
+      if (props.$variant === 'deactivate') return 'rgba(239, 68, 68, 0.15)';
       return 'rgba(79, 70, 229, 0.15)';
     }};
     border-color: ${props => {
-      if (props.variant === 'activate') return 'rgba(34, 197, 94, 0.5)';
-      if (props.variant === 'deactivate') return 'rgba(239, 68, 68, 0.5)';
+      if (props.$variant === 'activate') return 'rgba(34, 197, 94, 0.5)';
+      if (props.$variant === 'deactivate') return 'rgba(239, 68, 68, 0.5)';
       return 'rgba(79, 70, 229, 0.5)';
     }};
   }
@@ -89,7 +89,7 @@ export const ItemCard = styled.div`
   overflow: hidden;
 
   /* Inactive styling override */
-  ${props => !props.active && `
+  ${props => !props.$active && `
     border-color: rgba(148, 163, 184, 0.2);
     background: rgba(15, 23, 42, 0.8);
     opacity: 0.8;
@@ -107,7 +107,7 @@ export const ItemImage = styled.div`
   font-size: 4rem;
   margin-bottom: 0.5rem;
   
-  ${props => !props.active && `
+  ${props => !props.$active && `
     filter: grayscale(100%);
     opacity: 0.5;
   `}
@@ -242,15 +242,15 @@ export const StatusBadge = styled.span`
   font-weight: 600;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-  background: ${props => props.active ? 'rgba(34, 197, 94, 0.1)' : 'rgba(148, 163, 184, 0.1)'};
-  color: ${props => props.active ? '#4ade80' : '#94a3b8'};
+  background: ${props => props.$active ? 'rgba(34, 197, 94, 0.1)' : 'rgba(148, 163, 184, 0.1)'};
+  color: ${props => props.$active ? '#4ade80' : '#94a3b8'};
 `;
 
 export const ToggleButton = styled.button`
   position: relative;
   width: 48px;
   height: 24px;
-  background: ${props => props.active ? '#4f46e5' : '#334155'};
+  background: ${props => props.$active ? '#4f46e5' : '#334155'};
   border-radius: 9999px;
   border: none;
   cursor: pointer;
@@ -260,7 +260,7 @@ export const ToggleButton = styled.button`
     content: '';
     position: absolute;
     top: 2px;
-    left: ${props => props.active ? '26px' : '2px'};
+    left: ${props => props.$active ? '26px' : '2px'};
     width: 20px;
     height: 20px;
     background: white;

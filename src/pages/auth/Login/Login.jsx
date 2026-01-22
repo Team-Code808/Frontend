@@ -438,7 +438,7 @@ const AuthPage = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, industry: e.target.value })
                     }
-                    variant="blue"
+                    $variant="blue"
                   >
                     <option value="" disabled>
                       업종 선택
@@ -466,7 +466,7 @@ const AuthPage = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, companySize: e.target.value })
                     }
-                    variant="blue"
+                    $variant="blue"
                   >
                     <option value="" disabled>
                       규모 선택
@@ -481,7 +481,7 @@ const AuthPage = () => {
               </S.InputGroup>
             </S.Grid2>
 
-            <S.InfoBox variant="blue">
+            <S.InfoBox $variant="blue">
               <p>
                 <Sparkles
                   size={14}
@@ -499,7 +499,7 @@ const AuthPage = () => {
               </S.InputWrapper>
             </S.InputGroup>
 
-            <S.SubmitButton type="submit" variant="dark">
+            <S.SubmitButton type="submit" $variant="dark">
               등록 완료하기
               <CheckCircle2 size={24} />
             </S.SubmitButton>
@@ -587,7 +587,7 @@ const AuthPage = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, department: e.target.value })
                 }
-                variant="indigo"
+                $variant="indigo"
               >
                 <option value="" disabled>
                   부서 선택
@@ -630,7 +630,7 @@ const AuthPage = () => {
                       setFormData({ ...formData, position: val });
                     }
                   }}
-                  variant="indigo"
+                  $variant="indigo"
                 >
                   <option value="" disabled>
                     직급 선택
@@ -658,7 +658,7 @@ const AuthPage = () => {
               </div>
             </S.InputGroup>
 
-            <S.InfoBox variant="indigo">
+            <S.InfoBox $variant="indigo">
               <p>
                 <ShieldCheck
                   size={14}
@@ -668,7 +668,7 @@ const AuthPage = () => {
               </p>
             </S.InfoBox>
 
-            <S.SubmitButton type="submit" variant="indigo">
+            <S.SubmitButton type="submit" $variant="indigo">
               참여 신청하기
               <CheckCircle2 size={24} />
             </S.SubmitButton>

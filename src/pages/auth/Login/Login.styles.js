@@ -286,7 +286,7 @@ export const Select = styled.select`
 
   &:focus {
     border-color: ${(props) =>
-      props.variant === "indigo" ? "#4f46e5" : "#2563eb"};
+      props.$variant === "indigo" ? "#4f46e5" : "#2563eb"};
   }
 
   ${(props) =>
@@ -321,7 +321,7 @@ export const SubmitButton = styled.button`
   }
 
   ${(props) =>
-    props.variant === "dark" &&
+    props.$variant === "dark" &&
     css`
       background-color: #0f172a; /* bg-slate-900 */
       box-shadow: 0 10px 15px -3px rgba(226, 232, 240, 1); /* shadow-slate-200 */
@@ -331,7 +331,7 @@ export const SubmitButton = styled.button`
     `}
 
   ${(props) =>
-    props.variant === "indigo" &&
+    props.$variant === "indigo" &&
     css`
       background-color: #4f46e5; /* bg-indigo-600 */
       box-shadow: 0 10px 15px -3px rgba(224, 231, 255, 1); /* shadow-indigo-100 */
@@ -451,18 +451,18 @@ export const Grid2 = styled.div`
 
 export const InfoBox = styled.div`
   background-color: ${(props) =>
-    props.variant === "blue"
+    props.$variant === "blue"
       ? "#eff6ff"
       : "#e0e7ff"}; /* bg-blue-50 or indigo-50 */
   padding: 1rem;
   border-radius: 1rem;
   border: 1px solid
-    ${(props) => (props.variant === "blue" ? "#dbeafe" : "#e0e7ff")};
+    ${(props) => (props.$variant === "blue" ? "#dbeafe" : "#e0e7ff")};
 
   p {
     font-size: 0.75rem;
     font-weight: 700;
-    color: ${(props) => (props.variant === "blue" ? "#1d4ed8" : "#4338ca")};
+    color: ${(props) => (props.$variant === "blue" ? "#1d4ed8" : "#4338ca")};
     line-height: 1.625;
   }
 `;

@@ -150,7 +150,7 @@ const Attendance = () => {
         ].map((card, i) => (
           <S.SummaryCard key={i}>
             <S.CardHeader>
-              <S.IconBox color={card.color}>
+              <S.IconBox $color={card.color}>
                 <card.icon size={20} />
               </S.IconBox>
               <span>{card.label}</span>
@@ -188,8 +188,8 @@ const Attendance = () => {
                 {date ? (
                   <S.DayButton
                     onClick={() => setSelectedDay(date.day)}
-                    isSelected={selectedDay === date.day}
-                    status={date.status}
+                    $isSelected={selectedDay === date.day}
+                    $status={date.status}
                   >
                     {date.day}
                   </S.DayButton>
@@ -206,7 +206,7 @@ const Attendance = () => {
               { label: '지각', color: 'red' },
               { label: '미정', color: 'slate' }
             ].map((l) => (
-              <S.LegendItem key={l.label} color={l.color}>
+              <S.LegendItem key={l.label} $color={l.color}>
                 <div />
                 {l.label}
               </S.LegendItem>
@@ -217,7 +217,10 @@ const Attendance = () => {
         {/* Selected Day Details Card */}
         <S.DetailsColumn>
           <S.DetailsCard>
-            <S.StatusIndicatorBar status={details?.isLeave ? (details?.isWorkcation ? '워케이션' : 'leave') : details?.status} isLeave={details?.isLeave && !details?.isWorkcation} />
+            <S.StatusIndicatorBar
+              $status={details?.isLeave ? (details?.isWorkcation ? '워케이션' : 'leave') : details?.status}
+              $isLeave={details?.isLeave && !details?.isWorkcation}
+            />
 
             <S.DetailsContent>
               <S.DetailsHeader>
@@ -225,7 +228,10 @@ const Attendance = () => {
                   <p>상세 현황</p>
                   <h3>{year}년 {month + 1}월 {selectedDay || ''}일</h3>
                 </div>
-                <S.StatusBadge status={details?.status} isLeave={details?.isLeave && !details?.isWorkcation}>
+                <S.StatusBadge
+                  $status={details?.status}
+                  $isLeave={details?.isLeave && !details?.isWorkcation}
+                >
                   {details?.status}
                 </S.StatusBadge>
               </S.DetailsHeader>
@@ -251,7 +257,7 @@ const Attendance = () => {
                       <p>휴가 종류</p>
                       <p>{details.leaveType}</p>
                     </S.InfoBox>
-                    <S.InfoBox highlight={details.isFuture ? '#3b82f6' : '#16a34a'}>
+                    <S.InfoBox $highlight={details.isFuture ? '#3b82f6' : '#16a34a'}>
                       <p>결재 상태</p>
                       <p>{details.isFuture ? '승인 완료' : '사용 중'}</p>
                     </S.InfoBox>
@@ -331,7 +337,7 @@ const Attendance = () => {
                     <td>{item.clockOut}</td>
                     <td>{item.duration}</td>
                     <td>
-                      <S.TableStatus status={item.status}>{item.status}</S.TableStatus>
+                      <S.TableStatus $status={item.status}>{item.status}</S.TableStatus>
                     </td>
                   </tr>
                 ))}
@@ -356,7 +362,7 @@ const Attendance = () => {
               <S.LeaveCard key={leave.id}>
                 <S.LeaveCardHeader>
                   <span>{leave.type} 신청</span>
-                  <S.LeaveStatusBadge status={leave.status}>{leave.status}</S.LeaveStatusBadge>
+                  <S.LeaveStatusBadge $status={leave.status}>{leave.status}</S.LeaveStatusBadge>
                 </S.LeaveCardHeader>
                 <S.LeavePeriod>{leave.period}</S.LeavePeriod>
                 <S.LeaveCardFooter>

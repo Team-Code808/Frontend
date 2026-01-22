@@ -46,13 +46,13 @@ const AllNotificationsModal = ({ onClose }) => {
         {/* 탭 */}
         <S.ModalTabs>
           <S.ModalTabButton
-            active={filter === 'ALL'}
+            $active={filter === 'ALL'}
             onClick={() => setFilter('ALL')}
           >
             전체
           </S.ModalTabButton>
           <S.ModalTabButton
-            active={filter === 'UNREAD'}
+            $active={filter === 'UNREAD'}
             onClick={() => setFilter('UNREAD')}
             color="#4f46e5"
           >

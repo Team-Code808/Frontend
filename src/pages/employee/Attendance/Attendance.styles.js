@@ -74,10 +74,10 @@ export const IconBox = styled.div`
   /* Dynamic color logic passed as props or handled via specific styled component extension. 
      Using a generic approach here with props: color */
   
-  ${props => props.color === 'blue' && css`background-color: #eff6ff; color: #2563eb;`}
-  ${props => props.color === 'orange' && css`background-color: #fff7ed; color: #ea580c;`}
-  ${props => props.color === 'indigo' && css`background-color: #eef2ff; color: #4f46e5;`}
-  ${props => props.color === 'green' && css`background-color: #f0fdf4; color: #16a34a;`}
+  ${props => props.$color === 'blue' && css`background-color: #eff6ff; color: #2563eb;`}
+  ${props => props.$color === 'orange' && css`background-color: #fff7ed; color: #ea580c;`}
+  ${props => props.$color === 'indigo' && css`background-color: #eef2ff; color: #4f46e5;`}
+  ${props => props.$color === 'green' && css`background-color: #f0fdf4; color: #16a34a;`}
 `;
 
 export const CardValue = styled.div`
@@ -200,22 +200,22 @@ export const DayButton = styled.button`
   border: 2px solid;
 
   /* Status Styles Logic */
-  ${props => props.isSelected ? css`
+  ${props => props.$isSelected ? css`
     /* Selected State Override */
-    ${props.status === 'normal' && 'background-color: #f0fdf4; color: #15803d; border-color: #4ade80; box-shadow: 0 0 0 2px #f0fdf4;'}
-    ${props.status === 'late' && 'background-color: #fef2f2; color: #b91c1c; border-color: #f87171; box-shadow: 0 0 0 2px #fef2f2;'}
-    ${props.status === 'leave' && 'background-color: #eef2ff; color: #4338ca; border-color: #818cf8; box-shadow: 0 0 0 2px #eef2ff;'}
-    ${props.status === 'workcation' && 'background-color: #fefce8; color: #a16207; border-color: #fde047; box-shadow: 0 0 0 2px #fefce8;'}
-    ${props.status === 'future' && 'background-color: #f8fafc; color: #94a3b8; border-color: #cbd5e1; box-shadow: 0 0 0 2px #f8fafc;'}
-    ${props.status === 'none' && 'background-color: #eff6ff; color: #1d4ed8; border-color: #60a5fa; box-shadow: 0 0 0 2px #eff6ff;'}
+    ${props.$status === 'normal' && 'background-color: #f0fdf4; color: #15803d; border-color: #4ade80; box-shadow: 0 0 0 2px #f0fdf4;'}
+    ${props.$status === 'late' && 'background-color: #fef2f2; color: #b91c1c; border-color: #f87171; box-shadow: 0 0 0 2px #fef2f2;'}
+    ${props.$status === 'leave' && 'background-color: #eef2ff; color: #4338ca; border-color: #818cf8; box-shadow: 0 0 0 2px #eef2ff;'}
+    ${props.$status === 'workcation' && 'background-color: #fefce8; color: #a16207; border-color: #fde047; box-shadow: 0 0 0 2px #fefce8;'}
+    ${props.$status === 'future' && 'background-color: #f8fafc; color: #94a3b8; border-color: #cbd5e1; box-shadow: 0 0 0 2px #f8fafc;'}
+    ${props.$status === 'none' && 'background-color: #eff6ff; color: #1d4ed8; border-color: #60a5fa; box-shadow: 0 0 0 2px #eff6ff;'}
   ` : css`
     /* Default State */
-    ${props.status === 'normal' && 'background-color: rgba(240, 253, 244, 0.5); color: #16a34a; border-color: transparent; &:hover { border-color: #bbf7d0; }'}
-    ${props.status === 'late' && 'background-color: rgba(254, 242, 242, 0.5); color: #dc2626; border-color: transparent; &:hover { border-color: #fecaca; }'}
-    ${props.status === 'leave' && 'background-color: rgba(238, 242, 255, 0.5); color: #4f46e5; border-color: transparent; &:hover { border-color: #c7d2fe; }'}
-    ${props.status === 'workcation' && 'background-color: rgba(254, 252, 232, 0.5); color: #854d0e; border-color: transparent; &:hover { border-color: #fef08a; }'}
-    ${props.status === 'future' && 'background-color: transparent; color: #cbd5e1; border-color: #f1f5f9; border-style: dashed; &:hover { border-color: #e2e8f0; }'}
-    ${props.status === 'none' && 'background-color: rgba(248, 250, 252, 0.5); color: #94a3b8; border-color: transparent; &:hover { border-color: #e2e8f0; }'}
+    ${props.$status === 'normal' && 'background-color: rgba(240, 253, 244, 0.5); color: #16a34a; border-color: transparent; &:hover { border-color: #bbf7d0; }'}
+    ${props.$status === 'late' && 'background-color: rgba(254, 242, 242, 0.5); color: #dc2626; border-color: transparent; &:hover { border-color: #fecaca; }'}
+    ${props.$status === 'leave' && 'background-color: rgba(238, 242, 255, 0.5); color: #4f46e5; border-color: transparent; &:hover { border-color: #c7d2fe; }'}
+    ${props.$status === 'workcation' && 'background-color: rgba(254, 252, 232, 0.5); color: #854d0e; border-color: transparent; &:hover { border-color: #fef08a; }'}
+    ${props.$status === 'future' && 'background-color: transparent; color: #cbd5e1; border-color: #f1f5f9; border-style: dashed; &:hover { border-color: #e2e8f0; }'}
+    ${props.$status === 'none' && 'background-color: rgba(248, 250, 252, 0.5); color: #94a3b8; border-color: transparent; &:hover { border-color: #e2e8f0; }'}
   `}
 `;
 
@@ -240,11 +240,11 @@ export const LegendItem = styled.div`
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 9999px;
-    ${props => props.color === 'green' && 'background-color: #4ade80;'}
-    ${props => props.color === 'indigo' && 'background-color: #818cf8;'}
-    ${props => props.color === 'red' && 'background-color: #f87171;'}
-    ${props => props.color === 'yellow' && 'background-color: #eab308;'}
-    ${props => props.color === 'slate' && 'background-color: #e2e8f0; border: 1px dashed #cbd5e1;'}
+    ${props => props.$color === 'green' && 'background-color: #4ade80;'}
+    ${props => props.$color === 'indigo' && 'background-color: #818cf8;'}
+    ${props => props.$color === 'red' && 'background-color: #f87171;'}
+    ${props => props.$color === 'yellow' && 'background-color: #eab308;'}
+    ${props => props.$color === 'slate' && 'background-color: #e2e8f0; border: 1px dashed #cbd5e1;'}
   }
 `;
 
@@ -278,11 +278,11 @@ export const StatusIndicatorBar = styled.div`
   height: 0.375rem;
   transition: background-color 0.5s;
   
-  ${props => props.status === '미정' && 'background-color: #e2e8f0;'}
-  ${props => props.status === '정상' && 'background-color: #22c55e;'}
-  ${props => props.status === '지각' && 'background-color: #ef4444;'}
-  ${props => props.isLeave && 'background-color: #6366f1;'}
-  ${props => props.status === '워케이션' && 'background-color: #ca8a04;'}
+  ${props => props.$status === '미정' && 'background-color: #e2e8f0;'}
+  ${props => props.$status === '정상' && 'background-color: #22c55e;'}
+  ${props => props.$status === '지각' && 'background-color: #ef4444;'}
+  ${props => props.$isLeave && 'background-color: #6366f1;'}
+  ${props => props.$status === '워케이션' && 'background-color: #ca8a04;'}
 `;
 
 export const DetailsContent = styled.div`
@@ -323,11 +323,11 @@ export const StatusBadge = styled.div`
   font-weight: 900;
   text-transform: uppercase;
   
-  ${props => props.status === '미정' && 'background-color: #f8fafc; color: #94a3b8;'}
-  ${props => props.status === '정상' && 'background-color: #f0fdf4; color: #16a34a;'}
-  ${props => props.status === '지각' && 'background-color: #fef2f2; color: #dc2626;'}
-  ${props => props.isLeave && 'background-color: #eef2ff; color: #4f46e5;'}
-  ${props => props.status === '워케이션' && 'background-color: #fefce8; color: #a16207;'}
+  ${props => props.$status === '미정' && 'background-color: #f8fafc; color: #94a3b8;'}
+  ${props => props.$status === '정상' && 'background-color: #f0fdf4; color: #16a34a;'}
+  ${props => props.$status === '지각' && 'background-color: #fef2f2; color: #dc2626;'}
+  ${props => props.$isLeave && 'background-color: #eef2ff; color: #4f46e5;'}
+  ${props => props.$status === '워케이션' && 'background-color: #fefce8; color: #a16207;'}
 `;
 
 export const EmptyState = styled.div`
@@ -432,7 +432,7 @@ export const InfoBox = styled.div`
     font-size: 0.875rem;
     font-weight: 700;
     color: #334155;
-    ${props => props.highlight && css`color: ${props.highlight};`}
+    ${props => props.$highlight && css`color: ${props.$highlight};`}
   }
 `;
 
@@ -559,7 +559,7 @@ export const TableStatus = styled.span`
   font-size: 0.75rem;
   font-weight: 700;
   
-  ${props => props.status === '정상'
+  ${props => props.$status === '정상'
     ? 'background-color: #f0fdf4; color: #16a34a;'
     : 'background-color: #fef2f2; color: #dc2626;'}
 `;
@@ -621,7 +621,7 @@ export const LeaveStatusBadge = styled.span`
   border-radius: 9999px;
   font-weight: 700;
   
-  ${props => props.status === '승인완료'
+  ${props => props.$status === '승인완료'
     ? 'background-color: #f0fdf4; color: #16a34a;'
     : 'background-color: #eff6ff; color: #2563eb;'}
 `;
