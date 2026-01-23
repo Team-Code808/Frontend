@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -16,17 +16,19 @@ import {
   X,
   CheckCircle2,
   AlertCircle,
-  Info
-} from 'lucide-react';
-import { NavItemType } from '../constants/types';
-import Logo from './Logo';
-import { NOTIFICATIONS_DATA } from '../constants/constants';
-import * as S from './Header.styles';
+  Info,
+} from "lucide-react";
+import { NavItemType } from "../constants/types";
+import Logo from "./Logo";
+import { NOTIFICATIONS_DATA } from "../constants/constants";
+import * as S from "./Header.styles";
 
 const AllNotificationsModal = ({ onClose }) => {
-  const [filter, setFilter] = useState('ALL');
+  const [filter, setFilter] = useState("ALL");
 
-  const filtered = NOTIFICATIONS_DATA.filter(n => filter === 'ALL' || !n.read);
+  const filtered = NOTIFICATIONS_DATA.filter(
+    (n) => filter === "ALL" || !n.read
+  );
 
   return (
     <S.ModalOverlay>
@@ -62,26 +64,47 @@ const AllNotificationsModal = ({ onClose }) => {
 
         {/* 리스트 */}
         <S.ModalList>
-          {filtered.length > 0 ? filtered.map(item => (
-            <S.ModalItem key={item.id} read={item.read}>
-              <S.IconBox type={item.type}>
-                {item.type === 'success' ? <CheckCircle2 size={18} /> :
-                  item.type === 'alert' ? <AlertCircle size={18} /> :
-                    item.type === 'notice' ? <Bell size={18} /> : <Info size={18} />}
-              </S.IconBox>
-              <S.ListContent>
-                <S.ListHeader read={item.read}>
-                  <h4>{item.title}</h4>
-                  <span>{item.time}</span>
-                </S.ListHeader>
-                <S.ListMessage>{item.message}</S.ListMessage>
-              </S.ListContent>
-              {!item.read && <S.ListUnreadDot />}
-            </S.ModalItem>
-          )) : (
-            <div style={{ padding: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#94a3b8' }}>
-              <Bell size={40} style={{ opacity: 0.2, marginBottom: '0.5rem' }} />
-              <p style={{ fontSize: '0.75rem', fontWeight: 700 }}>표시할 알림이 없습니다.</p>
+          {filtered.length > 0 ? (
+            filtered.map((item) => (
+              <S.ModalItem key={item.id} read={item.read}>
+                <S.IconBox type={item.type}>
+                  {item.type === "success" ? (
+                    <CheckCircle2 size={18} />
+                  ) : item.type === "alert" ? (
+                    <AlertCircle size={18} />
+                  ) : item.type === "notice" ? (
+                    <Bell size={18} />
+                  ) : (
+                    <Info size={18} />
+                  )}
+                </S.IconBox>
+                <S.ListContent>
+                  <S.ListHeader read={item.read}>
+                    <h4>{item.title}</h4>
+                    <span>{item.time}</span>
+                  </S.ListHeader>
+                  <S.ListMessage>{item.message}</S.ListMessage>
+                </S.ListContent>
+                {!item.read && <S.ListUnreadDot />}
+              </S.ModalItem>
+            ))
+          ) : (
+            <div
+              style={{
+                padding: "3rem",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                color: "#94a3b8",
+              }}
+            >
+              <Bell
+                size={40}
+                style={{ opacity: 0.2, marginBottom: "0.5rem" }}
+              />
+              <p style={{ fontSize: "0.75rem", fontWeight: 700 }}>
+                표시할 알림이 없습니다.
+              </p>
             </div>
           )}
         </S.ModalList>
@@ -90,23 +113,27 @@ const AllNotificationsModal = ({ onClose }) => {
   );
 };
 
-import useStore from '../store/useStore';
+import useStore from "../store/useStore";
 
 const Header = () => {
   const { isAdminMode, setIsAdminMode, logout, user } = useStore();
-  const userName = user?.name || '';
+  const { name: userName, department } = user || {};
   const onLogout = logout;
   const navigate = useNavigate();
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showAllNotificationsModal, setShowAllNotificationsModal] = useState(false);
+  const [showAllNotificationsModal, setShowAllNotificationsModal] =
+    useState(false);
   const notificationRef = useRef(null);
 
   const notifications = NOTIFICATIONS_DATA.slice(0, 3); // 최신 3개만 미리보기
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
         setShowNotifications(false);
       }
     }
@@ -117,30 +144,82 @@ const Header = () => {
   }, []);
 
   const userNavItems = [
-    { id: NavItemType.DASHBOARD, label: '대시보드', icon: LayoutDashboard, path: '/app/dashboard' },
-    { id: NavItemType.DEPARTMENT, label: '부서정보', icon: Users, path: '/app/department' },
-    { id: NavItemType.ATTENDANCE, label: '근태관리', icon: CalendarCheck, path: '/app/attendance' },
-    { id: NavItemType.CONSULTATION, label: '상담신청', icon: MessageSquareHeart, path: '/app/consultation' },
-    { id: NavItemType.POINT_MALL, label: '포인트몰', icon: Coins, path: '/app/pointmall' },
+    {
+      id: NavItemType.DASHBOARD,
+      label: "대시보드",
+      icon: LayoutDashboard,
+      path: "/app/dashboard",
+    },
+    {
+      id: NavItemType.DEPARTMENT,
+      label: "부서정보",
+      icon: Users,
+      path: "/app/department",
+    },
+    {
+      id: NavItemType.ATTENDANCE,
+      label: "근태관리",
+      icon: CalendarCheck,
+      path: "/app/attendance",
+    },
+    {
+      id: NavItemType.CONSULTATION,
+      label: "상담신청",
+      icon: MessageSquareHeart,
+      path: "/app/consultation",
+    },
+    {
+      id: NavItemType.POINT_MALL,
+      label: "포인트몰",
+      icon: Coins,
+      path: "/app/pointmall",
+    },
   ];
 
   const adminNavItems = [
-    { id: NavItemType.DASHBOARD, label: '통합현황', icon: LayoutDashboard, path: '/app/dashboard' },
-    { id: NavItemType.ADMIN_USERS, label: '팀원관리', icon: Users, path: '/app/users' },
-    { id: NavItemType.ADMIN_MONITORING, label: '상세분석', icon: Activity, path: '/app/monitoring' },
-    { id: NavItemType.ADMIN_APPLICATIONS, label: '신청관리', icon: ClipboardList, path: '/app/applications' },
-    { id: 'ADMIN_GIFTICONS', label: '기프티콘 관리', icon: Coins, path: '/app/gifticons' },
+    {
+      id: NavItemType.DASHBOARD,
+      label: "통합현황",
+      icon: LayoutDashboard,
+      path: "/app/dashboard",
+    },
+    {
+      id: NavItemType.ADMIN_USERS,
+      label: "팀원관리",
+      icon: Users,
+      path: "/app/users",
+    },
+    {
+      id: NavItemType.ADMIN_MONITORING,
+      label: "상세분석",
+      icon: Activity,
+      path: "/app/monitoring",
+    },
+    {
+      id: NavItemType.ADMIN_APPLICATIONS,
+      label: "신청관리",
+      icon: ClipboardList,
+      path: "/app/applications",
+    },
+    {
+      id: "ADMIN_GIFTICONS",
+      label: "기프티콘 관리",
+      icon: Coins,
+      path: "/app/gifticons",
+    },
   ];
 
   const currentNavItems = isAdminMode ? adminNavItems : userNavItems;
 
   // 경로(path)에 따라 활성 탭 결정
   const currentPath = location.pathname;
-  const isMyPageActive = currentPath.includes('/app/mypage');
+  const isMyPageActive = currentPath.includes("/app/mypage");
 
   let activeTab = null;
   if (!isMyPageActive) {
-    const activeItem = currentNavItems.find(item => currentPath.startsWith(item.path));
+    const activeItem = currentNavItems.find((item) =>
+      currentPath.startsWith(item.path)
+    );
     if (activeItem) activeTab = activeItem.id;
   }
 
@@ -150,7 +229,7 @@ const Header = () => {
 
   const handleModeToggle = () => {
     setIsAdminMode(!isAdminMode);
-    navigate('/app/dashboard');
+    navigate("/app/dashboard");
   };
 
   return (
@@ -161,7 +240,7 @@ const Header = () => {
             {/* 왼쪽 영역 */}
             <S.LeftSection>
               <S.BrandGroup>
-                <S.LogoBox onClick={() => navigate('/app/dashboard')}>
+                <S.LogoBox onClick={() => navigate("/app/dashboard")}>
                   <Logo size={70} />
                   <S.BrandText $isAdminMode={isAdminMode}>
                     Calm Desk
@@ -174,9 +253,13 @@ const Header = () => {
                   onClick={handleModeToggle}
                 >
                   {isAdminMode ? (
-                    <><ArrowLeftRight /> 직원 모드 복귀</>
+                    <>
+                      <ArrowLeftRight /> 직원 모드 복귀
+                    </>
                   ) : (
-                    <><ShieldCheck /> 관리자 전환</>
+                    <>
+                      <ShieldCheck /> 관리자 전환
+                    </>
                   )}
                 </S.ModeToggleButton>
               </S.BrandGroup>
@@ -195,7 +278,9 @@ const Header = () => {
                   >
                     <item.icon size={24} />
                     <span>{item.label}</span>
-                    {isActive && <S.ActiveIndicator $isAdminMode={isAdminMode} />}
+                    {isActive && (
+                      <S.ActiveIndicator $isAdminMode={isAdminMode} />
+                    )}
                   </S.NavButton>
                 );
               })}
@@ -205,7 +290,7 @@ const Header = () => {
             <S.RightSection>
               <S.RightGroup>
                 <S.ProfileButton
-                  onClick={() => navigate('/app/mypage')}
+                  onClick={() => navigate("/app/mypage")}
                   $isActive={isMyPageActive}
                   $isAdminMode={isAdminMode}
                 >
@@ -216,18 +301,21 @@ const Header = () => {
                     <UserCircle size={20} />
                   </S.ProfileAvatar>
                   <S.ProfileInfo>
-                    <S.ProfileName $isActive={isMyPageActive} $isAdminMode={isAdminMode}>
+                    <S.ProfileName
+                      $isActive={isMyPageActive}
+                      $isAdminMode={isAdminMode}
+                    >
                       {isAdminMode ? "관리자" : `${userName} 님`}
                     </S.ProfileName>
                     <S.ProfileRole $isAdminMode={isAdminMode}>
-                      {isAdminMode ? "운영 총괄" : "상담 1팀"}
+                      {isAdminMode ? "운영 총괄" : department}
                     </S.ProfileRole>
                   </S.ProfileInfo>
                 </S.ProfileButton>
 
                 <S.ActionDivider $isAdminMode={isAdminMode}>
                   {/* 알림 버튼 및 팝업 */}
-                  <div style={{ position: 'relative' }} ref={notificationRef}>
+                  <div style={{ position: "relative" }} ref={notificationRef}>
                     <S.IconButton
                       onClick={() => setShowNotifications(!showNotifications)}
                       $active={showNotifications}
@@ -241,11 +329,16 @@ const Header = () => {
                       <S.NotiPopover $isAdminMode={isAdminMode}>
                         <S.NotiHeader $isAdminMode={isAdminMode}>
                           <span>알림</span>
-                          <button onClick={() => setShowNotifications(false)}>모두 읽음</button>
+                          <button onClick={() => setShowNotifications(false)}>
+                            모두 읽음
+                          </button>
                         </S.NotiHeader>
                         <S.NotiList>
-                          {notifications.map(notif => (
-                            <S.NotiItem key={notif.id} $isAdminMode={isAdminMode}>
+                          {notifications.map((notif) => (
+                            <S.NotiItem
+                              key={notif.id}
+                              $isAdminMode={isAdminMode}
+                            >
                               <S.NotiItemHeader $isAdminMode={isAdminMode}>
                                 <span>{notif.title}</span>
                                 <span>{notif.time}</span>
@@ -284,7 +377,9 @@ const Header = () => {
 
       {/* 전체 알림 모달 */}
       {showAllNotificationsModal && (
-        <AllNotificationsModal onClose={() => setShowAllNotificationsModal(false)} />
+        <AllNotificationsModal
+          onClose={() => setShowAllNotificationsModal(false)}
+        />
       )}
     </>
   );
