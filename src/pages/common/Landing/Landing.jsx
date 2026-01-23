@@ -40,11 +40,11 @@ const LandingPage = ({ onStart, onViewFeatures }) => {
           </S.Description>
 
           <S.ButtonGroup>
-            <S.HeroButton onClick={onStart} variant="primary">
+            <S.HeroButton onClick={onStart} $variant="primary">
               지금 시작하기
               <ArrowRight className="w-6 h-6 transition-transform" />
             </S.HeroButton>
-            <S.HeroButton onClick={onViewFeatures} variant="secondary">
+            <S.HeroButton onClick={onViewFeatures} $variant="secondary">
               기능 상세 보기
             </S.HeroButton>
           </S.ButtonGroup>
@@ -73,7 +73,7 @@ const LandingPage = ({ onStart, onViewFeatures }) => {
             }
           ].map((feature, i) => (
             <S.FeatureCard key={i}>
-              <S.FeatureIconBox variant={feature.variant}>
+              <S.FeatureIconBox $variant={feature.variant}>
                 <feature.icon />
               </S.FeatureIconBox>
               <S.FeatureTitle>{feature.title}</S.FeatureTitle>

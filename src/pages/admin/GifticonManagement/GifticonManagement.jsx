@@ -21,11 +21,11 @@ const AdminGifticonManagement = () => {
                         <ShoppingBag size={18} />
                         구매 내역
                     </S.BulkButton>
-                    <S.BulkButton onClick={activateAll} variant="activate">
+                    <S.BulkButton onClick={activateAll} $variant="activate">
                         <CheckCircle2 size={18} />
                         전체 활성화
                     </S.BulkButton>
-                    <S.BulkButton onClick={deactivateAll} variant="deactivate">
+                    <S.BulkButton onClick={deactivateAll} $variant="deactivate">
                         <XCircle size={18} />
                         전체 비활성화
                     </S.BulkButton>
@@ -34,8 +34,8 @@ const AdminGifticonManagement = () => {
 
             <S.Grid>
                 {items.map(item => (
-                    <S.ItemCard key={item.id} active={item.isActive}>
-                        <S.ItemImage active={item.isActive}>
+                    <S.ItemCard key={item.id} $active={item.isActive}>
+                        <S.ItemImage $active={item.isActive}>
                             {item.img}
                         </S.ItemImage>
                         <S.ItemInfo>
@@ -95,11 +95,11 @@ const AdminGifticonManagement = () => {
                         </S.QuantityRow>
 
                         <S.StatusRow>
-                            <S.StatusBadge active={item.isActive}>
+                            <S.StatusBadge $active={item.isActive}>
                                 {item.isActive ? '판매중' : '비활성'}
                             </S.StatusBadge>
                             <S.ToggleButton
-                                active={item.isActive}
+                                $active={item.isActive}
                                 onClick={() => toggleItemStatus(item.id)}
                             />
                         </S.StatusRow>

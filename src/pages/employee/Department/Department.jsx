@@ -125,7 +125,7 @@ const Department = () => {
                 <S.MemberInfo>
                   <S.NameRow>
                     <h3>{member.name}</h3>
-                    <S.StatusPill status={member.status}>
+                    <S.StatusPill $status={member.status}>
                       {member.status}
                     </S.StatusPill>
                   </S.NameRow>

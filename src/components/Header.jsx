@@ -48,14 +48,14 @@ const AllNotificationsModal = ({ onClose }) => {
         {/* 탭 */}
         <S.ModalTabs>
           <S.ModalTabButton
-            active={filter === "ALL"}
-            onClick={() => setFilter("ALL")}
+            $active={filter === 'ALL'}
+            onClick={() => setFilter('ALL')}
           >
             전체
           </S.ModalTabButton>
           <S.ModalTabButton
-            active={filter === "UNREAD"}
-            onClick={() => setFilter("UNREAD")}
+            $active={filter === 'UNREAD'}
+            onClick={() => setFilter('UNREAD')}
             color="#4f46e5"
           >
             안 읽음

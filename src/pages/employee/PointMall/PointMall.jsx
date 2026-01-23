@@ -138,7 +138,7 @@ const PointMall = () => {
     return (
         <>
             <S.Container>
-                <S.BannerSection tab={pointMallTab}>
+                <S.BannerSection $tab={pointMallTab}>
                     <S.BannerContent>
                         <h1>
                             {pointMallTab === 'SHOP' ? '포인트 몰' : '미션 도전'}
@@ -159,7 +159,7 @@ const PointMall = () => {
                 <S.TabContainer>
                     <S.TabGroup>
                         <S.TabButton
-                            active={pointMallTab === 'MISSIONS'}
+                            $active={pointMallTab === 'MISSIONS'}
                             mode="MISSIONS"
                             onClick={() => setPointMallTab('MISSIONS')}
                         >
@@ -167,7 +167,7 @@ const PointMall = () => {
                             미션 도전
                         </S.TabButton>
                         <S.TabButton
-                            active={pointMallTab === 'SHOP'}
+                            $active={pointMallTab === 'SHOP'}
                             mode="SHOP"
                             onClick={() => setPointMallTab('SHOP')}
                         >
@@ -224,7 +224,7 @@ const PointMall = () => {
                                             <S.IconBox>
                                                 {mission.icon}
                                             </S.IconBox>
-                                            <S.StatusPill status={mission.status}>
+                                            <S.StatusPill $status={mission.status}>
                                                 {mission.status}
                                             </S.StatusPill>
                                         </S.HeaderRow>
@@ -242,11 +242,11 @@ const PointMall = () => {
                                         <S.ProgressBarBg>
                                             <S.ProgressBarFill
                                                 width={mission.progress}
-                                                complete={mission.status === '완료'}
+                                                $complete={mission.status === '완료'}
                                             />
                                         </S.ProgressBarBg>
                                         <S.ActionBtn
-                                            complete={mission.status === '완료'}
+                                            $complete={mission.status === '완료'}
                                             onClick={() => mission.status !== '완료' && handleMissionClick(mission.id)}
                                         >
                                             {mission.status === '완료' ? '획득 완료' : '미션 진행하기'}
