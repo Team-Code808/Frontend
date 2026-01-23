@@ -796,7 +796,7 @@ export const BentoCard = styled.div`
     transform: translateY(-4px);
   }
 
-  ${props => props.gradient && css`
+  ${props => props.$gradient && css`
     background: linear-gradient(to bottom right, white, rgba(248, 250, 252, 0.5));
   `}
 `;
