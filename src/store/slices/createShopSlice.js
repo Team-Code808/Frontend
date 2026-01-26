@@ -10,18 +10,22 @@ export const createShopSlice = (set, get) => ({
     purchaseHistory: [],
 
     // 1. 초기 데이터 로드: 백엔드에서 모든 아이템 가져오기
-    fetchItems: async () => {
+    fetchItems: async (companyId) => {
+        // 1. 아직 로그인 로직이 없으므로, 전달받은 id가 없으면 가상의 1번을 사용
+        const targetId = companyId || 2;
+
         set({ isLoading: true });
         try {
-            const res = await axios.get(`${API_URL}/items`);
+            // 2. 가상의 targetId를 쿼리 스트링으로 전달
+            const res = await axios.get(`${API_URL}/items`, {
+                params: { companyId: targetId } // axios의 params 옵션을 쓰면 ?companyId=1 로 자동 변환됨
+            });
 
-            console.log("✅ 서버에서 받은 데이터:", res.data);
-            // 서버 응답이 200이고 데이터가 배열일 때만 저장
-
+            console.log(`✅ 회사 ID [${targetId}] 기프티콘 로드 완료:`, res.data);
             set({ items: Array.isArray(res.data) ? res.data : [], isLoading: false });
         } catch (error) {
             console.error("❌ 데이터 로드 실패:", error);
-            set({ items: [], isLoading: false }); // 에러 시 빈 배열로 설정하여 .map 에러 방지
+            set({ items: [], isLoading: false });
         }
     },
 
