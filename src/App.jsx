@@ -19,10 +19,11 @@ import NotFound from "./pages/common/NotFound/NotFound";
 import AuthPage from "./pages/auth/Login/Login";
 
 // 직원 페이지 (Employee Pages)
-import Consultation from './pages/employee/Consultation/Consultation';
-import PointMall from './pages/employee/PointMall/PointMall';
-import Department from './pages/employee/Department/Department';
-import Attendance from './pages/employee/Attendance/Attendance';
+import MyPage from "./pages/employee/MyPage/MyPage";
+import Department from "./pages/employee/Department/Department";
+import Attendance from "./pages/employee/Attendance/Attendance";
+import Consultation from "./pages/employee/Consultation/Consultation";
+// import PointMall from "./pages/employee/PointMall/PointMall";
 
 import { ShieldAlert, Clock } from "lucide-react";
 import * as S from "./App.styles";
@@ -96,20 +97,18 @@ function App() {
                 <Routes>
                   {/* 관리자 라우트 */}
                   {isAdminMode && <>
-                    <Route path="gifticons" element={<AdminGifticonManagement />}
-                    />
-                    <Route path="gifticons/history" element={<PurchaseHistory />}
-                    />
+
                   </>}
 
-                  {/* 직원 라우트 */}
+                  {/* 직원 라우트 — Header 메뉴와 경로 일치 */}
                   {!isAdminMode && (
                     <>
-                      <Route path="attendance" element={<Attendance />} />
+                      <Route path="dashboard" element={<Navigate to="/app/mypage" replace />} />
                       <Route path="department" element={<Department />} />
+                      <Route path="attendance" element={<Attendance />} />
                       <Route path="consultation" element={<Consultation />} />
-                      <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
-                      <Route path="pointmall" element={<PointMall />} />
+                      {/* <Route path="pointmall" element={<PointMall />} /> */}
+                      <Route path="mypage/*" element={<MyPage />} />
                     </>
                   )}
                 </Routes>
