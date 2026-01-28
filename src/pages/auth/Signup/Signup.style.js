@@ -1,6 +1,5 @@
 import styled, { keyframes, css } from "styled-components";
 
-// Animations
 const fadeIn = keyframes`
   from { opacity: 0; }
   to { opacity: 1; }
@@ -9,164 +8,6 @@ const fadeIn = keyframes`
 const slideInRight = keyframes`
   from { transform: translateX(2rem); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
-`;
-
-const zoomIn = keyframes`
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-`;
-
-// Common Styles
-const flexCenter = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-export const Container = styled.div`
-  min-height: 100vh;
-  background-color: #f8fafc; /* bg-slate-50 */
-  ${flexCenter}
-  padding: 1.5rem;
-  position: relative;
-  overflow: hidden;
-`;
-
-export const BackgroundDecor = styled.div`
-  position: absolute;
-  width: 40%;
-  height: 40%;
-  border-radius: 9999px;
-  filter: blur(120px);
-  z-index: 0;
-
-  ${(props) =>
-    props.type === "blue" &&
-    css`
-      top: -10%;
-      left: -10%;
-      background-color: rgba(191, 219, 254, 0.3); /* bg-blue-200/30 */
-    `}
-
-  ${(props) =>
-    props.type === "indigo" &&
-    css`
-      bottom: -10%;
-      right: -10%;
-      background-color: rgba(199, 210, 254, 0.3); /* bg-indigo-200/30 */
-    `}
-`;
-
-export const Card = styled.div`
-  width: 100%;
-  max-width: 1000px;
-  display: grid;
-  grid-template-columns: 1fr;
-  background-color: white;
-  border-radius: 48px;
-  box-shadow: 0 25px 50px -12px rgba(226, 232, 240, 0.5); /* shadow-2xl shadow-slate-200/50 */
-  overflow: hidden;
-  position: relative;
-  z-index: 10;
-  animation: ${zoomIn} 0.5s ease-out;
-
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-`;
-
-export const VisualSidebar = styled.div`
-  display: none;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 3rem;
-  background-color: #2563eb; /* bg-blue-600 */
-  color: white;
-  position: relative;
-
-  @media (min-width: 768px) {
-    display: flex;
-  }
-`;
-
-export const Brand = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  div {
-    width: 2.5rem;
-    height: 2.5rem;
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 1rem;
-    ${flexCenter}
-    backdrop-filter: blur(12px);
-  }
-
-  span {
-    font-size: 1.25rem;
-    font-weight: 900;
-    letter-spacing: -0.05em;
-    text-transform: uppercase;
-  }
-`;
-
-export const HeroText = styled.div`
-  h2 {
-    font-size: 2.25rem;
-    font-weight: 900;
-    line-height: 1.2;
-    margin-bottom: 1.5rem;
-    letter-spacing: -0.025em;
-    white-space: pre-line;
-  }
-
-  p {
-    color: #dbeafe; /* text-blue-100 */
-    font-size: 1.125rem;
-    font-weight: 500;
-    line-height: 1.625;
-    opacity: 0.8;
-  }
-`;
-
-export const FeatureList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-export const FeatureItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 0.75rem 1rem;
-  border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-
-  span {
-    font-size: 0.875rem;
-    font-weight: 700;
-  }
-`;
-
-export const FormContainer = styled.div`
-  padding: 2.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  max-height: 95vh;
-  overflow-y: auto;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  @media (min-width: 768px) {
-    padding: 4rem;
-  }
 `;
 
 export const FormHeader = styled.div`
@@ -196,7 +37,6 @@ export const Form = styled.form`
   flex-direction: column;
   gap: 1.5rem;
 
-  /* Applying slide-in animation if it's not the initial load */
   ${(props) =>
     props.animate &&
     css`
@@ -222,7 +62,6 @@ export const InputGroup = styled.div`
 export const InputWrapper = styled.div`
   position: relative;
 
-  /* Icon positioning */
   svg {
     position: absolute;
     left: 1rem;
@@ -286,7 +125,7 @@ export const Select = styled.select`
 
   &:focus {
     border-color: ${(props) =>
-      props.$variant === "indigo" ? "#4f46e5" : "#2563eb"};
+      props.variant === "indigo" ? "#4f46e5" : "#2563eb"};
   }
 
   ${(props) =>
@@ -321,7 +160,7 @@ export const SubmitButton = styled.button`
   }
 
   ${(props) =>
-    props.$variant === "dark" &&
+    props.variant === "dark" &&
     css`
       background-color: #0f172a; /* bg-slate-900 */
       box-shadow: 0 10px 15px -3px rgba(226, 232, 240, 1); /* shadow-slate-200 */
@@ -331,7 +170,7 @@ export const SubmitButton = styled.button`
     `}
 
   ${(props) =>
-    props.$variant === "indigo" &&
+    props.variant === "indigo" &&
     css`
       background-color: #4f46e5; /* bg-indigo-600 */
       box-shadow: 0 10px 15px -3px rgba(224, 231, 255, 1); /* shadow-indigo-100 */
@@ -363,7 +202,6 @@ export const TypeButton = styled.button`
 
   &:hover {
     background-color: #f1f5f9; /* hover:bg-slate-100 */
-    /* Dynamic border color based on type not nicely handled without props, hardcoding typical hover */
     border-color: #cbd5e1;
   }
 
@@ -451,18 +289,18 @@ export const Grid2 = styled.div`
 
 export const InfoBox = styled.div`
   background-color: ${(props) =>
-    props.$variant === "blue"
+    props.variant === "blue"
       ? "#eff6ff"
       : "#e0e7ff"}; /* bg-blue-50 or indigo-50 */
   padding: 1rem;
   border-radius: 1rem;
   border: 1px solid
-    ${(props) => (props.$variant === "blue" ? "#dbeafe" : "#e0e7ff")};
+    ${(props) => (props.variant === "blue" ? "#dbeafe" : "#e0e7ff")};
 
   p {
     font-size: 0.75rem;
     font-weight: 700;
-    color: ${(props) => (props.$variant === "blue" ? "#1d4ed8" : "#4338ca")};
+    color: ${(props) => (props.variant === "blue" ? "#1d4ed8" : "#4338ca")};
     line-height: 1.625;
   }
 `;
