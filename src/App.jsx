@@ -8,6 +8,7 @@ import MainLayout from "./layouts/MainLayout/MainLayout";
 // 관리자 페이지
 import AdminGifticonManagement from './pages/admin/GifticonManagement/GifticonManagement';
 import PurchaseHistory from './pages/admin/GifticonManagement/PurchaseHistory/PurchaseHistory';
+import AdminMyPage from './pages/admin/Mypage/MyPage';
 
 
 // 공통 페이지 (Common Pages)
@@ -96,9 +97,9 @@ function App() {
               ) : (
                 <Routes>
                   {/* 관리자 라우트 */}
-                  {isAdminMode && <>
-
-                  </>}
+                  {isAdminMode && (
+                    <Route path="mypage/*" element={<AdminMyPage />} />
+                  )}
 
                   {/* 직원 라우트 — Header 메뉴와 경로 일치 */}
                   {!isAdminMode && (
