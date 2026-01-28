@@ -338,7 +338,11 @@ export const ContactInfo = styled.div`
 
   @media (min-width: 768px) {
     flex-direction: row;
-    gap: 15rem;
+    gap: 2rem;
+    
+    > div {
+      flex: 1;
+    }
   }
 `;
 

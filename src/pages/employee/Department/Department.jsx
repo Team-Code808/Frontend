@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import useStore from '../../../store/useStore';
 import {
   Users,
@@ -6,25 +7,56 @@ import {
   Phone,
   ArrowRight,
   ChevronDown,
-  Check
+  Check,
+  AlertCircle
 } from 'lucide-react';
 import * as S from './Department.styles';
 
-const teamMembers = [
-  { id: 1, name: '이민수', role: '팀장', status: '업무 중', email: 'ms.lee@calmdesk.com', avatar: '👨‍💼', phone: '010-2841-7011' },
-  { id: 2, name: '김지아', role: '시니어 상담원', status: '업무 중', email: 'ja.kim@calmdesk.com', avatar: '👩‍💼', phone: '010-3921-7025' },
-  { id: 3, name: '박하준', role: '주니어 상담원', status: '자리비움', email: 'hj.park@calmdesk.com', avatar: '👨‍💻', phone: '010-4822-7042' },
-  { id: 4, name: '최윤아', role: '상담원', status: '업무 중', email: 'ya.choi@calmdesk.com', avatar: '👩‍🔬', phone: '010-5811-7103' },
-  { id: 5, name: '정태양', role: '상담원', status: '휴가 중', email: 'ty.jung@calmdesk.com', avatar: '🧔', phone: '010-6721-7118' },
-  { id: 6, name: '서예진', role: '상담원', status: '업무 중', email: 'yj.seo@calmdesk.com', avatar: '👩‍🎨', phone: '010-7214-7150' },
-];
-
 const Department = () => {
-  const { ui, setDepartmentFilter } = useStore();
-  const filterStatus = ui.departmentFilter;
-  const setFilterStatus = setDepartmentFilter; // Alias for minimal code change
+  // 전역 스토어에서 사용자 정보(내 부서 ID) 가져오기 (가정: user 객체에 departmentId가 있다고 가정)
+  // 현재 user 구조를 정확히 모르므로, 임시로 1번 부서라고 가정하거나 user에서 꺼냄
+  const { user } = useStore();
+  // const myDepartmentId = user?.departmentId || 1; // 실제 연동 시 주석 해제
+  const myDepartmentId = 1; // 테스트용 하드코딩
+
+  // 1. UI Status State (필터는 로컬 상태로 관리)
+  const [filterStatus, setFilterStatus] = useState('전체');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  // 2. Data State
+  const [departmentInfo, setDepartmentInfo] = useState(null);
+  const [members, setMembers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // 3. Fetch Data Effect
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // 부서 정보와 팀원 목록을 병렬로 조회 (직접 axios 호출)
+        const [infoResponse, membersResponse] = await Promise.all([
+          axios.get(`http://localhost:8080/api/departments/${myDepartmentId}`),
+          axios.get(`http://localhost:8080/api/departments/${myDepartmentId}/members`)
+        ]);
+
+        setDepartmentInfo(infoResponse.data);
+        setMembers(membersResponse.data);
+      } catch (err) {
+        console.error("데이터 로딩 실패:", err);
+        setError("부서 정보를 불러오는데 실패했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (myDepartmentId) {
+      fetchData();
+    }
+  }, [myDepartmentId]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -38,21 +70,27 @@ const Department = () => {
     };
   }, []);
 
-  const filteredMembers = teamMembers.filter(member => {
+  const filteredMembers = members.filter(member => {
     if (filterStatus === '전체') return true;
     return member.status === filterStatus;
   });
 
+  if (error) {
+    return (
+      <S.Container style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+        <div style={{ textAlign: 'center', color: '#ef4444' }}>
+          <AlertCircle size={48} style={{ marginBottom: '16px' }} />
+          <p>{error}</p>
+        </div>
+      </S.Container>
+    );
+  }
+
   return (
     <S.Container>
-      {/* Department Header */}
       <S.HeaderSection>
         <S.HeaderContent>
-          <S.BadgeGroup>
-            <S.Badge type="primary">CS 사업본부</S.Badge>
-            <S.Badge>서울 제1센터</S.Badge>
-          </S.BadgeGroup>
-          <S.Title>고객행복 1팀</S.Title>
+          <S.Title>{departmentInfo?.departmentName || '...'}</S.Title>
           <S.Description>
             고객의 소리를 경청하고 차별화된 가치를 전달하는 우리 팀입니다.
           </S.Description>
@@ -64,7 +102,7 @@ const Department = () => {
               </S.StatIconBox>
               <S.StatInfo>
                 <p>팀원 구성</p>
-                <p>12명</p>
+                <p>{departmentInfo?.memberCount || 0}명</p>
               </S.StatInfo>
             </S.StatItem>
           </S.StatsGroup>
@@ -114,17 +152,19 @@ const Department = () => {
 
         <S.MemberList>
           {filteredMembers.map((member) => (
-            <S.MemberCard key={member.id}>
+            <S.MemberCard key={member.memberId}>
               <S.CardInner>
                 {/* Avatar */}
                 <S.Avatar>
-                  {member.avatar}
+                  {/* 아바타가 없으면 이모지로 대체하거나 기본 이미지 */}
+                  {member.avatar || (member.role === '팀장' ? '👨‍💼' : '🧑‍💻')}
                 </S.Avatar>
 
                 {/* Name & Role */}
                 <S.MemberInfo>
                   <S.NameRow>
                     <h3>{member.name}</h3>
+                    {/* 상태값 스타일링 매핑 필요 (현재는 텍스트 그대로 사용) */}
                     <S.StatusPill $status={member.status}>
                       {member.status}
                     </S.StatusPill>
@@ -146,12 +186,10 @@ const Department = () => {
                     </div>
                   </S.ContactItem>
                 </S.ContactInfo>
-
-
               </S.CardInner>
             </S.MemberCard>
           ))}
-          {filteredMembers.length === 0 && (
+          {!isLoading && filteredMembers.length === 0 && (
             <S.EmptyState>
               해당 상태의 팀원이 없습니다.
             </S.EmptyState>
