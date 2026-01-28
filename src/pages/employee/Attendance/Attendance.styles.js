@@ -199,23 +199,113 @@ export const DayButton = styled.button`
   font-weight: 700;
   border: 2px solid;
 
-  /* Status Styles Logic */
-  ${props => props.$isSelected ? css`
-    /* Selected State Override */
-    ${props.$status === 'normal' && 'background-color: #f0fdf4; color: #15803d; border-color: #4ade80; box-shadow: 0 0 0 2px #f0fdf4;'}
-    ${props.$status === 'late' && 'background-color: #fef2f2; color: #b91c1c; border-color: #f87171; box-shadow: 0 0 0 2px #fef2f2;'}
-    ${props.$status === 'leave' && 'background-color: #eef2ff; color: #4338ca; border-color: #818cf8; box-shadow: 0 0 0 2px #eef2ff;'}
-    ${props.$status === 'workcation' && 'background-color: #fefce8; color: #a16207; border-color: #fde047; box-shadow: 0 0 0 2px #fefce8;'}
-    ${props.$status === 'future' && 'background-color: #f8fafc; color: #94a3b8; border-color: #cbd5e1; box-shadow: 0 0 0 2px #f8fafc;'}
-    ${props.$status === 'none' && 'background-color: #eff6ff; color: #1d4ed8; border-color: #60a5fa; box-shadow: 0 0 0 2px #eff6ff;'}
-  ` : css`
-    /* Default State */
-    ${props.$status === 'normal' && 'background-color: rgba(240, 253, 244, 0.5); color: #16a34a; border-color: transparent; &:hover { border-color: #bbf7d0; }'}
-    ${props.$status === 'late' && 'background-color: rgba(254, 242, 242, 0.5); color: #dc2626; border-color: transparent; &:hover { border-color: #fecaca; }'}
-    ${props.$status === 'leave' && 'background-color: rgba(238, 242, 255, 0.5); color: #4f46e5; border-color: transparent; &:hover { border-color: #c7d2fe; }'}
-    ${props.$status === 'workcation' && 'background-color: rgba(254, 252, 232, 0.5); color: #854d0e; border-color: transparent; &:hover { border-color: #fef08a; }'}
-    ${props.$status === 'future' && 'background-color: transparent; color: #cbd5e1; border-color: #f1f5f9; border-style: dashed; &:hover { border-color: #e2e8f0; }'}
-    ${props.$status === 'none' && 'background-color: rgba(248, 250, 252, 0.5); color: #94a3b8; border-color: transparent; &:hover { border-color: #e2e8f0; }'}
+  /* Selected State - normal */
+  ${props => props.$isSelected && props.$status === 'normal' && css`
+    background-color: #f0fdf4;
+    color: #15803d;
+    border-color: #4ade80;
+    box-shadow: 0 0 0 2px #f0fdf4;
+  `}
+
+  /* Selected State - late */
+  ${props => props.$isSelected && props.$status === 'late' && css`
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border-color: #f87171;
+    box-shadow: 0 0 0 2px #fef2f2;
+  `}
+
+  /* Selected State - leave */
+  ${props => props.$isSelected && props.$status === 'leave' && css`
+    background-color: #eef2ff;
+    color: #4338ca;
+    border-color: #818cf8;
+    box-shadow: 0 0 0 2px #eef2ff;
+  `}
+
+  /* Selected State - workcation */
+  ${props => props.$isSelected && props.$status === 'workcation' && css`
+    background-color: #fefce8;
+    color: #a16207;
+    border-color: #fde047;
+    box-shadow: 0 0 0 2px #fefce8;
+  `}
+
+  /* Selected State - future */
+  ${props => props.$isSelected && props.$status === 'future' && css`
+    background-color: #f8fafc;
+    color: #94a3b8;
+    border-color: #cbd5e1;
+    box-shadow: 0 0 0 2px #f8fafc;
+  `}
+
+  /* Selected State - none */
+  ${props => props.$isSelected && props.$status === 'none' && css`
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px #eff6ff;
+  `}
+
+  /* Default State - normal */
+  ${props => !props.$isSelected && props.$status === 'normal' && css`
+    background-color: rgba(240, 253, 244, 0.5);
+    color: #16a34a;
+    border-color: transparent;
+    &:hover {
+      border-color: #bbf7d0;
+    }
+  `}
+
+  /* Default State - late */
+  ${props => !props.$isSelected && props.$status === 'late' && css`
+    background-color: rgba(254, 242, 242, 0.5);
+    color: #dc2626;
+    border-color: transparent;
+    &:hover {
+      border-color: #fecaca;
+    }
+  `}
+
+  /* Default State - leave */
+  ${props => !props.$isSelected && props.$status === 'leave' && css`
+    background-color: rgba(238, 242, 255, 0.5);
+    color: #4f46e5;
+    border-color: transparent;
+    &:hover {
+      border-color: #c7d2fe;
+    }
+  `}
+
+  /* Default State - workcation */
+  ${props => !props.$isSelected && props.$status === 'workcation' && css`
+    background-color: rgba(254, 252, 232, 0.5);
+    color: #854d0e;
+    border-color: transparent;
+    &:hover {
+      border-color: #fef08a;
+    }
+  `}
+
+  /* Default State - future */
+  ${props => !props.$isSelected && props.$status === 'future' && css`
+    background-color: transparent;
+    color: #cbd5e1;
+    border-color: #f1f5f9;
+    border-style: dashed;
+    &:hover {
+      border-color: #e2e8f0;
+    }
+  `}
+
+  /* Default State - none */
+  ${props => !props.$isSelected && props.$status === 'none' && css`
+    background-color: rgba(248, 250, 252, 0.5);
+    color: #94a3b8;
+    border-color: transparent;
+    &:hover {
+      border-color: #e2e8f0;
+    }
   `}
 `;
 

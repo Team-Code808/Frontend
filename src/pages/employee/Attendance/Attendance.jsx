@@ -78,7 +78,9 @@ const Attendance = () => {
           memberId: MEMBER_ID
         }
       });
-      setAttendanceHistory(response.data || []);
+      const history = response.data || [];
+      console.log('Attendance History:', history);
+      setAttendanceHistory(history);
     } catch (err) {
       console.error('Failed to fetch history:', err);
       setError('근태 기록을 불러오는데 실패했습니다.');
@@ -92,7 +94,9 @@ const Attendance = () => {
           memberId: MEMBER_ID
         }
       });
-      setLeaveRequests(response.data || []);
+      const leaves = response.data || [];
+      console.log('Leave Requests:', leaves);
+      setLeaveRequests(leaves);
     } catch (err) {
       console.error('Failed to fetch leaves:', err);
       setError('휴가 현황을 불러오는데 실패했습니다.');
@@ -173,45 +177,65 @@ const Attendance = () => {
 
   // 휴가 날짜 추출 (API 데이터에서)
   const getLeaveDays = () => {
-    const leaveDays = new Set();
+    const leaveDaysMap = new Map(); // day -> { type, isWorkcation }
     leaveRequests.forEach(leave => {
       if (leave.period) {
-        // period 형식: "2026.01.25 - 01.26" 또는 "2026.01.14 (오후)"
+        // period 형식: "2026.01.25 - 01.26" 또는 "2026.01.14 (오후)" 또는 "2026.01.14"
         const parts = leave.period.split(' - ');
         if (parts.length === 2) {
-          // 기간 휴가
+          // 기간 휴가: "2026.01.25 - 01.26"
           const startMatch = parts[0].match(/(\d{4})\.(\d{2})\.(\d{2})/);
           const endMatch = parts[1].match(/(\d{2})\.(\d{2})/);
           if (startMatch && endMatch) {
             const startYear = parseInt(startMatch[1]);
             const startMonth = parseInt(startMatch[2]);
             const startDay = parseInt(startMatch[3]);
-            const endDay = parseInt(endMatch[1]);
+            const endMonth = parseInt(endMatch[1]);
+            const endDay = parseInt(endMatch[2]);
             
+            // 시작일이 현재 보고 있는 월인 경우
             if (startYear === year && startMonth === month + 1) {
-              for (let d = startDay; d <= endDay; d++) {
-                leaveDays.add(d);
+              // 같은 월 내에서의 기간
+              if (endMonth === month + 1) {
+                for (let d = startDay; d <= endDay; d++) {
+                  leaveDaysMap.set(d, { type: leave.type, isWorkcation: leave.type === '워케이션' });
+                }
+              } else {
+                // 시작일부터 월말까지
+                for (let d = startDay; d <= daysInMonth; d++) {
+                  leaveDaysMap.set(d, { type: leave.type, isWorkcation: leave.type === '워케이션' });
+                }
+              }
+            }
+            // 종료일이 현재 보고 있는 월인 경우 (시작일은 다른 월)
+            else if (startYear === year && endMonth === month + 1) {
+              // 월초부터 종료일까지
+              for (let d = 1; d <= endDay; d++) {
+                leaveDaysMap.set(d, { type: leave.type, isWorkcation: leave.type === '워케이션' });
               }
             }
           }
         } else {
-          // 단일 날짜 휴가
+          // 단일 날짜 휴가: "2026.01.14 (오후)" 또는 "2026.01.14"
           const match = leave.period.match(/(\d{4})\.(\d{2})\.(\d{2})/);
           if (match) {
             const leaveYear = parseInt(match[1]);
             const leaveMonth = parseInt(match[2]);
             const leaveDay = parseInt(match[3]);
             if (leaveYear === year && leaveMonth === month + 1) {
-              leaveDays.add(leaveDay);
+              leaveDaysMap.set(leaveDay, { type: leave.type, isWorkcation: leave.type === '워케이션' });
             }
           }
         }
       }
     });
-    return leaveDays;
+    return leaveDaysMap;
   };
 
-  const leaveDays = getLeaveDays();
+  const leaveDaysMap = getLeaveDays();
+  console.log('Leave Days Map:', Array.from(leaveDaysMap.entries()));
+  console.log('Current month:', year, month + 1);
+  console.log('Attendance History for calendar:', attendanceHistory);
 
   const calendarDays = Array.from({ length: 42 }, (_, i) => {
     const day = i - startDayOffset + 1;
@@ -223,18 +247,11 @@ const Attendance = () => {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth();
     const isCurrentMonth = year === currentYear && month === currentMonth;
-    const isToday = isCurrentMonth && day === today;
 
-    // 휴가 날짜 확인
-    if (leaveDays.has(day)) {
-      const leave = leaveRequests.find(l => {
-        const period = l.period || '';
-        if (period.includes('워케이션')) {
-          return period.includes(`${year}.${String(month + 1).padStart(2, '0')}.${String(day).padStart(2, '0')}`);
-        }
-        return period.includes(`${year}.${String(month + 1).padStart(2, '0')}.${String(day).padStart(2, '0')}`);
-      });
-      if (leave?.type === '워케이션') {
+    // 휴가 날짜 확인 (우선순위가 높음)
+    if (leaveDaysMap.has(day)) {
+      const leaveInfo = leaveDaysMap.get(day);
+      if (leaveInfo.isWorkcation) {
         status = 'workcation';
       } else {
         status = 'leave';
@@ -243,15 +260,15 @@ const Attendance = () => {
       // 근태 기록 확인
       const history = attendanceHistory.find(h => h.day === day);
       if (history) {
-        if (history.status === '지각') {
+        if (history.status === '지각' || history.status === '결근') {
           status = 'late';
-        } else {
+        } else if (history.status === '정상') {
           status = 'normal';
         }
       } else if (isCurrentMonth && day > today) {
         status = 'future';
-      } else if (isCurrentMonth && day < today) {
-        status = 'none'; // 기록이 없는 과거 날짜
+      } else {
+        status = 'none'; // 기록이 없는 날짜
       }
     }
 
