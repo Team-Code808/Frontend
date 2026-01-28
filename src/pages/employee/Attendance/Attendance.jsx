@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Clock,
   Calendar as CalendarIcon,
@@ -19,32 +20,139 @@ import {
 } from 'lucide-react';
 import * as S from './Attendance.styles';
 
-const Attendance = () => {
-  // 현재 날짜 상태 관리 (년, 월) - 초기값은 2026년 1월
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 0));
+const API_BASE_URL = 'http://localhost:8080/api/employee/attendance';
+const MEMBER_ID = 1; // 임시 memberId (나중에 인증 연동 시 수정)
 
-  const [selectedDay, setSelectedDay] = useState(20);
+const Attendance = () => {
+  // 현재 날짜 상태 관리 (년, 월) - 초기값은 현재 날짜
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const [selectedDay, setSelectedDay] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // API 데이터 상태
+  const [summary, setSummary] = useState(null);
+  const [attendanceHistory, setAttendanceHistory] = useState([]);
+  const [leaveRequests, setLeaveRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // 휴가 신청 폼 상태
+  const [vacationForm, setVacationForm] = useState({
+    type: '연차',
+    startDate: '',
+    endDate: '',
+    reason: ''
+  });
 
   // 현재 보고 있는 연도와 월
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth(); // 0 ~ 11
 
-  // 기준이 되는 오늘 날짜 (데모용 - 2026.01.20)
-  const today = 20;
+  // 기준이 되는 오늘 날짜
+  const today = new Date().getDate();
 
-  const attendanceHistory = [
-    { id: 1, day: 20, date: '2026.01.20 (화)', clockIn: '08:52', clockOut: '18:05', status: '정상', duration: '9h 13m', note: '특이사항 없음' },
-    { id: 2, day: 19, date: '2026.01.19 (월)', clockIn: '09:12', clockOut: '18:30', status: '지각', duration: '9h 18m', note: '교통 체증으로 인한 지각' },
-    { id: 3, day: 16, date: '2026.01.16 (금)', clockIn: '08:45', clockOut: '18:10', status: '정상', duration: '9h 25m', note: '특이사항 없음' },
-    { id: 4, day: 15, date: '2026.01.15 (목)', clockIn: '08:58', clockOut: '17:55', status: '정상', duration: '8h 57m', note: '조기 퇴근 승인' },
-  ];
+  // API 호출 함수들
+  const fetchSummary = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/summary`, {
+        params: {
+          year: year,
+          month: month + 1, // 백엔드는 1-12월 사용
+          memberId: MEMBER_ID
+        }
+      });
+      setSummary(response.data);
+    } catch (err) {
+      console.error('Failed to fetch summary:', err);
+      setError('요약 정보를 불러오는데 실패했습니다.');
+    }
+  };
 
-  const leaveRequests = [
-    { id: 1, type: '연차', period: '2026.01.25 - 01.26', status: '승인대기', days: '2일' },
-    { id: 2, type: '반차', period: '2026.01.14 (오후)', status: '승인완료', days: '0.5일' },
-    { id: 3, type: '워케이션', period: '2026.01.27 - 01.28', status: '승인완료', days: '0.0일' },
-  ];
+  const fetchHistory = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/history`, {
+        params: {
+          year: year,
+          month: month + 1, // 백엔드는 1-12월 사용
+          memberId: MEMBER_ID
+        }
+      });
+      setAttendanceHistory(response.data || []);
+    } catch (err) {
+      console.error('Failed to fetch history:', err);
+      setError('근태 기록을 불러오는데 실패했습니다.');
+    }
+  };
+
+  const fetchLeaves = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/leaves`, {
+        params: {
+          memberId: MEMBER_ID
+        }
+      });
+      setLeaveRequests(response.data || []);
+    } catch (err) {
+      console.error('Failed to fetch leaves:', err);
+      setError('휴가 현황을 불러오는데 실패했습니다.');
+    }
+  };
+
+  // 데이터 로딩
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      setError(null);
+      await Promise.all([fetchSummary(), fetchHistory(), fetchLeaves()]);
+      setLoading(false);
+    };
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [year, month]);
+
+  // 휴가 신청 처리
+  const handleVacationSubmit = async () => {
+    if (!vacationForm.startDate || !vacationForm.endDate) {
+      alert('시작일과 종료일을 모두 입력해주세요.');
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/vacation`, {
+        type: vacationForm.type,
+        startDate: vacationForm.startDate,
+        endDate: vacationForm.endDate,
+        reason: vacationForm.reason || null
+      }, {
+        params: {
+          memberId: MEMBER_ID
+        }
+      });
+
+      if (response.data.id) {
+        alert('휴가 신청이 완료되었습니다.');
+        setIsModalOpen(false);
+        setVacationForm({
+          type: '연차',
+          startDate: '',
+          endDate: '',
+          reason: ''
+        });
+        // 휴가 목록 새로고침
+        await fetchLeaves();
+      } else if (response.data.message) {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      console.error('Failed to submit vacation request:', err);
+      if (err.response?.data?.message) {
+        alert(err.response.data.message);
+      } else {
+        alert('휴가 신청에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      }
+    }
+  };
 
   // 동적으로 해당 월의 일수와 시작 요일 계산
   const getDaysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
@@ -63,30 +171,88 @@ const Attendance = () => {
     setSelectedDay(null); // 달이 바뀌면 선택 초기화
   };
 
+  // 휴가 날짜 추출 (API 데이터에서)
+  const getLeaveDays = () => {
+    const leaveDays = new Set();
+    leaveRequests.forEach(leave => {
+      if (leave.period) {
+        // period 형식: "2026.01.25 - 01.26" 또는 "2026.01.14 (오후)"
+        const parts = leave.period.split(' - ');
+        if (parts.length === 2) {
+          // 기간 휴가
+          const startMatch = parts[0].match(/(\d{4})\.(\d{2})\.(\d{2})/);
+          const endMatch = parts[1].match(/(\d{2})\.(\d{2})/);
+          if (startMatch && endMatch) {
+            const startYear = parseInt(startMatch[1]);
+            const startMonth = parseInt(startMatch[2]);
+            const startDay = parseInt(startMatch[3]);
+            const endDay = parseInt(endMatch[1]);
+            
+            if (startYear === year && startMonth === month + 1) {
+              for (let d = startDay; d <= endDay; d++) {
+                leaveDays.add(d);
+              }
+            }
+          }
+        } else {
+          // 단일 날짜 휴가
+          const match = leave.period.match(/(\d{4})\.(\d{2})\.(\d{2})/);
+          if (match) {
+            const leaveYear = parseInt(match[1]);
+            const leaveMonth = parseInt(match[2]);
+            const leaveDay = parseInt(match[3]);
+            if (leaveYear === year && leaveMonth === month + 1) {
+              leaveDays.add(leaveDay);
+            }
+          }
+        }
+      }
+    });
+    return leaveDays;
+  };
+
+  const leaveDays = getLeaveDays();
+
   const calendarDays = Array.from({ length: 42 }, (_, i) => {
     const day = i - startDayOffset + 1;
     if (day <= 0 || day > daysInMonth) return null;
 
     let status = 'none';
 
-    // Mock data는 2026년 1월 기준이므로, 현재 보고 있는 달이 2026년 1월일 때만 상태 표시
-    const isTargetMonth = year === 2026 && month === 0;
+    // 현재 월의 오늘 날짜 확인
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    const isCurrentMonth = year === currentYear && month === currentMonth;
+    const isToday = isCurrentMonth && day === today;
 
-    if (isTargetMonth) {
-      if ([14, 25, 26].includes(day)) {
-        status = 'leave';
-      } else if ([27, 28].includes(day)) {
+    // 휴가 날짜 확인
+    if (leaveDays.has(day)) {
+      const leave = leaveRequests.find(l => {
+        const period = l.period || '';
+        if (period.includes('워케이션')) {
+          return period.includes(`${year}.${String(month + 1).padStart(2, '0')}.${String(day).padStart(2, '0')}`);
+        }
+        return period.includes(`${year}.${String(month + 1).padStart(2, '0')}.${String(day).padStart(2, '0')}`);
+      });
+      if (leave?.type === '워케이션') {
         status = 'workcation';
-      }
-      else if (day <= today) {
-        if ([5, 6, 7, 8, 9, 12, 13, 15, 16, 20].includes(day)) status = 'normal';
-        if ([19].includes(day)) status = 'late';
-      }
-      else {
-        status = 'future';
+      } else {
+        status = 'leave';
       }
     } else {
-      status = 'none';
+      // 근태 기록 확인
+      const history = attendanceHistory.find(h => h.day === day);
+      if (history) {
+        if (history.status === '지각') {
+          status = 'late';
+        } else {
+          status = 'normal';
+        }
+      } else if (isCurrentMonth && day > today) {
+        status = 'future';
+      } else if (isCurrentMonth && day < today) {
+        status = 'none'; // 기록이 없는 과거 날짜
+      }
     }
 
     return { day, status };
@@ -95,30 +261,28 @@ const Attendance = () => {
   const getSelectedDayDetails = () => {
     if (!selectedDay) return null;
 
-    // 선택된 날짜에 대한 정보 조회도 2026년 1월 기준 mock data
-    const isTargetMonth = year === 2026 && month === 0;
-    if (!isTargetMonth) {
-      return {
-        day: selectedDay,
-        history: null,
-        isLeave: false,
-        isWorkcation: false,
-        isFuture: false,
-        leaveType: null,
-        status: '기록 없음'
-      };
-    }
-
     const history = attendanceHistory.find(h => h.day === selectedDay);
 
+    // 휴가 확인
     let leaveType = null;
-    if (selectedDay === 14) leaveType = '반차';
-    if ([25, 26].includes(selectedDay)) leaveType = '연차';
-    if ([27, 28].includes(selectedDay)) leaveType = '워케이션';
+    const leave = leaveRequests.find(l => {
+      const period = l.period || '';
+      const dateStr = `${year}.${String(month + 1).padStart(2, '0')}.${String(selectedDay).padStart(2, '0')}`;
+      return period.includes(dateStr);
+    });
+
+    if (leave) {
+      leaveType = leave.type;
+    }
 
     const isLeave = !!leaveType;
     const isWorkcation = leaveType === '워케이션';
-    const isFuture = selectedDay > today;
+    
+    // 현재 월의 오늘 날짜 확인
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    const isCurrentMonth = year === currentYear && month === currentMonth;
+    const isFuture = isCurrentMonth && selectedDay > today;
 
     let statusLabel = '';
     if (isLeave) statusLabel = leaveType;
@@ -138,15 +302,71 @@ const Attendance = () => {
 
   const details = getSelectedDayDetails();
 
+  // 로딩 중이거나 에러가 있을 때 표시
+  if (loading) {
+    return (
+      <S.Container>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <p>데이터를 불러오는 중...</p>
+        </div>
+      </S.Container>
+    );
+  }
+
+  if (error && !summary && attendanceHistory.length === 0 && leaveRequests.length === 0) {
+    return (
+      <S.Container>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: '1rem' }}>
+          <AlertCircle size={48} color="#f87171" />
+          <p style={{ color: '#f87171' }}>{error}</p>
+          <button 
+            onClick={() => {
+              setError(null);
+              setLoading(true);
+              Promise.all([fetchSummary(), fetchHistory(), fetchLeaves()]).finally(() => setLoading(false));
+            }}
+            style={{ padding: '0.5rem 1rem', backgroundColor: '#6366f1', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}
+          >
+            다시 시도
+          </button>
+        </div>
+      </S.Container>
+    );
+  }
+
   return (
     <S.Container>
       {/* Summary Cards */}
       <S.SummaryGrid>
         {[
-          { icon: CalendarIcon, label: '이번 달 출근', val: '14', total: '/ 21일', color: 'blue' },
-          { icon: Timer, label: '지각/결근', val: '1', total: '건', color: 'orange' },
-          { icon: Palmtree, label: '잔여 연차', val: '12.5', total: '일', color: 'indigo' },
-          { icon: Clock, label: '이번 주 근무', val: '28.5', total: '시간', color: 'green' }
+          { 
+            icon: CalendarIcon, 
+            label: '이번 달 출근', 
+            val: summary ? String(summary.monthWorkDays) : '0', 
+            total: summary ? `/ ${summary.monthTotalDays}일` : '/ 0일', 
+            color: 'blue' 
+          },
+          { 
+            icon: Timer, 
+            label: '지각/결근', 
+            val: summary ? String(summary.lateOrAbsenceCount) : '0', 
+            total: '건', 
+            color: 'orange' 
+          },
+          { 
+            icon: Palmtree, 
+            label: '잔여 연차', 
+            val: summary ? String(summary.remainingVacation) : '0', 
+            total: '일', 
+            color: 'indigo' 
+          },
+          { 
+            icon: Clock, 
+            label: '이번 주 근무', 
+            val: summary ? String(summary.weekWorkHours) : '0', 
+            total: '시간', 
+            color: 'green' 
+          }
         ].map((card, i) => (
           <S.SummaryCard key={i}>
             <S.CardHeader>
@@ -397,10 +617,13 @@ const Attendance = () => {
               <S.LabelGroup>
                 <S.InputLabel>휴가 종류</S.InputLabel>
                 <S.SelectWrapper>
-                  <S.Select>
-                    <option>연차 (1.0일)</option>
-                    <option>반차 (0.5일)</option>
-                    <option>워케이션 (0.0일) - 원격근무</option>
+                  <S.Select
+                    value={vacationForm.type}
+                    onChange={(e) => setVacationForm({ ...vacationForm, type: e.target.value })}
+                  >
+                    <option value="연차">연차 (1.0일)</option>
+                    <option value="반차">반차 (0.5일)</option>
+                    <option value="워케이션">워케이션 (0.0일) - 원격근무</option>
                   </S.Select>
                   <ChevronRight size={16} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%) rotate(90deg)', pointerEvents: 'none', color: '#94a3b8' }} />
                 </S.SelectWrapper>
@@ -409,25 +632,32 @@ const Attendance = () => {
               <S.InfoGrid>
                 <S.LabelGroup>
                   <S.InputLabel>시작일</S.InputLabel>
-                  <S.DateInput type="date" />
+                  <S.DateInput 
+                    type="date" 
+                    value={vacationForm.startDate}
+                    onChange={(e) => setVacationForm({ ...vacationForm, startDate: e.target.value })}
+                  />
                 </S.LabelGroup>
                 <S.LabelGroup>
                   <S.InputLabel>종료일</S.InputLabel>
-                  <S.DateInput type="date" />
+                  <S.DateInput 
+                    type="date" 
+                    value={vacationForm.endDate}
+                    onChange={(e) => setVacationForm({ ...vacationForm, endDate: e.target.value })}
+                  />
                 </S.LabelGroup>
               </S.InfoGrid>
 
               <S.LabelGroup>
                 <S.InputLabel>신청 사유</S.InputLabel>
-                <S.TextArea placeholder="사유를 간단히 입력해 주세요 (선택 사항)" />
+                <S.TextArea 
+                  placeholder="사유를 간단히 입력해 주세요 (선택 사항)"
+                  value={vacationForm.reason}
+                  onChange={(e) => setVacationForm({ ...vacationForm, reason: e.target.value })}
+                />
               </S.LabelGroup>
 
-              <S.SubmitModalButton
-                onClick={() => {
-                  alert('휴가 신청이 완료되었습니다.');
-                  setIsModalOpen(false);
-                }}
-              >
+              <S.SubmitModalButton onClick={handleVacationSubmit}>
                 <Send size={20} />
                 신청 완료
               </S.SubmitModalButton>
