@@ -45,8 +45,8 @@ const ShopSection = ( {refreshData} ) => {
             await fetchItems(user.companyId || 2); 
            
         } catch (error) {
-            console.error("구매 실패:", error);
-            alert("포인트가 부족하거나 재고가 없습니다.");
+            alert("구매 실패", error);
+            
         }
     };
 

@@ -121,13 +121,13 @@ export const TabButton = styled.button`
   font-weight: 900;
   transition: all 0.2s;
   
-  ${props => props.active
+  ${props => props.$active
     ? 'background-color: white; shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);'
     : 'color: #94a3b8; &:hover { color: #475569; }'
   }
   
-  ${props => props.active && props.mode === 'SHOP' && 'color: #d97706;'} /* amber-600 */
-  ${props => props.active && props.mode === 'MISSIONS' && 'color: #4f46e5;'} /* indigo-600 */
+  ${props => props.$active && props.mode === 'SHOP' && 'color: #d97706;'} /* amber-600 */
+  ${props => props.$active && props.mode === 'MISSIONS' && 'color: #4f46e5;'} /* indigo-600 */
 `;
 
 /* Shop Section */
@@ -424,22 +424,53 @@ export const ProgressBarBg = styled.div`
 export const ProgressBarFill = styled.div`
   height: 100%;
   transition: width 1s ease-out;
-  width: ${props => props.width}%;
-  background-color: ${props => props.complete ? '#22c55e' : '#6366f1'}; /* green-500 : indigo-500 */
+  width: ${props => props.$width}%;
+  background-color: ${props => props.$complete ? '#22c55e' : '#6366f1'}; /* green-500 : indigo-500 */
 `;
 
 export const ActionBtn = styled.button`
   width: 100%;
   padding: 0.625rem;
   border-radius: 0.75rem;
-  font-size: 0.75rem; /* xs */
+  font-size: 0.75rem;
   font-weight: 900;
   transition: all 0.2s;
-  
-  ${props => props.complete
-    ? 'background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed;'
-    : 'background-color: #4f46e5; color: white; box-shadow: 0 10px 15px -3px rgba(238, 242, 255, 1); &:hover { background-color: #4338ca; }'
-  }
+  border: none; /* 테두리 제거 */
+
+  ${props => {
+    // 1. 이미 보상을 획득한 경우 (완료)
+    if (props.$complete) {
+      return `
+        background-color: #f1f5f9; 
+        color: #94a3b8; 
+        cursor: not-allowed;
+      `;
+    }
+
+    // 2. 진행 중이라서 버튼이 비활성화된 경우 (disabled)
+    if (props.disabled) {
+      return `
+        background-color: #e7ebe4; 
+        color: #959c91; 
+        cursor: not-allowed;
+      `;
+    }
+
+    // 3. 100% 달성하여 보상을 받을 수 있는 경우 (활성)
+    return `
+      background-color: #4f46e5; 
+      color: white; 
+      box-shadow: 0 10px 15px -3px rgba(238, 242, 255, 1); 
+      cursor: pointer;
+      &:hover { 
+        background-color: #4338ca; 
+        transform: translateY(-1px);
+      }
+      &:active {
+        transform: translateY(0);
+      }
+    `;
+  }}
 `;
 
 const zoomIn = keyframes`

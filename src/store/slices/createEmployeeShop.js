@@ -21,6 +21,7 @@ export const createEmployeeShop = (set, get) => ({
                 
             });
 
+
             // 서버 응답에서 생성된 주문 데이터 혹은 성공 확인
             const newPurchase = {
                 id: response.data.orderId || Date.now(), // 서버에서 준 ID 선호
@@ -45,8 +46,8 @@ export const createEmployeeShop = (set, get) => ({
         } catch (error) {
             console.error("구매 실패:", error);
             // 에러 메시지가 서버에서 온 경우(포인트 부족 등) 출력
-            const errorMsg = error.response?.data?.message || '포인트가 부족하거나 서버 오류가 발생했습니다.';
-            alert(errorMsg);
+            throw error;
+           
         }
     },
 });
