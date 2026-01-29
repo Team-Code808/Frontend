@@ -13,11 +13,9 @@ import {
 import * as S from './Department.styles';
 
 const Department = () => {
-  // 전역 스토어에서 사용자 정보(내 부서 ID) 가져오기 (가정: user 객체에 departmentId가 있다고 가정)
-  // 현재 user 구조를 정확히 모르므로, 임시로 1번 부서라고 가정하거나 user에서 꺼냄
+  // 전역 스토어에서 사용자 정보(내 부서 ID) 가져오기
   const { user } = useStore();
-  // const myDepartmentId = user?.departmentId || 1; // 실제 연동 시 주석 해제
-  const myDepartmentId = 1; // 테스트용 하드코딩
+  const myDepartmentId = user?.departmentId || 1; // user 정보가 없으면 기본값 1
 
   // 1. UI Status State (필터는 로컬 상태로 관리)
   const [filterStatus, setFilterStatus] = useState('전체');

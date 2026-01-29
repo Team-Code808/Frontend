@@ -29,12 +29,15 @@ export const useLogin = (onLogin) => {
         const payload = decodeToken(response.token);
 
         onLogin({
+          id: response.memberId,
           email: payload?.sub || formData.email,
           name: response.name || payload?.name,
           role: payload?.role,
           companyCode: response.companyCode,
           companyName: response.companyName,
           departmentName: response.departmentName,
+          department: response.departmentName,
+          departmentId: response.departmentId,
           phone: response.phone,
           token: response.token,
           joinStatus: response.joinStatus,

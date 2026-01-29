@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import useStore from '../../../store/useStore';
 import apiClient from '../../../api/axios';
 import {
   Clock,
@@ -21,9 +22,11 @@ import {
 import * as S from './Attendance.styles';
 
 const API_BASE_URL = '/employee/attendance';
-const MEMBER_ID = 1; // 임시 memberId (나중에 인증 연동 시 수정)
 
 const Attendance = () => {
+  const { user } = useStore();
+  const memberId = user?.id || 1; // Fallback to 1 if not logged in (or handle redirect)
+
   // 현재 날짜 상태 관리 (년, 월) - 초기값은 현재 날짜
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -60,7 +63,7 @@ const Attendance = () => {
         params: {
           year: year,
           month: month + 1, // 백엔드는 1-12월 사용
-          memberId: MEMBER_ID
+          memberId: memberId
         }
       });
       setSummary(response.data);
@@ -76,7 +79,7 @@ const Attendance = () => {
         params: {
           year: year,
           month: month + 1, // 백엔드는 1-12월 사용
-          memberId: MEMBER_ID
+          memberId: memberId
         }
       });
       const history = response.data || [];
@@ -91,7 +94,7 @@ const Attendance = () => {
     try {
       const response = await apiClient.get(`${API_BASE_URL}/leaves`, {
         params: {
-          memberId: MEMBER_ID
+          memberId: memberId
         }
       });
       const leaves = response.data || [];
@@ -112,7 +115,7 @@ const Attendance = () => {
     };
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [year, month]);
+  }, [year, month, memberId]);
 
   // 휴가 신청 처리
   const handleVacationSubmit = async () => {
@@ -136,7 +139,7 @@ const Attendance = () => {
 
       const response = await apiClient.post(`${API_BASE_URL}/vacation`, requestData, {
         params: {
-          memberId: MEMBER_ID
+          memberId: memberId
         }
       });
 
