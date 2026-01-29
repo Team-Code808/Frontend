@@ -63,7 +63,7 @@ const Attendance = () => {
         params: {
           year: year,
           month: month + 1, // 백엔드는 1-12월 사용
-          memberId: MEMBER_ID
+          memberId: memberId
         }
       });
       setSummary(response.data);
@@ -79,7 +79,7 @@ const Attendance = () => {
         params: {
           year: year,
           month: month + 1, // 백엔드는 1-12월 사용
-          memberId: MEMBER_ID
+          memberId: memberId
         }
       });
       const history = response.data || [];
