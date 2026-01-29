@@ -1,5 +1,5 @@
 import React from "react";
-import { useSignup, generateRandomCode } from "./hooks/useSignup";
+import { useSignup } from "./hooks/useSignup";
 import BasicInfo from "./steps/BasicInfo";
 import SignupType from "./steps/SignupType";
 import AdminSignup from "./steps/AdminSignup";
@@ -11,6 +11,7 @@ const SignupContainer = ({ onLogin }) => {
     formData,
     handleChange,
     setStep,
+    handleBasicSignup,
     handleAdminSignup,
     handleStaffSignup,
     handleVerifyCompanyCode,
@@ -28,7 +29,14 @@ const SignupContainer = ({ onLogin }) => {
           <BasicInfo
             formData={formData}
             onChange={handleChange}
-            onNext={() => setStep("SIGNUP_TYPE")}
+            onNext={async () => {
+              try {
+                await handleBasicSignup();
+                setStep("SIGNUP_TYPE");
+              } catch (err) {
+                console.error("기본 회원가입 실패:", err);
+              }
+            }}
           />
         );
       case "SIGNUP_TYPE":
@@ -36,8 +44,6 @@ const SignupContainer = ({ onLogin }) => {
           <SignupType
             onSelectType={(type) => {
               if (type === "ADMIN") {
-                const code = generateRandomCode();
-                setFormData((prev) => ({ ...prev, companyCode: code }));
                 setStep("SIGNUP_ADMIN");
               } else {
                 setStep("SIGNUP_STAFF");
@@ -51,6 +57,7 @@ const SignupContainer = ({ onLogin }) => {
             formData={formData}
             onChange={handleChange}
             onSubmit={handleAdminSignup}
+            setFormData={setFormData}
           />
         );
       case "SIGNUP_STAFF":
@@ -72,7 +79,14 @@ const SignupContainer = ({ onLogin }) => {
           <BasicInfo
             formData={formData}
             onChange={handleChange}
-            onNext={() => setStep("SIGNUP_TYPE")}
+            onNext={async () => {
+              try {
+                await handleBasicSignup();
+                setStep("SIGNUP_TYPE");
+              } catch (err) {
+                console.error("기본 회원가입 실패:", err);
+              }
+            }}
           />
         );
     }

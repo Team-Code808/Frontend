@@ -18,6 +18,7 @@ const AuthPage = () => {
   const onLogin = login;
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
   const step = searchParams.get("step") || "LOGIN";
 
   const { formData, handleChange, handleLoginSubmit } = useLogin(onLogin);
@@ -86,15 +87,15 @@ const AuthPage = () => {
           {step === "LOGIN" ? (
             <S.Form onSubmit={handleLoginSubmit}>
               <S.InputGroup>
-                <label>아이디</label>
+                <label>이메일</label>
                 <S.InputWrapper>
                   <Mail />
                   <S.Input
-                    name="id"
-                    type="text"
+                    name="email"
+                    type="email"
                     required
-                    placeholder="이메일 또는 아이디"
-                    value={formData.id}
+                    placeholder="이메일을 입력하세요"
+                    value={formData.email}
                     onChange={handleChange}
                   />
                 </S.InputWrapper>

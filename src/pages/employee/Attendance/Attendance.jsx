@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../../../api/axios';
 import {
   Clock,
   Calendar as CalendarIcon,
@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import * as S from './Attendance.styles';
 
-const API_BASE_URL = 'http://localhost:8080/api/employee/attendance';
+const API_BASE_URL = '/employee/attendance';
 const MEMBER_ID = 1; // 임시 memberId (나중에 인증 연동 시 수정)
 
 const Attendance = () => {
@@ -29,7 +29,7 @@ const Attendance = () => {
 
   const [selectedDay, setSelectedDay] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   // API 데이터 상태
   const [summary, setSummary] = useState(null);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
@@ -56,7 +56,7 @@ const Attendance = () => {
   // API 호출 함수들
   const fetchSummary = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/summary`, {
+      const response = await apiClient.get(`${API_BASE_URL}/summary`, {
         params: {
           year: year,
           month: month + 1, // 백엔드는 1-12월 사용
@@ -72,7 +72,7 @@ const Attendance = () => {
 
   const fetchHistory = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/history`, {
+      const response = await apiClient.get(`${API_BASE_URL}/history`, {
         params: {
           year: year,
           month: month + 1, // 백엔드는 1-12월 사용
@@ -89,7 +89,7 @@ const Attendance = () => {
 
   const fetchLeaves = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/leaves`, {
+      const response = await apiClient.get(`${API_BASE_URL}/leaves`, {
         params: {
           memberId: MEMBER_ID
         }
@@ -134,7 +134,7 @@ const Attendance = () => {
         requestData.halfDayType = vacationForm.halfDayType;
       }
 
-      const response = await axios.post(`${API_BASE_URL}/vacation`, requestData, {
+      const response = await apiClient.post(`${API_BASE_URL}/vacation`, requestData, {
         params: {
           memberId: MEMBER_ID
         }
@@ -199,7 +199,7 @@ const Attendance = () => {
             const startDay = parseInt(startMatch[3]);
             const endMonth = parseInt(endMatch[1]);
             const endDay = parseInt(endMatch[2]);
-            
+
             // 시작일이 현재 보고 있는 월인 경우
             if (startYear === year && startMonth === month + 1) {
               // 같은 월 내에서의 기간
@@ -292,7 +292,7 @@ const Attendance = () => {
 
     const isLeave = !!leaveType;
     const isWorkcation = leaveType === '워케이션';
-    
+
     // 현재 월의 오늘 날짜 확인
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth();
@@ -334,7 +334,7 @@ const Attendance = () => {
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: '1rem' }}>
           <AlertCircle size={48} color="#f87171" />
           <p style={{ color: '#f87171' }}>{error}</p>
-          <button 
+          <button
             onClick={() => {
               setError(null);
               setLoading(true);
@@ -354,33 +354,33 @@ const Attendance = () => {
       {/* Summary Cards */}
       <S.SummaryGrid>
         {[
-          { 
-            icon: CalendarIcon, 
-            label: '이번 달 출근', 
-            val: summary ? String(summary.monthWorkDays) : '0', 
-            total: summary ? `/ ${summary.monthTotalDays}일` : '/ 0일', 
-            color: 'blue' 
+          {
+            icon: CalendarIcon,
+            label: '이번 달 출근',
+            val: summary ? String(summary.monthWorkDays) : '0',
+            total: summary ? `/ ${summary.monthTotalDays}일` : '/ 0일',
+            color: 'blue'
           },
-          { 
-            icon: Timer, 
-            label: '지각/결근', 
-            val: summary ? String(summary.lateOrAbsenceCount) : '0', 
-            total: '건', 
-            color: 'orange' 
+          {
+            icon: Timer,
+            label: '지각/결근',
+            val: summary ? String(summary.lateOrAbsenceCount) : '0',
+            total: '건',
+            color: 'orange'
           },
-          { 
-            icon: Palmtree, 
-            label: '잔여 연차', 
-            val: summary ? String(summary.remainingVacation) : '0', 
-            total: '일', 
-            color: 'indigo' 
+          {
+            icon: Palmtree,
+            label: '잔여 연차',
+            val: summary ? String(summary.remainingVacation) : '0',
+            total: '일',
+            color: 'indigo'
           },
-          { 
-            icon: Clock, 
-            label: '이번 주 근무', 
-            val: summary ? String(summary.weekWorkHours) : '0', 
-            total: '시간', 
-            color: 'green' 
+          {
+            icon: Clock,
+            label: '이번 주 근무',
+            val: summary ? String(summary.weekWorkHours) : '0',
+            total: '시간',
+            color: 'green'
           }
         ].map((card, i) => (
           <S.SummaryCard key={i}>
@@ -663,16 +663,16 @@ const Attendance = () => {
               <S.InfoGrid>
                 <S.LabelGroup>
                   <S.InputLabel>시작일</S.InputLabel>
-                  <S.DateInput 
-                    type="date" 
+                  <S.DateInput
+                    type="date"
                     value={vacationForm.startDate}
                     onChange={(e) => setVacationForm({ ...vacationForm, startDate: e.target.value })}
                   />
                 </S.LabelGroup>
                 <S.LabelGroup>
                   <S.InputLabel>종료일</S.InputLabel>
-                  <S.DateInput 
-                    type="date" 
+                  <S.DateInput
+                    type="date"
                     value={vacationForm.endDate}
                     onChange={(e) => setVacationForm({ ...vacationForm, endDate: e.target.value })}
                   />
@@ -681,7 +681,7 @@ const Attendance = () => {
 
               <S.LabelGroup>
                 <S.InputLabel>신청 사유</S.InputLabel>
-                <S.TextArea 
+                <S.TextArea
                   placeholder="사유를 간단히 입력해 주세요 (선택 사항)"
                   value={vacationForm.reason}
                   onChange={(e) => setVacationForm({ ...vacationForm, reason: e.target.value })}

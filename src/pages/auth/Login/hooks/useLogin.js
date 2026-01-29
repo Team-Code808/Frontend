@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserRole } from "../../../../constants/types";
+import { login } from "../api/Loginapi";
+import { decodeToken } from "../../../../utils/jwtUtils";
 
 export const useLogin = (onLogin) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    id: "",
+    email: "",
     password: "",
   });
 
@@ -14,31 +15,37 @@ export const useLogin = (onLogin) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    const isSpecialAdmin = formData.id === "admin";
 
-    const storedApps = JSON.parse(localStorage.getItem("users") || "[]");
-    const pendingUser = storedApps.find((u) => u.id === formData.id);
-
-    if (pendingUser) {
-      onLogin({
-        ...pendingUser,
-        role: UserRole.STAFF,
+    try {
+      const response = await login({
+        email: formData.email,
+        password: formData.password,
       });
-      navigate("/app/dashboard");
-      return;
-    }
 
-    onLogin({
-      id: formData.id || "demo_user",
-      name: "김철수",
-      role: isSpecialAdmin ? UserRole.ADMIN : UserRole.STAFF,
-      department: "상담 1팀",
-      phone: "010-0000-0000",
-      joinStatus: "APPROVED",
-    });
-    navigate("/app/dashboard");
+      if (response.token) {
+        localStorage.setItem("authToken", response.token);
+        const payload = decodeToken(response.token);
+
+        onLogin({
+          email: payload?.sub || formData.email,
+          name: response.name || payload?.name,
+          role: payload?.role,
+          companyCode: response.companyCode,
+          companyName: response.companyName,
+          departmentName: response.departmentName,
+          phone: response.phone,
+          token: response.token,
+          joinStatus: response.joinStatus,
+        });
+
+        navigate("/app/dashboard");
+      }
+    } catch (error) {
+      console.error("로그인 실패:", error);
+      alert(error.message || "로그인에 실패했습니다.");
+    }
   };
 
   return {

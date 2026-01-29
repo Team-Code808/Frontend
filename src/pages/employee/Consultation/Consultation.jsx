@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import apiClient from '../../../api/axios';
 import { Clock, CheckCircle2, Send, Info } from 'lucide-react';
 import * as S from './Consultation.styles';
 
@@ -16,7 +16,7 @@ const CounselingRequestPage = () => {
 
   const fetchWaitingCount = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/consultations/count');
+      const response = await apiClient.get('/consultations/count');
       setWaitingCount(response.data.count);
     } catch (error) {
       console.error('Failed to fetch waiting count:', error);
@@ -31,7 +31,7 @@ const CounselingRequestPage = () => {
     }
 
     try {
-      await axios.post('http://localhost:8080/api/consultations', {
+      await apiClient.post('/consultations', {
         title: title,
         description: message
       });

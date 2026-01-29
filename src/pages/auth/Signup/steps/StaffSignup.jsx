@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   ChevronLeft,
   Key,
@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import * as S from "../Signup.style";
-import { DEPARTMENTS, POSITIONS } from "../hooks/useSignup";
 
 const StaffSignup = ({
   formData,
@@ -52,6 +51,7 @@ const StaffSignup = ({
                   verified: false,
                   companyName: "",
                   departments: [],
+                  ranks: [],
                   attempted: false,
                 });
               }}
@@ -60,7 +60,14 @@ const StaffSignup = ({
           </S.InputWrapper>
           <S.VerifyButton
             type="button"
-            onClick={onVerify}
+            onClick={async (e) => {
+              e.preventDefault();
+              try {
+                await onVerify();
+              } catch (error) {
+                console.error("회사 코드 검증 실패:", error);
+              }
+            }}
             disabled={!formData.companyCode}
           >
             검증
@@ -99,31 +106,40 @@ const StaffSignup = ({
           noIcon
           required
           disabled={!companyVerification.verified}
-          name="department"
-          value={formData.department}
+          name="departmentId"
+          value={formData.departmentId}
           onChange={onChange}
           variant="indigo"
         >
           <option value="" disabled>
-            부서 선택
+            {companyVerification.verified
+              ? "부서 선택"
+              : "회사 코드를 먼저 검증해주세요"}
           </option>
           {companyVerification.verified &&
-          companyVerification.departments.length > 0
-            ? companyVerification.departments.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept}
-                </option>
-              ))
-            : DEPARTMENTS.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept}
-                </option>
-              ))}
+            companyVerification.departments.map((dept) => (
+              <option key={dept.departmentId} value={dept.departmentId}>
+                {dept.departmentName}
+              </option>
+            ))}
         </S.Select>
       </S.InputGroup>
 
       <S.InputGroup>
-        <label>직급 / 직책</label>
+        <label>
+          직급 / 직책
+          {!companyVerification.verified && (
+            <span
+              style={{
+                fontSize: "0.625rem",
+                color: "#fb7185",
+                marginLeft: "0.5rem",
+              }}
+            >
+              (회사 코드 검증 후 선택 가능)
+            </span>
+          )}
+        </label>
         <div
           style={{
             display: "flex",
@@ -134,28 +150,34 @@ const StaffSignup = ({
           <S.Select
             noIcon
             required
-            value={isCustomPos ? "custom" : formData.position}
+            disabled={!companyVerification.verified}
+            value={isCustomPos ? "custom" : formData.rankId}
             onChange={(e) => {
               const val = e.target.value;
               if (val === "custom") {
                 setIsCustomPos(true);
-                setFormData((prev) => ({ ...prev, position: "" }));
+                setFormData((prev) => ({ ...prev, rankId: "" }));
               } else {
                 setIsCustomPos(false);
-                setFormData((prev) => ({ ...prev, position: val }));
+                setFormData((prev) => ({ ...prev, rankId: val }));
               }
             }}
             variant="indigo"
           >
             <option value="" disabled>
-              직급 선택
+              {companyVerification.verified
+                ? "직급 선택"
+                : "회사 코드를 먼저 검증해주세요"}
             </option>
-            {POSITIONS.map((pos) => (
-              <option key={pos} value={pos}>
-                {pos}
-              </option>
-            ))}
-            <option value="custom">직접 입력 (기타)</option>
+            {companyVerification.verified &&
+              companyVerification.ranks.map((rank) => (
+                <option key={rank.rankId} value={rank.rankId}>
+                  {rank.rankName}
+                </option>
+              ))}
+            {companyVerification.verified && (
+              <option value="custom">직접 입력 (기타)</option>
+            )}
           </S.Select>
           {isCustomPos && (
             <S.Input
@@ -163,9 +185,9 @@ const StaffSignup = ({
               type="text"
               required
               placeholder="직급 직접 입력"
-              value={formData.position}
+              value={formData.rankId}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, position: e.target.value }))
+                setFormData((prev) => ({ ...prev, rankId: e.target.value }))
               }
               style={{ animation: "fadeIn 0.3s" }}
             />

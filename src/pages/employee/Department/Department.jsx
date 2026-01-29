@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../../../api/axios';
 import useStore from '../../../store/useStore';
 import {
   Users,
@@ -39,8 +39,8 @@ const Department = () => {
 
         // 부서 정보와 팀원 목록을 병렬로 조회 (직접 axios 호출)
         const [infoResponse, membersResponse] = await Promise.all([
-          axios.get(`http://localhost:8080/api/departments/${myDepartmentId}`),
-          axios.get(`http://localhost:8080/api/departments/${myDepartmentId}/members`)
+          apiClient.get(`/departments/${myDepartmentId}`),
+          apiClient.get(`/departments/${myDepartmentId}/members`)
         ]);
 
         setDepartmentInfo(infoResponse.data);

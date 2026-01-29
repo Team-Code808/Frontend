@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8008/api',
+  baseURL: 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -11,7 +11,7 @@ const apiClient = axios.create({
 // 요청 인터셉터 (토큰 자동 추가)
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -29,7 +29,7 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
       window.location.href = '/auth/login';
     }
     return Promise.reject(error);

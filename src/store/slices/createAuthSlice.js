@@ -1,23 +1,49 @@
-import { UserRole } from '../../constants/types';
+import { decodeToken } from "../../utils/jwtUtils";
 
 export const createAuthSlice = (set) => ({
-    user: null,
-    isAdminMode: false,
+  user: null,
+  isAdminMode: false,
 
-    setUser: (user) => set({ user }),
-    setIsAdminMode: (mode) => set({ isAdminMode: mode }),
+  setUser: (user) => set({ user }),
+  setIsAdminMode: (mode) => set({ isAdminMode: mode }),
 
-    // 로그인 로직을 처리하는 헬퍼 액션
-    login: (user) => {
-        const isAdmin = user.role === UserRole.ADMIN;
-        set({ user, isAdminMode: isAdmin });
-    },
+  login: (user) => {
+    const role =
+      user.role || (user.token ? decodeToken(user.token)?.role : null);
+    const isAdmin = role === "ADMIN";
 
-    // 로그아웃을 처리하는 헬퍼 액션 (모든 상태 초기화로 업데이트됨)
-    logout: () => set({
-        user: null,
-        isAdminMode: false,
-        attendance: { isClockedIn: false, isAway: false, isCoolDown: false, coolDownStartTime: null },
-        ui: { departmentFilter: '전체' }
-    }),
+    if (user.token) {
+      localStorage.setItem("authToken", user.token);
+    }
+
+    console.log("User:", user);
+    console.log("Role:", role);
+    console.log("Is Admin:", isAdmin);
+
+    set({
+      user: {
+        ...user,
+        role: role,
+      },
+      isAdminMode: isAdmin,
+    });
+  },
+
+  logout: () => {
+    localStorage.removeItem("authToken");
+
+    set({
+      user: null,
+      isAdminMode: false,
+      attendance: {
+        isClockedIn: false,
+        isAway: false,
+        isCoolDown: false,
+        coolDownStartTime: null,
+      },
+      ui: { departmentFilter: "전체" },
+    });
+
+    window.location.href = "/login";
+  },
 });

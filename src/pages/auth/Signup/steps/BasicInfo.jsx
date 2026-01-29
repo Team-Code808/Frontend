@@ -54,8 +54,8 @@ const BasicInfo = ({ formData, onChange, onNext }) => {
           type="email"
           required
           placeholder="example@company.com"
-          name="id"
-          value={formData.id}
+          name="email"
+          value={formData.email}
           onChange={onChange}
         />
       </S.InputGroup>

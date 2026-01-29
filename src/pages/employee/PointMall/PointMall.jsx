@@ -54,7 +54,7 @@ const PointMall = () => {
                     <S.PointBadge>
                         <Gift size={20} />
                         {/* 서버에서 받아온 실제 포인트 출력 */}
-                        <span>나의 보유 포인트: <strong>{mallData.currentPoint.toLocaleString()} P</strong></span>
+                      <span>나의 보유 포인트: <strong>{(mallData?.currentPoint || 0).toLocaleString()} P</strong></span>
                     </S.PointBadge>
                 </S.BannerContent>
                 <S.BackgroundIcon>
