@@ -60,25 +60,44 @@ const Dashboard = () => {
     '업무량 과다', '까다로운 고객', '시스템 장애', '동료 관계', '개인 사정', '컨디션 난조', '기타'
   ];
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const response = await apiClient.get('/employee/dashboard');
-        setDashboardData(response.data);
+  const fetchDashboardData = async () => {
+    try {
+      const response = await apiClient.get('/employee/dashboard');
+      setDashboardData(response.data);
 
-        // 백엔드 상태와 스토어 동기화
-        if (response.data.attendanceStats.currentStatus === '업무 중') {
+      // 백엔드 상태와 스토어 동기화
+      const status = response.data.attendanceStats.currentStatus;
+
+      switch (status) {
+        case '업무 중':
           setClockIn(true);
-        } else {
+          setAway(false);
+          setCoolDown(false);
+          break;
+        case '자리 비움':
+          setClockIn(true);
+          setAway(true);
+          setCoolDown(false);
+          break;
+        case '쿨다운':
+          setClockIn(true);
+          setAway(false);
+          setCoolDown(true, response.data.attendanceStats.startTime);
+          break;
+        default: // 업무 준비, 퇴근 완료 등
           setClockIn(false);
-        }
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-      } finally {
-        setIsLoading(false);
+          setAway(false);
+          setCoolDown(false);
+          break;
       }
-    };
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchDashboardData();
 
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -100,39 +119,59 @@ const Dashboard = () => {
     );
   };
 
-  const handleModalSubmit = () => {
+  const handleModalSubmit = async () => {
     if (selectedEmotion === null) {
       alert('오늘의 기분을 선택해 주세요!');
       return;
     }
 
-    // 실제 로직 연동 (여기서는 토글만)
-    setClockIn(!isClockedIn);
-    setIsEmotionModalOpen(false);
+    try {
+      if (modalType === 'IN') {
+        await apiClient.post('/employee/dashboard/status/clock-in');
+      } else {
+        await apiClient.post('/employee/dashboard/status/clock-out');
+      }
 
-    const message = modalType === 'IN' ? '출근 처리가 완료되었습니다. 오늘도 화이팅하세요!' : '퇴근 처리가 완료되었습니다. 오늘 하루도 고생 많으셨습니다!';
-    alert(message);
+      // 데이터 갱신
+      await fetchDashboardData();
+      setIsEmotionModalOpen(false);
+
+      const message = modalType === 'IN' ? '출근 처리가 완료되었습니다. 오늘도 화이팅하세요!' : '퇴근 처리가 완료되었습니다. 오늘 하루도 고생 많으셨습니다!';
+      alert(message);
+    } catch (error) {
+      console.error('Status update failed:', error);
+      alert('상태 변경에 실패했습니다.');
+    }
   };
 
   const [timeLeft, setTimeLeft] = useState(0);
 
   const handleCoolDown = () => {
     if (isCoolDown) {
-      // Manual Stop
-      stopCooldown();
+      // Manual Stop -> WORKING
+      updateStatus('WORKING');
     } else {
-      // Start
-      startCooldown();
+      // Start -> COOLDOWN
+      updateStatus('COOLDOWN');
+    }
+  };
+
+  const updateStatus = async (status) => {
+    try {
+      await apiClient.post('/employee/dashboard/status', { status });
+      await fetchDashboardData();
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      alert('상태 변경에 실패했습니다.');
     }
   };
 
   const startCooldown = () => {
-    setCoolDown(true);
-    // Timer updates are handled by the useEffect watching coolDownStartTime
+    // Deprecated: APIs handle state
   };
 
   const stopCooldown = () => {
-    setCoolDown(false);
+    // Deprecated: APIs handle state
     setTimeLeft(0);
   };
 
@@ -175,7 +214,11 @@ const Dashboard = () => {
   };
 
   const handleAway = () => {
-    setAway(!isAway);
+    if (isAway) {
+      updateStatus('WORKING');
+    } else {
+      updateStatus('AWAY');
+    }
   };
 
   if (isLoading) {
