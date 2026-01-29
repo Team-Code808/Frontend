@@ -43,7 +43,7 @@ const AdminGifticonManagement = () => {
             <S.Grid>
                 {items.map(item => (
                     <S.ItemCard key={item.id} $activeStatus={item.active}>
-                        <S.ItemImage activeStatus={item.active}>
+                        <S.ItemImage $activeStatus={item.active}>
                             {item.img}
                         </S.ItemImage>
                         <S.ItemInfo>
@@ -103,11 +103,11 @@ const AdminGifticonManagement = () => {
                         </S.QuantityRow>
 
                         <S.StatusRow>
-                            <S.StatusBadge activeStatus={item.active}>
+                            <S.StatusBadge $activeStatus={item.active}>
                                 {item.active ? '판매중' : '비활성'}
                             </S.StatusBadge>
                             <S.ToggleButton
-                                activeStatus={item.active}
+                                $activeStatus={item.active}
                                 onClick={() => toggleItemStatus(item.id)}
                             />
                         </S.StatusRow>

@@ -89,7 +89,7 @@ export const ItemCard = styled.div`
   overflow: hidden;
 
   /* Inactive styling override */
-  ${props => !props.activeStatus && `
+  ${props => !props.$activeStatus && `
     border-color: rgba(148, 163, 184, 0.2);
     background: rgba(15, 23, 42, 0.8);
     opacity: 0.8;
@@ -107,7 +107,7 @@ export const ItemImage = styled.div`
   font-size: 4rem;
   margin-bottom: 0.5rem;
   
-  ${props => !props.activeStatus && `
+  ${props => !props.$activeStatus && `
     filter: grayscale(100%);
     opacity: 0.5;
   `}
@@ -242,24 +242,19 @@ export const StatusBadge = styled.span`
   font-weight: 600;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-<<<<<<< HEAD
-  background: ${props => props.activeStatus ? 'rgba(34, 197, 94, 0.1)' : 'rgba(148, 163, 184, 0.1)'};
-  color: ${props => props.activeStatus ? '#4ade80' : '#94a3b8'};
-=======
-  background: ${props => props.$active ? 'rgba(34, 197, 94, 0.1)' : 'rgba(148, 163, 184, 0.1)'};
-  color: ${props => props.$active ? '#4ade80' : '#94a3b8'};
->>>>>>> 3b2b05e85a1a6217e00d425424f8b4eff554f0a4
+
+  background: ${props => props.$activeStatus ? 'rgba(34, 197, 94, 0.1)' : 'rgba(148, 163, 184, 0.1)'};
+  color: ${props => props.$activeStatus ? '#4ade80' : '#94a3b8'};
+
 `;
 
 export const ToggleButton = styled.button`
   position: relative;
   width: 48px;
   height: 24px;
-<<<<<<< HEAD
-  background: ${props => props.activeStatus ? '#4f46e5' : '#334155'};
-=======
-  background: ${props => props.$active ? '#4f46e5' : '#334155'};
->>>>>>> 3b2b05e85a1a6217e00d425424f8b4eff554f0a4
+
+  background: ${props => props.$activeStatus ? '#4f46e5' : '#334155'};
+
   border-radius: 9999px;
   border: none;
   cursor: pointer;
@@ -269,11 +264,7 @@ export const ToggleButton = styled.button`
     content: '';
     position: absolute;
     top: 2px;
-<<<<<<< HEAD
-    left: ${props => props.activeStatus ? '26px' : '2px'};
-=======
-    left: ${props => props.$active ? '26px' : '2px'};
->>>>>>> 3b2b05e85a1a6217e00d425424f8b4eff554f0a4
+    left: ${props => props.$activeStatus ? '26px' : '2px'};
     width: 20px;
     height: 20px;
     background: white;

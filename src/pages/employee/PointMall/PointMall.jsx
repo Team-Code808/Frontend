@@ -20,7 +20,7 @@ const PointMall = () => {
         try {
             setLoading(true);
             // 실제 환경에서는 로그인된 사용자의 ID를 사용합니다.
-            const userId = "2"; 
+            const userId = "11"; 
             const response = await axios.get(`/api/employee/shop/${userId}`);
             
             if (response.data) {
