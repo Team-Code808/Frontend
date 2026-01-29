@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Mail,
@@ -15,19 +15,43 @@ import {
 } from 'lucide-react';
 import * as S from './MyPage.styles';
 import useStore from '../../../store/useStore';
+import { adminMypageApi } from '../../../api/mypageApi';
 
 const AdminMyPageMain = () => {
   const { user } = useStore();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // 임시로 관리자 memberId를 2로 설정
+  const adminMemberId = 2;
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const response = await adminMypageApi.getProfile(adminMemberId);
+        if (response.success && response.data) {
+          setProfile(response.data);
+        }
+      } catch (error) {
+        console.error('프로필 로딩 실패:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [adminMemberId]);
 
   const adminInfo = {
-    name: user?.name || '관리자',
+    name: profile?.name || user?.name || '관리자',
     position: user?.position || '센터 운영 총괄',
     department: user?.department || '운영 전략 본부',
-    email: user?.id || user?.email || 'admin@calmdesk.com',
-    phone: user?.phone || '010-0000-0000',
-    joinDate: user?.joinDate || '2020.01.01',
+    email: profile?.email || user?.id || user?.email || 'admin@calmdesk.com',
+    phone: profile?.phone || user?.phone || '010-0000-0000',
+    joinDate: profile?.joinDate || user?.joinDate || '2020.01.01',
     avatar: '🛡️',
     accessLevel: 'Super Admin',
     companyCode: user?.companyCode || 'CODE-ERROR'
