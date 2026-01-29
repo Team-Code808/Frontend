@@ -3,8 +3,6 @@ import useStore from "./store/useStore";
 import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout/MainLayout";
 
-
-
 // 관리자 페이지
 import AdminGifticonManagement from './pages/admin/GifticonManagement/GifticonManagement';
 import PurchaseHistory from './pages/admin/GifticonManagement/PurchaseHistory/PurchaseHistory';
@@ -120,6 +118,7 @@ function App() {
                         path="dashboard"
                         element={<Navigate to="/app/mypage" replace />}
                       />
+                      <Route path="mypage/*" element={<MyPage />} />
                       <Route path="department" element={<Department />} />
                       <Route path="attendance" element={<Attendance />} />
                       <Route path="consultation" element={<Consultation />} />
