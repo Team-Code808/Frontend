@@ -42,7 +42,8 @@ const Attendance = () => {
     type: '연차',
     startDate: '',
     endDate: '',
-    reason: ''
+    reason: '',
+    halfDayType: '오후' // 반차일 경우 오전/오후 선택
   });
 
   // 현재 보고 있는 연도와 월
@@ -121,12 +122,19 @@ const Attendance = () => {
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/vacation`, {
+      const requestData = {
         type: vacationForm.type,
         startDate: vacationForm.startDate,
         endDate: vacationForm.endDate,
         reason: vacationForm.reason || null
-      }, {
+      };
+
+      // 반차일 경우에만 halfDayType 추가
+      if (vacationForm.type === '반차') {
+        requestData.halfDayType = vacationForm.halfDayType;
+      }
+
+      const response = await axios.post(`${API_BASE_URL}/vacation`, requestData, {
         params: {
           memberId: MEMBER_ID
         }
@@ -139,7 +147,8 @@ const Attendance = () => {
           type: '연차',
           startDate: '',
           endDate: '',
-          reason: ''
+          reason: '',
+          halfDayType: '오후'
         });
         // 휴가 목록 새로고침
         await fetchLeaves();
@@ -634,6 +643,22 @@ const Attendance = () => {
                   <ChevronRight size={16} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%) rotate(90deg)', pointerEvents: 'none', color: '#94a3b8' }} />
                 </S.SelectWrapper>
               </S.LabelGroup>
+
+              {vacationForm.type === '반차' && (
+                <S.LabelGroup>
+                  <S.InputLabel>반차 시간</S.InputLabel>
+                  <S.SelectWrapper>
+                    <S.Select
+                      value={vacationForm.halfDayType}
+                      onChange={(e) => setVacationForm({ ...vacationForm, halfDayType: e.target.value })}
+                    >
+                      <option value="오전">오전 반차 (09:00 ~ 13:00)</option>
+                      <option value="오후">오후 반차 (13:00 ~ 18:00)</option>
+                    </S.Select>
+                    <ChevronRight size={16} style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%) rotate(90deg)', pointerEvents: 'none', color: '#94a3b8' }} />
+                  </S.SelectWrapper>
+                </S.LabelGroup>
+              )}
 
               <S.InfoGrid>
                 <S.LabelGroup>
