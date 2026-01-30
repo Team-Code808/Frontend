@@ -4,9 +4,10 @@ import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout/MainLayout";
 
 // 관리자 페이지
+import AdminGifticonManagement from './pages/admin/GifticonManagement/GifticonManagement';
+import PurchaseHistory from './pages/admin/GifticonManagement/PurchaseHistory/PurchaseHistory';
+import AdminMyPage from './pages/admin/Mypage/MyPage';
 import AdminDashboard from "./pages/admin/Dashboard/Dashboard";
-import AdminGifticonManagement from "./pages/admin/GifticonManagement/GifticonManagement";
-import PurchaseHistory from "./pages/admin/GifticonManagement/PurchaseHistory/PurchaseHistory";
 
 // 공통 페이지 (Common Pages)
 import LandingPage from "./pages/common/Landing/Landing";
@@ -36,8 +37,11 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  const { user, isAdminMode } = useStore();
+  const { user } = useStore();
   const navigate = useNavigate();
+
+  // 로그인한 유저의 role로 관리자 여부 판단
+  const isAdminMode = user?.role === 'ADMIN';
 
   const handleStart = () => navigate("/auth");
   const handleFeatureDetails = () => navigate("/features");
@@ -94,7 +98,7 @@ function App() {
                 />
               ) : (
                 <Routes>
-                  {/* 관리자 라우트 */}
+                  {/* 관리자 라우트 - role이 ADMIN인 경우만 */}
                   {isAdminMode && (
                     <>
                       <Route path="dashboard" element={<AdminDashboard />} />
@@ -106,12 +110,21 @@ function App() {
                         path="gifticons/history"
                         element={<PurchaseHistory />}
                       />
+                      <Route
+                        path="mypage/*"
+                        element={<AdminMyPage />}
+                      />
                     </>
                   )}
 
-                  {/* 직원 라우트 — Header 메뉴와 경로 일치 */}
+                  {/* 직원 라우트 — role이 EMPLOYEE인 경우 */}
                   {!isAdminMode && (
                     <>
+                      <Route
+                        path="dashboard"
+                        element={<Navigate to="/app/mypage" replace />}
+                      />
+                      <Route path="mypage/*" element={<MyPage />} />
                       <Route path="department" element={<Department />} />
                       <Route path="attendance" element={<Attendance />} />
                       <Route path="consultation" element={<Consultation />} />

@@ -30,9 +30,10 @@ export const useLogin = (onLogin) => {
 
         onLogin({
           id: response.memberId,
-          email: payload?.sub || formData.email,
+          memberId: response.memberId,
+          email: payload?.sub || formData.email || response.email,
           name: response.name || payload?.name,
-          role: payload?.role,
+          role: response.role || payload?.role, // 백엔드에서 직접 받은 role 사용
           companyCode: response.companyCode,
           companyName: response.companyName,
           departmentName: response.departmentName,

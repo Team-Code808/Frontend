@@ -21,6 +21,7 @@ const MyPageMain = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [coupons, setCoupons] = useState([]);
+  const [stress, setStress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -41,10 +42,11 @@ const MyPageMain = () => {
         setLoading(true);
         setError(null);
 
-        // 프로필과 기프티콘 데이터를 병렬로 가져오기
-        const [profileRes, couponsRes] = await Promise.all([
+        // 프로필, 기프티콘, 스트레스 데이터를 병렬로 가져오기
+        const [profileRes, couponsRes, stressRes] = await Promise.all([
           mypageApi.getProfile(memberId),
-          mypageApi.getCoupons(memberId)
+          mypageApi.getCoupons(memberId),
+          mypageApi.getStress(memberId)
         ]);
 
         if (profileRes.success && profileRes.data) {
@@ -53,6 +55,10 @@ const MyPageMain = () => {
 
         if (couponsRes.success && couponsRes.data) {
           setCoupons(couponsRes.data || []);
+        }
+
+        if (stressRes.success && stressRes.data) {
+          setStress(stressRes.data);
         }
       } catch (err) {
         console.error('데이터 로딩 실패:', err);
@@ -170,24 +176,54 @@ const MyPageMain = () => {
             <S.StressGrid>
               <S.StressCircle>
                 <S.CircleContent>
-                  <span>24%</span>
+                  <span>{stress?.avgStress ?? 0}%</span>
                   <span>Stress</span>
                 </S.CircleContent>
-                <S.StressLevelBadge>Low Level</S.StressLevelBadge>
               </S.StressCircle>
               <S.StressDetails>
                 <h3>
-                  <Heart size={20} color="#f43f5e" />
+                  <Heart size={20} color={
+                    stress?.level === 'CRITICAL' ? '#dc2626' :
+                    stress?.level === 'HIGH' ? '#f97316' :
+                    stress?.level === 'NORMAL' ? '#eab308' : '#f43f5e'
+                  } />
                   주간 컨디션 요약
                 </h3>
                 <p>
-                  현재 전반적으로 <span style={{ color: '#2563eb', fontWeight: 700 }}>안정적인 컨디션</span>을 유지하고 있습니다.
-                  규칙적인 휴식과 긍정적인 마인드로 활기찬 한 주를 보내세요!
+                  현재 전반적으로 <span style={{
+                    color: stress?.level === 'CRITICAL' ? '#dc2626' :
+                           stress?.level === 'HIGH' ? '#f97316' :
+                           stress?.level === 'NORMAL' ? '#eab308' : '#2563eb',
+                    fontWeight: 700
+                  }}>{stress?.message || '안정적인 컨디션'}</span>을 유지하고 있습니다.
+                  {' '}{stress?.description || '규칙적인 휴식과 긍정적인 마인드로 활기찬 한 주를 보내세요!'}
                 </p>
                 <S.TagGroup>
-                  <S.Tag>#스트레스_제로</S.Tag>
-                  <S.Tag>#마음건강_튼튼</S.Tag>
-                  <S.Tag>#긍정_에너지</S.Tag>
+                  {stress?.level === 'CRITICAL' ? (
+                    <>
+                      <S.Tag>#즉시_휴식_필요</S.Tag>
+                      <S.Tag>#상담_권장</S.Tag>
+                      <S.Tag>#건강_관리</S.Tag>
+                    </>
+                  ) : stress?.level === 'HIGH' ? (
+                    <>
+                      <S.Tag>#주의_필요</S.Tag>
+                      <S.Tag>#휴식_권장</S.Tag>
+                      <S.Tag>#스트레스_관리</S.Tag>
+                    </>
+                  ) : stress?.level === 'NORMAL' ? (
+                    <>
+                      <S.Tag>#양호한_상태</S.Tag>
+                      <S.Tag>#가벼운_휴식</S.Tag>
+                      <S.Tag>#꾸준한_관리</S.Tag>
+                    </>
+                  ) : (
+                    <>
+                      <S.Tag>#스트레스_제로</S.Tag>
+                      <S.Tag>#마음건강_튼튼</S.Tag>
+                      <S.Tag>#긍정_에너지</S.Tag>
+                    </>
+                  )}
                 </S.TagGroup>
               </S.StressDetails>
             </S.StressGrid>
