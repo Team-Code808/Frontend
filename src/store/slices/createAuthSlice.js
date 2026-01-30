@@ -24,6 +24,7 @@ export const createAuthSlice = (set) => ({
       user: {
         ...user,
         role: role,
+        memberId: user.memberId || user.id, // memberId 저장
       },
       isAdminMode: isAdmin,
     });

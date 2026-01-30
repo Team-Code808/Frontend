@@ -4,6 +4,7 @@ import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout/MainLayout";
 
 // 관리자 페이지
+import AdminDashboard from "./pages/admin/Dashboard/Dashboard";
 import AdminGifticonManagement from "./pages/admin/GifticonManagement/GifticonManagement";
 import PurchaseHistory from "./pages/admin/GifticonManagement/PurchaseHistory/PurchaseHistory";
 
@@ -20,8 +21,8 @@ import MyPage from "./pages/employee/MyPage/MyPage";
 import Department from "./pages/employee/Department/Department";
 import Attendance from "./pages/employee/Attendance/Attendance";
 import Consultation from "./pages/employee/Consultation/Consultation";
-import Dashboard from './pages/employee/Dashboard/Dashboard';
-import PointMall from './pages/employee/PointMall/PointMall';
+import Dashboard from "./pages/employee/Dashboard/Dashboard";
+import PointMall from "./pages/employee/PointMall/PointMall";
 
 import { ShieldAlert, Clock } from "lucide-react";
 import * as S from "./App.styles";
@@ -96,6 +97,7 @@ function App() {
                   {/* 관리자 라우트 */}
                   {isAdminMode && (
                     <>
+                      <Route path="dashboard" element={<AdminDashboard />} />
                       <Route
                         path="gifticons"
                         element={<AdminGifticonManagement />}
@@ -116,7 +118,10 @@ function App() {
                       <Route path="pointmall" element={<PointMall />} />
                       <Route path="dashboard" element={<Dashboard />} />
                       <Route path="mypage/*" element={<MyPage />} />
-                      <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
+                      <Route
+                        path="*"
+                        element={<Navigate to="/app/dashboard" replace />}
+                      />
                     </>
                   )}
                 </Routes>
