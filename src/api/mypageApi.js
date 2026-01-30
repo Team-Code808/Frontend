@@ -40,6 +40,14 @@ export const mypageApi = {
     });
     return response.data;
   },
+
+  // 스트레스 요약 조회
+  getStress: async (memberId) => {
+    const response = await apiClient.get('/mypage/stress', {
+      params: { memberId },
+    });
+    return response.data;
+  },
 };
 
 // 관리자 마이페이지 API
