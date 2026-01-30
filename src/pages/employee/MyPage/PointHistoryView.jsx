@@ -60,31 +60,34 @@ const PointHistoryView = () => {
     (item) => filter === 'ALL' || (item.type && item.type.toUpperCase() === filter)
   );
 
+  // 총 잔액: 계좌(ACCOUNT) 기준. 없으면 최신 내역 잔액
   const currentBalance =
     profile != null && profile.currentPoint != null
       ? Number(profile.currentPoint)
-      : (() => {
-          if (history.length === 0) return 0;
-          const latest = history[0];
-          const prev = history[1];
-          const mostRecent = latest?.balanceAfter != null ? latest.balanceAfter : 0;
-          const isRecentSpendZero =
-            latest?.type && latest.type.toUpperCase() === 'SPEND' && mostRecent === 0;
-          if (isRecentSpendZero && prev?.balanceAfter != null) return prev.balanceAfter;
-          return mostRecent;
-        })();
+      : (history.length > 0 && history[0]?.balanceAfter != null ? Number(history[0].balanceAfter) : 0);
 
+  const now = new Date();
+  const thisYear = now.getFullYear();
+  const thisMonth = now.getMonth();
+  const isThisMonth = (dateStr) => {
+    if (!dateStr) return false;
+    const [datePart] = dateStr.split(' ');
+    const [y, m] = datePart.split('.').map(Number);
+    return y === thisYear && m === thisMonth + 1;
+  };
+  // amount: 적립은 +, 사용은 - 로 내려옴
   const thisMonthEarn = history
-    .filter((h) => h.type && h.type.toUpperCase() === 'EARN')
-    .reduce((sum, h) => sum + (h.amount || 0), 0);
+    .filter((h) => h.type && h.type.toUpperCase() === 'EARN' && isThisMonth(h.date))
+    .reduce((sum, h) => sum + (h.amount != null ? Math.max(0, Number(h.amount)) : 0), 0);
   const thisMonthSpend = history
-    .filter((h) => h.type && h.type.toUpperCase() === 'SPEND')
-    .reduce((sum, h) => sum + Math.abs(h.amount || 0), 0);
+    .filter((h) => h.type && h.type.toUpperCase() === 'SPEND' && isThisMonth(h.date))
+    .reduce((sum, h) => sum + (h.amount != null ? Math.abs(Number(h.amount)) : 0), 0);
 
+  // API에서 적립은 +, 사용은 - 부호로 내려옴 → 그대로 표시 (+면 +, -면 -)
   const formatAmount = (item) => {
-    const amt = item.amount != null ? item.amount : 0;
-    const isEarn = item.type && item.type.toUpperCase() === 'EARN';
-    return `${isEarn ? '+' : '-'}${Math.abs(amt).toLocaleString()}`;
+    const amt = item.amount != null ? Number(item.amount) : 0;
+    const sign = amt >= 0 ? '+' : '';
+    return `${sign}${amt.toLocaleString()}`;
   };
 
   if (loading) {
