@@ -2,6 +2,8 @@ import axios from 'axios';
 
 import {API_URL} from '../../Config';
 
+
+ 
 // const API_URL = '/api/admin/shop'; // 백엔드 API 기본 주소
 let pending = {};
 let timer = null;
@@ -13,13 +15,14 @@ const getAuthHeader = () => {
 };
 
 export const createAdminShopSlice = (set, get) => ({
+    
     items: [],
     purchaseHistory: [],
 
     // 1. 초기 데이터 로드: 백엔드에서 모든 아이템 가져오기
     fetchItems: async (companyId) => {
         // 1. 아직 로그인 로직이 없으므로, 전달받은 id가 없으면 가상의 1번을 사용
-        const targetId = companyId || 11;
+       const targetId = companyId || get().user?.companyId || 1;
 
         set({ isLoading: true });
         try {
