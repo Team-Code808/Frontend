@@ -319,8 +319,11 @@ export const StatusPill = styled.span`
   font-weight: 700;
   
   ${props => props.$status === '업무 중' && 'background-color: #f0fdf4; color: #16a34a;'}
-  ${props => props.$status === '자리비움' && 'background-color: #fff7ed; color: #ea580c;'}
-  ${props => props.$status === '휴가 중' && 'background-color: #f1f5f9; color: #94a3b8;'}
+  ${props => props.$status === '자리 비움' && 'background-color: #fff7ed; color: #ea580c;'}
+  ${props => props.$status === '쿨다운' && 'background-color: #eff6ff; color: #3b82f6;'}
+  ${props => props.$status === '출근 전' && 'background-color: #f1f5f9; color: #64748b;'}
+  ${props => props.$status === '퇴근' && 'background-color: #fca5a5; color: #7f1d1d;'}
+  ${props => props.$status === '휴가 중' && 'background-color: #e2e8f0; color: #475569;'}
 `;
 
 export const RoleText = styled.p`

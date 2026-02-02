@@ -128,7 +128,7 @@ const Department = () => {
 
               {isDropdownOpen && (
                 <S.DropdownMenu>
-                  {['전체', '업무 중', '자리비움', '휴가 중'].map((option) => (
+                  {['전체', '출근 전', '업무 중', '자리 비움', '쿨다운', '퇴근', '휴가 중'].map((option) => (
                     <S.DropdownItem
                       key={option}
                       onClick={() => {

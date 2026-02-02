@@ -8,11 +8,11 @@ export const createAttendanceSlice = (set) => ({
 
     setClockIn: (status) => set((state) => ({ attendance: { ...state.attendance, isClockedIn: status } })),
     setAway: (status) => set((state) => ({ attendance: { ...state.attendance, isAway: status } })),
-    setCoolDown: (status) => set((state) => ({
+    setCoolDown: (status, startTime) => set((state) => ({
         attendance: {
             ...state.attendance,
             isCoolDown: status,
-            coolDownStartTime: status ? Date.now() : null
+            coolDownStartTime: status ? (startTime ? new Date(startTime).getTime() : Date.now()) : null
         }
     })),
 });
