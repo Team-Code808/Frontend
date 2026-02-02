@@ -11,7 +11,6 @@ import {
   Calendar,
   CreditCard
 } from 'lucide-react';
-import { MOCK_USER } from '../../../constants/constants';
 import * as S from './MyPage.styles';
 import useStore from '../../../store/useStore';
 import { mypageApi } from '../../../api/mypageApi';
@@ -74,23 +73,17 @@ const MyPageMain = () => {
     fetchData();
   }, [memberId]);
 
-  // 표시할 사용자 데이터 (API 데이터 우선, 없으면 MOCK_USER 사용)
+  // 표시할 사용자 데이터 (API/스토어 우선, 없으면 '-' 표시)
+  const empty = (v) => (v != null && v !== '' ? v : '-');
   const displayUser = {
-    ...MOCK_USER,
-    ...(profile ? {
-      name: profile.name,
-      email: profile.email,
-      phone: profile.phone,
-      department: profile.department,
-      position: profile.position,
-      joinDate: profile.joinDate,
-      point: profile.currentPoint?.toLocaleString() || '0'
-    } : user ? {
-      name: user.name,
-      department: user.department,
-      phone: user.phone || MOCK_USER.phone,
-      joinDate: user.joinDate || MOCK_USER.joinDate
-    } : {})
+    avatar: '👤',
+    name: empty(profile?.name ?? user?.name),
+    email: empty(profile?.email),
+    phone: empty(profile?.phone ?? user?.phone),
+    department: empty(profile?.department ?? user?.department),
+    position: empty(profile?.position),
+    joinDate: empty(profile?.joinDate ?? user?.joinDate),
+    point: profile?.currentPoint != null ? profile.currentPoint.toLocaleString() : '0'
   };
 
   if (loading) {

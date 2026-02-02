@@ -9,7 +9,6 @@ import {
   Mail,
   Lock
 } from 'lucide-react';
-import { MOCK_USER } from '../../../constants/constants';
 import * as S from './MyPage.styles';
 import useStore from '../../../store/useStore';
 import { mypageApi } from '../../../api/mypageApi';
@@ -43,14 +42,14 @@ const ProfileEditView = () => {
           setEmail(res.data.email || '');
           setPhone(res.data.phone || '');
         } else {
-          setEmail(user?.email || MOCK_USER.email || '');
-          setPhone(user?.phone || MOCK_USER.phone || '');
+          setEmail(user?.email || '');
+          setPhone(user?.phone || '');
         }
       } catch (err) {
         console.error('프로필 로드 실패:', err);
         setError(err.response?.data?.message || '프로필을 불러오지 못했습니다.');
-        setEmail(user?.email || MOCK_USER.email || '');
-        setPhone(user?.phone || MOCK_USER.phone || '');
+        setEmail(user?.email || '');
+        setPhone(user?.phone || '');
       } finally {
         setLoading(false);
       }
@@ -59,12 +58,10 @@ const ProfileEditView = () => {
   }, [memberId]);
 
   const displayUser = {
-    ...MOCK_USER,
-    ...(user ? {
-      name: user.name,
-      department: user.department,
-      joinDate: user.joinDate || MOCK_USER.joinDate
-    } : {})
+    avatar: '👤',
+    name: user?.name ?? '-',
+    department: user?.department ?? '-',
+    joinDate: user?.joinDate ?? '-'
   };
 
   const handleSave = async () => {
