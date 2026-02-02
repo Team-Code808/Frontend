@@ -23,17 +23,9 @@ const MissionSection = ({ missions, refreshData }) => {
         }
 
         try {
-<<<<<<< HEAD
-            // 미션 완료 API 호출 (엔드포인트는 설계에 따라 수정 가능)
-            // 예: /api/employee/mission/complete
-            await axios.post('/api/employee/mission/complete', {
-                missionId: missionId,
-                userId: 2  // ------------------ 이 부분에 userId가 들어가야한다!!!!!!!!!!!!
-            });
-=======
             // 스토어 액션 호출
             await completeMission(missionId, user.id);
->>>>>>> e81f4fa247abb752c26d550c35ff4b21e64ba140
+
             
             alert('미션 보상이 지급되었습니다!');
             

@@ -12,7 +12,7 @@ const PointMall = () => {
     // 스토어에서 필요한 상태와 액션 추출
     const { mallData, loading, fetchPointMallData, user } = useStore();
 
-    const userId = user?.memberId; //TODO: 유저 아이디 더미 데이터 
+    const userId = user?.memberId; // TODO: 유저 아이디 더미 데이터
 
     useEffect(() => {
         // 실제 환경에서는 로그인된 사용자 정보를 가져옵니다.
