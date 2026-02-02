@@ -103,6 +103,10 @@ function App() {
                     <>
                       <Route path="dashboard" element={<AdminDashboard />} />
                       <Route
+                        path="teammanagement"
+                        element={<AdminGifticonManagement />}
+                      />
+                      <Route
                         path="gifticons"
                         element={<AdminGifticonManagement />}
                       />
