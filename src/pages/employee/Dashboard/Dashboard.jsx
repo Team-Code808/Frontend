@@ -267,8 +267,11 @@ const Dashboard = () => {
           <S.ActionButton
             onClick={handleClockButtonClick}
             $variant={isClockedIn ? 'danger' : 'primary'}
+            disabled={dashboardData.attendanceStats.currentStatus === '퇴근'}
           >
-            {isClockedIn ? "퇴근하기" : "출근하기"}
+            {dashboardData.attendanceStats.currentStatus === '퇴근'
+              ? "퇴근 완료"
+              : (isClockedIn ? "퇴근하기" : "출근하기")}
           </S.ActionButton>
 
           <S.ActionButton
