@@ -8,15 +8,18 @@ import ShopSection from './ShopSection';
 const PointMall = () => {
     const [pointMallTab, setPointMallTab] = React.useState('MISSIONS');
     
-     const userId = "6"; 
+      
     // 스토어에서 필요한 상태와 액션 추출
-    const { mallData, loading, fetchPointMallData } = useStore();
+    const { mallData, loading, fetchPointMallData, user } = useStore();
+
+    const userId = user?.memberId; //TODO: 유저 아이디 더미 데이터 
 
     useEffect(() => {
         // 실제 환경에서는 로그인된 사용자 정보를 가져옵니다.
-       
-        fetchPointMallData(userId);
-    }, [fetchPointMallData]);
+        if (userId) {
+            fetchPointMallData(userId);
+        }
+    }, [fetchPointMallData, userId]);
 
     if (loading) return <S.Container>데이터를 불러오는 중입니다...</S.Container>;
 
