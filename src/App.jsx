@@ -7,6 +7,7 @@ import MainLayout from "./layouts/MainLayout/MainLayout";
 import AdminDashboard from "./pages/admin/Dashboard/Dashboard";
 import AdminGifticonManagement from "./pages/admin/GifticonManagement/GifticonManagement";
 import PurchaseHistory from "./pages/admin/GifticonManagement/PurchaseHistory/PurchaseHistory";
+import Monitoring from "./pages/admin/Monitoring/Monitoring";
 
 // 공통 페이지 (Common Pages)
 import LandingPage from "./pages/common/Landing/Landing";
@@ -98,6 +99,7 @@ function App() {
                   {isAdminMode && (
                     <>
                       <Route path="dashboard" element={<AdminDashboard />} />
+                      <Route path="monitoring" element={<Monitoring />} />
                       <Route
                         path="gifticons"
                         element={<AdminGifticonManagement />}
