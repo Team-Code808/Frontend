@@ -229,6 +229,12 @@ export default function MemberDetailModal({ member, onClose }) {
                   </S.WellnessLeft>
                   <S.WellnessValue color="#f43f5e">
                     <p>{typeof member.stress === 'number' ? `${member.stress}%` : '-'}</p>
+                    {typeof member.stress === 'number' && member.stress >= 80 && (
+                      <span style={{ fontSize: '12px', color: '#dc2626', fontWeight: 600 }}>위험군</span>
+                    )}
+                    {typeof member.stress === 'number' && member.stress >= 70 && member.stress < 80 && (
+                      <span style={{ fontSize: '12px', color: '#ea580c', fontWeight: 600 }}>주의 필요</span>
+                    )}
                   </S.WellnessValue>
                 </S.WellnessItem>
               </S.WellnessSection>
