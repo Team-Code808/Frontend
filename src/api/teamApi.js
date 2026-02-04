@@ -8,4 +8,12 @@ export const teamApi = {
     const response = await apiClient.get('/admin/team/members');
     return response.data;
   },
+
+  /** 팀원 월별 근태 현황 (일 -> 출근/지각/결근/휴가/휴가예정) */
+  getMemberAttendance: async (memberId, year, month) => {
+    const response = await apiClient.get(`/admin/team/members/${memberId}/attendance`, {
+      params: { year, month },
+    });
+    return response.data;
+  },
 };

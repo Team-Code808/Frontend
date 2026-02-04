@@ -876,10 +876,14 @@ export const DayCell = styled.div`
 
   ${props => {
     switch (props.status) {
-      case 'present': return 'background-color: rgba(34, 197, 94, 0.1); color: #4ade80; border-color: rgba(34, 197, 94, 0.2);'; // Green
-      case 'late': return 'background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2);'; // Amber
-      case 'absent': return 'background-color: rgba(244, 63, 94, 0.1); color: #fb7185; border-color: rgba(244, 63, 94, 0.2);'; // Rose
-      case 'vacation': return 'background-color: rgba(167, 139, 250, 0.1); color: #a78bfa; border-color: rgba(167, 139, 250, 0.2);'; // Violet
+      case 'present': case '출근':
+        return 'background-color: rgba(34, 197, 94, 0.2); color: #4ade80; border-color: rgba(34, 197, 94, 0.3);'; // 초록
+      case 'late': case '지각':
+        return 'background-color: rgba(234, 179, 8, 0.2); color: #eab308; border-color: rgba(234, 179, 8, 0.3);'; // 노랑
+      case 'absent': case '결근':
+        return 'background-color: rgba(239, 68, 68, 0.2); color: #f87171; border-color: rgba(239, 68, 68, 0.3);'; // 빨강
+      case 'vacation': case '휴가': case '휴가예정':
+        return 'background-color: rgba(167, 139, 250, 0.2); color: #a78bfa; border-color: rgba(167, 139, 250, 0.3);'; // 보라
       default: return '';
     }
   }}

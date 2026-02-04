@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Phone,
@@ -15,6 +15,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import * as S from '../TeamManagement.styles';
+import { teamApi } from '../../../../api/teamApi';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -28,8 +29,9 @@ function getFirstDayOffset(year, month) {
 
 const LEGEND_ITEMS = [
   { label: '출근', bg: 'rgba(34, 197, 94, 0.2)' },
-  { label: '지각', bg: 'rgba(245, 158, 11, 0.2)' },
-  { label: '결근', bg: 'rgba(244, 63, 94, 0.2)' },
+  { label: '지각', bg: 'rgba(234, 179, 8, 0.2)' },
+  { label: '결근', bg: 'rgba(239, 68, 68, 0.2)' },
+  { label: '휴가/휴가예정', bg: 'rgba(167, 139, 250, 0.2)' },
 ];
 
 const MOCK_HISTORY = [
@@ -41,6 +43,24 @@ export default function MemberDetailModal({ member, onClose }) {
   const now = new Date();
   const [displayYear, setDisplayYear] = useState(now.getFullYear());
   const [displayMonth, setDisplayMonth] = useState(now.getMonth() + 1);
+  const [attendanceRecord, setAttendanceRecord] = useState({});
+
+  useEffect(() => {
+    if (!member?.id) {
+      setAttendanceRecord({});
+      return;
+    }
+    let cancelled = false;
+    teamApi
+      .getMemberAttendance(member.id, displayYear, displayMonth)
+      .then((data) => {
+        if (!cancelled) setAttendanceRecord(data || {});
+      })
+      .catch(() => {
+        if (!cancelled) setAttendanceRecord({});
+      });
+    return () => { cancelled = true; };
+  }, [member?.id, displayYear, displayMonth]);
 
   if (!member) return null;
 
@@ -178,7 +198,7 @@ export default function MemberDetailModal({ member, onClose }) {
                   ))}
                   {Array.from({ length: daysInMonth }, (_, i) => {
                     const day = i + 1;
-                    const status = member.attendanceRecord?.[day] || '';
+                    const status = attendanceRecord[day] || attendanceRecord[String(day)] || '';
                     return (
                       <S.DayCell key={day} status={status}>
                         {day}
