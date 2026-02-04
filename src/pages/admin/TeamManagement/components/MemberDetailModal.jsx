@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   X,
   Phone,
@@ -11,10 +11,20 @@ import {
   History,
   MessageCircle,
   ExternalLink,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import * as S from '../TeamManagement.styles';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+
+function getDaysInMonth(year, month) {
+  return new Date(year, month, 0).getDate();
+}
+
+function getFirstDayOffset(year, month) {
+  return new Date(year, month - 1, 1).getDay();
+}
 
 const LEGEND_ITEMS = [
   { label: '출근', bg: 'rgba(34, 197, 94, 0.2)' },
@@ -28,7 +38,34 @@ const MOCK_HISTORY = [
 ];
 
 export default function MemberDetailModal({ member, onClose }) {
+  const now = new Date();
+  const [displayYear, setDisplayYear] = useState(now.getFullYear());
+  const [displayMonth, setDisplayMonth] = useState(now.getMonth() + 1);
+
   if (!member) return null;
+
+  const daysInMonth = getDaysInMonth(displayYear, displayMonth);
+  const firstDayOffset = getFirstDayOffset(displayYear, displayMonth);
+
+  const goPrevMonth = () => {
+    if (displayMonth === 1) {
+      setDisplayMonth(12);
+      setDisplayYear((y) => y - 1);
+    } else {
+      setDisplayMonth((m) => m - 1);
+    }
+  };
+
+  const goNextMonth = () => {
+    if (displayMonth === 12) {
+      setDisplayMonth(1);
+      setDisplayYear((y) => y + 1);
+    } else {
+      setDisplayMonth((m) => m + 1);
+    }
+  };
+
+  const monthLabel = `${displayYear}.${String(displayMonth).padStart(2, '0')}`;
 
   return (
     <S.ModalOverlay>
@@ -73,10 +110,44 @@ export default function MemberDetailModal({ member, onClose }) {
             <S.LeftColumn>
               <S.CalendarWidget>
                 <S.WidgetHeader>
-                  <p>
-                    <Calendar size={12} color="#818cf8" />
-                    근태 현황 (2026.01)
-                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      onClick={goPrevMonth}
+                      aria-label="이전 달"
+                      style={{
+                        padding: '0.25rem',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#94a3b8',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <p style={{ margin: 0, minWidth: '7rem', textAlign: 'center' }}>
+                      <Calendar size={12} color="#818cf8" style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                      근태 현황 ({monthLabel})
+                    </p>
+                    <button
+                      type="button"
+                      onClick={goNextMonth}
+                      aria-label="다음 달"
+                      style={{
+                        padding: '0.25rem',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#94a3b8',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </div>
                   <div
                     style={{
                       display: 'flex',
@@ -105,7 +176,10 @@ export default function MemberDetailModal({ member, onClose }) {
                   {WEEKDAYS.map((d) => (
                     <S.WeekDay key={d}>{d}</S.WeekDay>
                   ))}
-                  {Array.from({ length: 31 }, (_, i) => {
+                  {Array.from({ length: firstDayOffset }, (_, i) => (
+                    <div key={`empty-${i}`} />
+                  ))}
+                  {Array.from({ length: daysInMonth }, (_, i) => {
                     const day = i + 1;
                     const status = member.attendanceRecord?.[day] || '';
                     return (
