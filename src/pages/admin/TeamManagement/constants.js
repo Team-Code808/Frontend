@@ -26,8 +26,8 @@ export function mapApiToMemberCard(m) {
     remainingLeave,
     stress: m.stress != null ? m.stress : '-',
     avatar: '👤',
-    status: '-',
-    metrics: { ...defaultMetrics, leave: remainingLeave },
+    status: m.attendanceStatus ?? '-',
+    metrics: { ...defaultMetrics, leave: remainingLeave, cooldowns: m.cooldownCount ?? 0 },
     attendanceRecord: {},
   };
 }

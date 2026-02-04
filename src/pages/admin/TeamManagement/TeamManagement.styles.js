@@ -293,16 +293,20 @@ export const StatusBadge = styled.span`
   
   ${props => {
     switch (props.status) {
-      case '출근':
-        return 'background-color: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.2);'; // Green
-      case '퇴근':
-        return 'background-color: rgba(148, 163, 184, 0.1); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2);'; // Slate/Gray
-      case '휴가':
-        return 'background-color: rgba(167, 139, 250, 0.1); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.2);'; // Violet
+      case '출근 전':
+        return 'background-color: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.25);'; // Slate
+      case '업무 중':
+        return 'background-color: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.25);'; // Green
+      case '자리 비움':
       case '자리비움':
+        return 'background-color: rgba(251, 146, 60, 0.15); color: #fb923c; border: 1px solid rgba(251, 146, 60, 0.25);'; // Orange
       case '쿨다운':
-        return 'background-color: rgba(251, 146, 60, 0.1); color: #fb923c; border: 1px solid rgba(251, 146, 60, 0.2);'; // Orange
-      case '위험': // Keep for backward compatibility if needed, or removing
+        return 'background-color: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.25);'; // Amber
+      case '퇴근':
+        return 'background-color: rgba(100, 116, 139, 0.15); color: #64748b; border: 1px solid rgba(100, 116, 139, 0.25);'; // Slate
+      case '출근': case '휴가':
+        return 'background-color: rgba(167, 139, 250, 0.1); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.2);'; // Violet
+      case '위험': case '주의':
         return 'background-color: rgba(244, 63, 94, 0.1); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.2);';
       default:
         return 'background-color: rgba(148, 163, 184, 0.1); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2);';
@@ -363,11 +367,12 @@ export const ModalHeader = styled.div`
 
   ${props => {
     switch (props.status) {
-      case '출근': return 'background-color: #4338ca;'; // Indigo
-      case '퇴근': return 'background-color: #475569;'; // Slate
-      case '휴가': return 'background-color: #7c3aed;'; // Violet
-      case '자리비움':
-      case '쿨다운': return 'background-color: #ea580c;'; // Orange
+      case '출근 전': return 'background-color: #475569;'; // Slate
+      case '업무 중': return 'background-color: #15803d;'; // Green
+      case '자리 비움': case '자리비움': return 'background-color: #ea580c;'; // Orange
+      case '쿨다운': return 'background-color: #d97706;'; // Amber
+      case '퇴근': return 'background-color: #334155;'; // Dark slate
+      case '출근': case '휴가': return 'background-color: #7c3aed;'; // Violet
       case '위험': return 'background-color: #be123c;';
       case '주의': return 'background-color: #ea580c;';
       default: return 'background-color: #4338ca;';
