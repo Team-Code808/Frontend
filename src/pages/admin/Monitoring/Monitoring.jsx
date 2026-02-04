@@ -31,6 +31,35 @@ import {
 import * as S from './Monitoring.styles';
 import { fetchMonitoringData } from '../../../api/admin';
 
+const CustomTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    const { name, value, color, fill } = payload[0].payload;
+    const finalColor = color || fill || payload[0].fill;
+
+    return (
+      <div style={{
+        backgroundColor: '#0f172a',
+        border: '1px solid #334155',
+        borderRadius: '12px',
+        padding: '12px 16px',
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)',
+        minWidth: '150px',
+        zIndex: 1000
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: finalColor, marginRight: '8px' }} />
+          <span style={{ color: '#f1f5f9', fontWeight: 'bold', fontSize: '14px' }}>{name}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ color: '#94a3b8', fontSize: '13px' }}>인원</span>
+          <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '16px' }}>{value}명</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 const AdminMonitoring = () => {
   const [isPeriodOpen, setIsPeriodOpen] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState('2026년 1분기');
@@ -245,7 +274,10 @@ const AdminMonitoring = () => {
                     <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  position={{ x: 0, y: 0 }}
+                />
               </PieChart>
             </ResponsiveContainer>
             <S.CenterLabel>
