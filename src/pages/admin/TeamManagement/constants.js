@@ -24,7 +24,7 @@ export function mapApiToMemberCard(m) {
     phone: m.phone ?? '-',
     joinDate: m.joinDate ?? '-',
     remainingLeave,
-    stress: 0,
+    stress: m.stress != null ? m.stress : '-',
     avatar: '👤',
     status: '-',
     metrics: { ...defaultMetrics, leave: remainingLeave },

@@ -97,9 +97,6 @@ export default function MemberDetailModal({ member, onClose }) {
               </S.ContactChip>
             </S.ContactRow>
           </S.ModalInfo>
-          <S.ModalActions>
-            <S.CallButton>상담 호출</S.CallButton>
-          </S.ModalActions>
           <S.CloseModalButton onClick={onClose}>
             <X size={24} />
           </S.CloseModalButton>
@@ -228,11 +225,10 @@ export default function MemberDetailModal({ member, onClose }) {
                     <S.WellnessIcon color="rose">
                       <Activity size={18} />
                     </S.WellnessIcon>
-                    <S.WellnessLabel>스트레스 경고</S.WellnessLabel>
+                    <S.WellnessLabel>현재 스트레스</S.WellnessLabel>
                   </S.WellnessLeft>
                   <S.WellnessValue color="#f43f5e">
-                    <p>{member.metrics.alerts}</p>
-                    <span>회</span>
+                    <p>{typeof member.stress === 'number' ? `${member.stress}%` : '-'}</p>
                   </S.WellnessValue>
                 </S.WellnessItem>
               </S.WellnessSection>
