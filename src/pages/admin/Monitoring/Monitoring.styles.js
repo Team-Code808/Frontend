@@ -411,15 +411,7 @@ export const ComparisonCard = styled.div`
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 `;
 
-export const InfoButton = styled.button`
-  padding: 0.5rem;
-  background-color: #0f172a;
-  border-radius: 0.75rem;
-  color: #64748b;
-  border: 1px solid rgba(51, 65, 85, 0.5);
-  
-  &:hover { color: white; }
-`;
+
 
 export const FactorsCard = styled.div`
   background-color: #1e293b;

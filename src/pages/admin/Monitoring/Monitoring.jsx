@@ -8,7 +8,6 @@ import {
   BarChart3,
   PieChart as PieIcon,
   ChevronDown,
-  Info,
   Activity,
   ArrowUpRight,
   ArrowDownRight,
@@ -311,7 +310,6 @@ const AdminMonitoring = () => {
               </h3>
               <p italic>Average vs High Risk Individuals per Dept</p>
             </S.ChartTitles>
-            <S.InfoButton><Info size={16} /></S.InfoButton>
           </S.ChartHeader>
 
           <div style={{ height: 300, width: '100%' }}>
