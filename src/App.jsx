@@ -4,10 +4,10 @@ import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout/MainLayout";
 
 // 관리자 페이지
-import AdminGifticonManagement from './pages/admin/GifticonManagement/GifticonManagement';
-import PurchaseHistory from './pages/admin/GifticonManagement/PurchaseHistory/PurchaseHistory';
-import AdminMyPage from './pages/admin/Mypage/MyPage';
 import AdminDashboard from "./pages/admin/Dashboard/Dashboard";
+import AdminGifticonManagement from "./pages/admin/GifticonManagement/GifticonManagement";
+import PurchaseHistory from "./pages/admin/GifticonManagement/PurchaseHistory/PurchaseHistory";
+import AdminMyPage from "./pages/admin/Mypage/MyPage";
 import AdminTeamManagement from "./pages/admin/TeamManagement/TeamManagement";
 
 // 공통 페이지 (Common Pages)
@@ -38,11 +38,8 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  const { user } = useStore();
+  const { user, isAdminMode } = useStore();
   const navigate = useNavigate();
-
-  // 로그인한 유저의 role로 관리자 여부 판단
-  const isAdminMode = user?.role === 'ADMIN';
 
   const handleStart = () => navigate("/auth");
   const handleFeatureDetails = () => navigate("/features");
@@ -99,7 +96,7 @@ function App() {
                 />
               ) : (
                 <Routes>
-                  {/* 관리자 라우트 - role이 ADMIN인 경우만 */}
+                  {/* 관리자 라우트 */}
                   {isAdminMode && (
                     <>
                       <Route path="dashboard" element={<AdminDashboard />} />
@@ -115,25 +112,21 @@ function App() {
                         path="gifticons/history"
                         element={<PurchaseHistory />}
                       />
+                      <Route path="mypage/*" element={<AdminMyPage />} />
                       <Route
-                        path="mypage/*"
-                        element={<AdminMyPage />}
+                        path="*"
+                        element={<Navigate to="/app/dashboard" replace />}
                       />
                     </>
                   )}
 
-                  {/* 직원 라우트 — role이 EMPLOYEE인 경우 */}
+                  {/* 직원 라우트 — Header 메뉴와 경로 일치 */}
                   {!isAdminMode && (
                     <>
-                      <Route
-                        path="dashboard"
-                        element={<Navigate to="/app/mypage" replace />}
-                      />
-                      <Route path="mypage/*" element={<MyPage />} />
                       <Route path="department" element={<Department />} />
                       <Route path="attendance" element={<Attendance />} />
                       <Route path="consultation" element={<Consultation />} />
-                      {/* <Route path="pointmall" element={<PointMall />} /> */}
+                      <Route path="pointmall" element={<PointMall />} />
                       <Route path="dashboard" element={<Dashboard />} />
                       <Route path="mypage/*" element={<MyPage />} />
                       <Route

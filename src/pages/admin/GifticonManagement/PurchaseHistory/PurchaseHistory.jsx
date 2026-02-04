@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react'; // useEffect 추가!
 import { ArrowLeft, ShoppingBag, Search, Calendar, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../../../../store/useStore';
@@ -6,10 +6,16 @@ import * as S from './PurchaseHistory.styles';
 
 const PurchaseHistory = () => {
     const navigate = useNavigate();
-    const { purchaseHistory } = useStore();
+    const { purchaseHistory, fetchAllPurchaseHistory, loading } = useStore();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterDate, setFilterDate] = useState('');
 
+    useEffect(() => {
+        // 컴포넌트 진입 시 전체 내역 로드 함수 실행
+        fetchAllPurchaseHistory();
+    }, [fetchAllPurchaseHistory]);
+
+    // 필터링 로직은 기존과 동일 (searchTerm으로 직원명/상품명 모두 검색 가능)
     const filteredHistory = useMemo(() => {
         return purchaseHistory.filter(purchase => {
             const matchesSearch = 

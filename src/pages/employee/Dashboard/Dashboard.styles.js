@@ -343,6 +343,8 @@ export const ChartWrapper = styled.div`
   height: 300px;
   min-width: 0;
   overflow: hidden;
+  display: block;
+  position: relative;
 `;
 
 /* Modal Styles */
