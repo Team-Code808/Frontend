@@ -236,6 +236,7 @@ const AdminMonitoring = () => {
                     padding: '12px'
                   }}
                   itemStyle={{ fontWeight: 900 }}
+                  labelStyle={{ color: '#fff', fontWeight: 'bold', marginBottom: '8px' }}
                 />
                 <Area name="상담" type="monotone" dataKey="consultation" stroke="#818cf8" strokeWidth={3} fillOpacity={1} fill="url(#colorConsult)" />
                 <Area name="스트레스" type="monotone" dataKey="stress" stroke="#fb7185" strokeWidth={3} fillOpacity={1} fill="url(#colorStress)" />
@@ -327,6 +328,7 @@ const AdminMonitoring = () => {
                 <Tooltip
                   cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                   contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px' }}
+                  labelStyle={{ color: '#fff', fontWeight: 'bold', marginBottom: '8px' }}
                 />
                 <Bar dataKey="avg" fill="#818cf8" radius={[0, 4, 4, 0]} barSize={20} />
               </BarChart>
