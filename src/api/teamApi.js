@@ -16,4 +16,15 @@ export const teamApi = {
     });
     return response.data;
   },
+
+  /** 회사 소속 부서명 목록 (추가된 부서만) */
+  getDepartments: async () => {
+    const response = await apiClient.get('/admin/team/departments');
+    return response.data;
+  },
+
+  /** 회사에 부서 추가 */
+  createDepartment: async (departmentName) => {
+    await apiClient.post('/admin/team/departments', { departmentName });
+  },
 };

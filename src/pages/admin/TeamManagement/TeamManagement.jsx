@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import useStore from '../../../store/useStore';
-import { DEFAULT_DEPARTMENTS } from './constants';
 import { useTeamMembers } from './hooks/useTeamMembers';
+import { teamApi } from '../../../api/teamApi';
 import SummaryCards from './components/SummaryCards';
 import TeamSearchBar from './components/TeamSearchBar';
 import MemberCard from './components/MemberCard';
@@ -30,7 +29,6 @@ const emptyMessageStyle = {
 };
 
 const AdminTeamManagement = () => {
-  const { user } = useStore();
   const { teamMembers, teamList, loading, error } = useTeamMembers();
 
   const [selectedDept, setSelectedDept] = useState('전체');
@@ -38,43 +36,35 @@ const AdminTeamManagement = () => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [showAddDeptModal, setShowAddDeptModal] = useState(false);
   const [newDeptName, setNewDeptName] = useState('');
-  const [departments, setDepartments] = useState(['전체', ...DEFAULT_DEPARTMENTS]);
+  const [departments, setDepartments] = useState(['전체']);
+
+  const fetchDepartments = async () => {
+    try {
+      const list = await teamApi.getDepartments();
+      setDepartments(Array.isArray(list) ? ['전체', ...list] : ['전체']);
+    } catch {
+      setDepartments(['전체']);
+    }
+  };
 
   useEffect(() => {
-    if (user?.companyCode) {
-      const companies = JSON.parse(localStorage.getItem('companies') || '[]');
-      const company = companies.find((c) => c.companyCode === user.companyCode);
-      if (company?.departments) {
-        setDepartments(['전체', ...company.departments]);
-      }
-    }
-  }, [user]);
+    fetchDepartments();
+  }, []);
 
-  const handleAddDepartment = () => {
+  const handleAddDepartment = async () => {
     if (!newDeptName.trim()) {
       alert('부서명을 입력해주세요.');
       return;
     }
-    if (departments.includes(newDeptName.trim())) {
-      alert('이미 존재하는 부서입니다.');
-      return;
+    try {
+      await teamApi.createDepartment(newDeptName.trim());
+      await fetchDepartments();
+      setNewDeptName('');
+      setShowAddDeptModal(false);
+    } catch (err) {
+      const message = err.response?.data?.message || err.message || '부서 추가에 실패했습니다.';
+      alert(message);
     }
-    if (!user?.companyCode) {
-      alert('회사 코드가 없습니다.');
-      return;
-    }
-    const companies = JSON.parse(localStorage.getItem('companies') || '[]');
-    const companyIndex = companies.findIndex((c) => c.companyCode === user.companyCode);
-    if (companyIndex < 0) {
-      alert('회사 정보를 찾을 수 없습니다.');
-      return;
-    }
-    const updatedDepartments = [...companies[companyIndex].departments, newDeptName.trim()];
-    companies[companyIndex].departments = updatedDepartments;
-    localStorage.setItem('companies', JSON.stringify(companies));
-    setDepartments(['전체', ...updatedDepartments]);
-    setNewDeptName('');
-    setShowAddDeptModal(false);
   };
 
   const filteredTeam = teamList.filter((member) => {
