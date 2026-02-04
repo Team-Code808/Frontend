@@ -189,6 +189,7 @@ export const DayCell = styled.div`
 export const DayButton = styled.button`
   width: 2.5rem;
   height: 2.5rem;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -198,6 +199,14 @@ export const DayButton = styled.button`
   font-size: 0.875rem;
   font-weight: 700;
   border: 2px solid;
+
+  .consultation-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    color: #fb7185;
+    opacity: 0.9;
+  }
 
   /* Selected State - normal */
   ${props => props.$isSelected && props.$status === 'normal' && css`
@@ -245,6 +254,14 @@ export const DayButton = styled.button`
     color: #1d4ed8;
     border-color: #60a5fa;
     box-shadow: 0 0 0 2px #eff6ff;
+  `}
+
+  /* Selected State - leave-rejected (반려된 휴가) */
+  ${props => props.$isSelected && props.$status === 'leave-rejected' && css`
+    background-color: #f8fafc;
+    color: #94a3b8;
+    border-color: #cbd5e1;
+    box-shadow: 0 0 0 2px #f8fafc;
   `}
 
   /* Default State - normal */
@@ -307,6 +324,17 @@ export const DayButton = styled.button`
       border-color: #e2e8f0;
     }
   `}
+
+  /* Default State - leave-rejected (반려된 휴가) */
+  ${props => !props.$isSelected && props.$status === 'leave-rejected' && css`
+    background-color: transparent;
+    color: #cbd5e1;
+    border-color: #f1f5f9;
+    border-style: dashed;
+    &:hover {
+      border-color: #e2e8f0;
+    }
+  `}
 `;
 
 export const Legend = styled.div`
@@ -334,6 +362,7 @@ export const LegendItem = styled.div`
     ${props => props.$color === 'indigo' && 'background-color: #818cf8;'}
     ${props => props.$color === 'red' && 'background-color: #f87171;'}
     ${props => props.$color === 'yellow' && 'background-color: #eab308;'}
+    ${props => props.$color === 'pink' && 'background-color: #fb7185;'}
     ${props => props.$color === 'slate' && 'background-color: #e2e8f0; border: 1px dashed #cbd5e1;'}
   }
 `;
