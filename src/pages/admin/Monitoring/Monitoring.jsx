@@ -223,7 +223,7 @@ const AdminMonitoring = () => {
                     {stat.trend ? stat.trend.replace(/[+-]/, '') : '0'}
                   </S.TrendBadge>
                   <span style={{ fontSize: '0.625rem', color: '#64748b', fontWeight: '900', whiteSpace: 'nowrap' }}>
-                    {i === 0 ? '전월 대비' : '전기 대비'}
+                    {i === 0 || selectedPeriod === 'MONTH' ? '전월 대비' : '전기 대비'}
                   </span>
                 </div>
               </S.StatValueRow>
