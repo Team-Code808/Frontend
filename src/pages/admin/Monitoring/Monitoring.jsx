@@ -120,6 +120,13 @@ const AdminMonitoring = () => {
     setActiveMetric(prev => prev === metric ? 'ALL' : metric);
   };
 
+  const getPeriodPrefix = () => {
+    if (selectedPeriod === 'MONTH') return '월간';
+    // Q1, Q2...
+    const quarter = selectedPeriod.replace('Q', '');
+    return `${quarter}분기`;
+  };
+
   const toggleStressLevel = (levelName) => {
     setActiveStressLevel(prev => prev === levelName ? 'ALL' : levelName);
   };
@@ -192,11 +199,11 @@ const AdminMonitoring = () => {
       {/* 요약 카드 섹션 */}
       <S.StatsGrid>
         {[
-          { label: '전체 직원', val: stats.totalEmployees, trend: stats.employeeTrend, icon: Users, color: 'blue' },
-          { label: '평균 스트레스', val: stats.avgStress, trend: stats.stressTrend, icon: HeartPulse, color: 'rose' },
-          { label: '위험군 (70%+)', val: stats.highRiskCount, trend: stats.riskTrend, icon: AlertTriangle, color: 'orange' },
-          { label: '평균 쿨다운', val: stats.avgCooldown, trend: stats.cooldownTrend, icon: Zap, color: 'violet' },
-          { label: '전월 대비 상담', val: stats.consultationCount, trend: stats.consultationTrend, icon: MessageSquare, color: 'emerald' },
+          { label: '현재 전체 직원', val: stats.totalEmployees, trend: stats.employeeTrend, icon: Users, color: 'blue' },
+          { label: `${getPeriodPrefix()} 평균 스트레스`, val: stats.avgStress, trend: stats.stressTrend, icon: HeartPulse, color: 'rose' },
+          { label: `${getPeriodPrefix()} 위험군 (70%+)`, val: stats.highRiskCount, trend: stats.riskTrend, icon: AlertTriangle, color: 'orange' },
+          { label: `${getPeriodPrefix()} 평균 쿨다운`, val: stats.cooldownTrend, trend: stats.cooldownTrend, icon: Zap, color: 'violet' },
+          { label: `${getPeriodPrefix()} 상담 건수`, val: stats.consultationCount, trend: stats.consultationTrend, icon: MessageSquare, color: 'emerald' },
         ].map((stat, i) => (
           <S.StatCard key={i}>
             <S.StatContent>
@@ -204,7 +211,9 @@ const AdminMonitoring = () => {
                 <S.IconBox color={stat.color}>
                   <stat.icon size={20} />
                 </S.IconBox>
-                <span>{stat.label}</span>
+                <span>
+                  {stat.label}
+                </span>
               </S.StatHeader>
               <S.StatValueRow>
                 <p>{loading ? '...' : stat.val}</p>
@@ -350,7 +359,7 @@ const AdminMonitoring = () => {
             <S.ChartTitles>
               <h3>
                 <PieIcon size={20} color="#fb7185" />
-                스트레스 수준 분포
+                {getPeriodPrefix()} 스트레스 수준 분포
               </h3>
               <p uppercase>Emotional Baseline Distribution</p>
             </S.ChartTitles>
@@ -422,7 +431,7 @@ const AdminMonitoring = () => {
             <S.ChartTitles>
               <h3>
                 <BarChart3 size={20} color="#60a5fa" />
-                부서별 스트레스 비교
+                {getPeriodPrefix()} 부서별 스트레스 비교
               </h3>
               <p italic>Average vs High Risk Individuals per Dept</p>
             </S.ChartTitles>
@@ -456,7 +465,7 @@ const AdminMonitoring = () => {
           <S.ChartTitles>
             <h3>
               <AlertTriangle size={20} color="#fb923c" />
-              주요 스트레스 요인 분석
+              {getPeriodPrefix()} 주요 스트레스 요인 분석
             </h3>
             <p uppercase>Primary Emotional Triggers</p>
           </S.ChartTitles>
