@@ -170,7 +170,7 @@ const MyPageMain = () => {
               <S.StressCircle>
                 <S.CircleContent>
                   <span>{stress?.avgStress ?? 0}%</span>
-                  <span>Stress</span>
+                  <span>이번 주 평균</span>
                 </S.CircleContent>
               </S.StressCircle>
               <S.StressDetails>
@@ -182,8 +182,13 @@ const MyPageMain = () => {
                   } />
                   주간 컨디션 요약
                 </h3>
+                {stress?.period && (
+                  <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', color: '#64748b' }}>
+                    {stress.period}
+                  </p>
+                )}
                 <p>
-                  현재 전반적으로 <span style={{
+                  이번 주 전반적으로 <span style={{
                     color: stress?.level === 'CRITICAL' ? '#dc2626' :
                            stress?.level === 'HIGH' ? '#f97316' :
                            stress?.level === 'NORMAL' ? '#eab308' : '#2563eb',
