@@ -20,13 +20,13 @@ import {
 } from "lucide-react";
 import { NavItemType } from "../constants/types";
 import Logo from "./Logo";
-import { NOTIFICATIONS_DATA } from "../constants/constants";
 import * as S from "./Header.styles";
 
 const AllNotificationsModal = ({ onClose }) => {
   const [filter, setFilter] = useState("ALL");
+  const { notifications, markAsRead } = useStore();
 
-  const filtered = NOTIFICATIONS_DATA.filter(
+  const filtered = notifications.filter(
     (n) => filter === "ALL" || !n.read
   );
 
@@ -66,7 +66,11 @@ const AllNotificationsModal = ({ onClose }) => {
         <S.ModalList>
           {filtered.length > 0 ? (
             filtered.map((item) => (
-              <S.ModalItem key={item.id} read={item.read}>
+              <S.ModalItem 
+                key={item.id} 
+                $read={item.read} // 스타일드 컴포넌트 프롭은 $를 붙이는 것이 좋습니다
+                onClick={() => markAsRead(item.id)} 
+              >
                 <S.IconBox type={item.type}>
                   {item.type === "success" ? (
                     <CheckCircle2 size={18} />
@@ -116,31 +120,52 @@ const AllNotificationsModal = ({ onClose }) => {
 import useStore from "../store/useStore";
 
 const Header = () => {
-  const { isAdminMode, setIsAdminMode, logout, user } = useStore();
+  // 1. 통합 스토어(useStore)에서 알림 상태와 함수(fetch)를 가져옵니다.
+  const { 
+    notifications, 
+    fetchNotifications, // 서버에서 데이터를 받아오는 함수
+    subscribeToNotifications,
+    markAsRead,
+    markAllAsRead, 
+    isAdminMode, 
+    setIsAdminMode, 
+    logout: onLogout,
+    user 
+  } = useStore();
+
   const { name: userName, department } = user || {};
-  const onLogout = logout;
   const navigate = useNavigate();
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showAllNotificationsModal, setShowAllNotificationsModal] =
-    useState(false);
+  const [showAllNotificationsModal, setShowAllNotificationsModal] = useState(false);
   const notificationRef = useRef(null);
 
-  const notifications = NOTIFICATIONS_DATA.slice(0, 3); // 최신 3개만 미리보기
+  // 2. 컴포넌트가 마운트될 때(처음 켜질 때) 서버에 알림 데이터를 요청합니다.
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   useEffect(() => {
+    if (user?.id) {
+      const unsubscribe = subscribeToNotifications(user.id);
+      return () => unsubscribe(); // 언마운트 시 연결 해제
+    }
+  }, [user?.id, subscribeToNotifications]);
+
+  // 3. 파생 상태값 (항상 최신 notifications 기반으로 계산됨)
+  const hasUnread = notifications.some(n => !n.read);
+  const recentNotifications = notifications.slice(0, 3);
+  
+ 
+  // 클릭 외부 감지 로직 (기존과 동일)
+  useEffect(() => {
     function handleClickOutside(event) {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target)
-      ) {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
         setShowNotifications(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const userNavItems = [
@@ -322,26 +347,25 @@ const Header = () => {
                       $isAdminMode={isAdminMode}
                     >
                       <Bell size={20} />
-                      <S.NotiDot />
+                      {hasUnread && <S.NotiDot />}
                     </S.IconButton>
 
-                    {showNotifications && (
+                   {showNotifications && (
                       <S.NotiPopover $isAdminMode={isAdminMode}>
                         <S.NotiHeader $isAdminMode={isAdminMode}>
                           <span>알림</span>
-                          <button onClick={() => setShowNotifications(false)}>
-                            모두 읽음
-                          </button>
+                          <button onClick={markAllAsRead}>모두 읽음</button> {/* 기능 연결 */}
                         </S.NotiHeader>
                         <S.NotiList>
                           {notifications.map((notif) => (
                             <S.NotiItem
-                              key={notif.id}
-                              $isAdminMode={isAdminMode}
+                                key={notif.id}
+                                $isAdminMode={isAdminMode}
+                                $read={notif.read}
+                                onClick={() => markAsRead(notif.id)} // 단일 읽음 기능 연결
                             >
                               <S.NotiItemHeader $isAdminMode={isAdminMode}>
-                                <span>{notif.title}</span>
-                                <span>{notif.time}</span>
+                               <span>{notif.time || '방금 전'}</span>
                               </S.NotiItemHeader>
                               <S.NotiMessage>{notif.message}</S.NotiMessage>
                             </S.NotiItem>
