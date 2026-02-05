@@ -60,8 +60,14 @@ const CustomTooltip = ({ active, payload }) => {
 };
 
 const AdminMonitoring = () => {
+  const [selectedPeriod, setSelectedPeriod] = useState('MONTH');
   const [isPeriodOpen, setIsPeriodOpen] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState('2026년 1분기');
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [isYearOpen, setIsYearOpen] = useState(false);
+
+  // 그래프 필터 상태
+  const [activeMetric, setActiveMetric] = useState('ALL'); // 'ALL', 'consultation', 'stress', 'cooldown'
+  const [activeStressLevel, setActiveStressLevel] = useState('ALL'); // 'ALL' 또는 스트레스 단계 명
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({
     stats: {
@@ -82,16 +88,24 @@ const AdminMonitoring = () => {
     factors: []
   });
 
-  const periods = ['2026년 1분기', '2025년 4분기', '2025년 3분기', '2025년 2분기'];
+  const periodOptions = [
+    { label: '월간 (기본값)', value: 'MONTH' },
+    { label: '1분기', value: 'Q1' },
+    { label: '2분기', value: 'Q2' },
+    { label: '3분기', value: 'Q3' },
+    { label: '4분기', value: 'Q4' }
+  ];
+
+  const yearOptions = [2026, 2025];
 
   useEffect(() => {
     loadData();
-  }, [selectedPeriod]);
+  }, [selectedPeriod, selectedYear]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const res = await fetchMonitoringData(selectedPeriod);
+      const res = await fetchMonitoringData(selectedPeriod, selectedYear);
       if (res) {
         setData(res);
       }
@@ -102,11 +116,26 @@ const AdminMonitoring = () => {
     }
   };
 
+  const toggleMetric = (metric) => {
+    setActiveMetric(prev => prev === metric ? 'ALL' : metric);
+  };
+
+  const getPeriodPrefix = () => {
+    if (selectedPeriod === 'MONTH') return '월간';
+    // Q1, Q2...
+    const quarter = selectedPeriod.replace('Q', '');
+    return `${quarter}분기`;
+  };
+
+  const toggleStressLevel = (levelName) => {
+    setActiveStressLevel(prev => prev === levelName ? 'ALL' : levelName);
+  };
+
   const { stats, trend, distribution, deptComparison, factors } = data;
 
   return (
     <S.Container>
-      {/* Header with Title & Filter */}
+      {/* 제목 및 필터 헤더 */}
       <S.Header>
         <S.TitleBox>
           <h2>
@@ -116,23 +145,48 @@ const AdminMonitoring = () => {
           <p>Advanced Emotional Analytics</p>
         </S.TitleBox>
         <S.HeaderControls>
+          {/* 연도 선택 드롭다운 */}
+          <S.PeriodDropdownContainer style={{ marginRight: '8px' }}>
+            <S.PeriodButton onClick={() => setIsYearOpen(!isYearOpen)}>
+              {selectedYear}년
+              <ChevronDown size={14} style={{ transform: isYearOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
+            </S.PeriodButton>
+            {isYearOpen && (
+              <S.DropdownMenu>
+                {yearOptions.map(year => (
+                  <S.DropdownItem
+                    key={year}
+                    onClick={() => {
+                      setSelectedYear(year);
+                      setIsYearOpen(false);
+                    }}
+                    active={selectedYear === year}
+                  >
+                    {year}년
+                  </S.DropdownItem>
+                ))}
+              </S.DropdownMenu>
+            )}
+          </S.PeriodDropdownContainer>
+
+          {/* 기간 선택 드롭다운 */}
           <S.PeriodDropdownContainer>
             <S.PeriodButton onClick={() => setIsPeriodOpen(!isPeriodOpen)}>
-              {selectedPeriod}
+              {periodOptions.find(p => p.value === selectedPeriod)?.label}
               <ChevronDown size={14} style={{ transform: isPeriodOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
             </S.PeriodButton>
             {isPeriodOpen && (
               <S.DropdownMenu>
-                {periods.map(period => (
+                {periodOptions.map(option => (
                   <S.DropdownItem
-                    key={period}
+                    key={option.value}
                     onClick={() => {
-                      setSelectedPeriod(period);
+                      setSelectedPeriod(option.value);
                       setIsPeriodOpen(false);
                     }}
-                    active={selectedPeriod === period}
+                    active={selectedPeriod === option.value}
                   >
-                    {period}
+                    {option.label}
                   </S.DropdownItem>
                 ))}
               </S.DropdownMenu>
@@ -142,14 +196,14 @@ const AdminMonitoring = () => {
         </S.HeaderControls>
       </S.Header>
 
-      {/* Summary Cards */}
+      {/* 요약 카드 섹션 */}
       <S.StatsGrid>
         {[
-          { label: '전체 직원', val: stats.totalEmployees, trend: stats.employeeTrend, icon: Users, color: 'blue' },
-          { label: '평균 스트레스', val: stats.avgStress, trend: stats.stressTrend, icon: HeartPulse, color: 'rose' },
-          { label: '위험군 (70%+)', val: stats.highRiskCount, trend: stats.riskTrend, icon: AlertTriangle, color: 'orange' },
-          { label: '평균 쿨다운', val: stats.avgCooldown, trend: stats.cooldownTrend, icon: Zap, color: 'violet' },
-          { label: '전월 대비 상담', val: stats.consultationCount, trend: stats.consultationTrend, icon: MessageSquare, color: 'emerald' },
+          { label: '현재 전체 직원', val: stats.totalEmployees, trend: stats.employeeTrend, icon: Users, color: 'blue' },
+          { label: `${getPeriodPrefix()} 평균 스트레스`, val: stats.avgStress, trend: stats.stressTrend, icon: HeartPulse, color: 'rose' },
+          { label: `${getPeriodPrefix()} 위험군 (70%+)`, val: stats.highRiskCount, trend: stats.riskTrend, icon: AlertTriangle, color: 'orange' },
+          { label: `${getPeriodPrefix()} 평균 쿨다운`, val: stats.avgCooldown, trend: stats.cooldownTrend, icon: Zap, color: 'violet' },
+          { label: `${getPeriodPrefix()} 상담 건수`, val: stats.consultationCount, trend: stats.consultationTrend, icon: MessageSquare, color: 'emerald' },
         ].map((stat, i) => (
           <S.StatCard key={i}>
             <S.StatContent>
@@ -157,14 +211,21 @@ const AdminMonitoring = () => {
                 <S.IconBox color={stat.color}>
                   <stat.icon size={20} />
                 </S.IconBox>
-                <span>{stat.label}</span>
+                <span>
+                  {stat.label}
+                </span>
               </S.StatHeader>
               <S.StatValueRow>
                 <p>{loading ? '...' : stat.val}</p>
-                <S.TrendBadge trend={stat.trend?.includes('-') ? 'down' : 'up'}>
-                  {stat.trend?.includes('-') ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
-                  {stat.trend ? stat.trend.replace(/[+-]/, '') : '0'}
-                </S.TrendBadge>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                  <S.TrendBadge trend={stat.trend?.includes('-') ? 'down' : 'up'}>
+                    {stat.trend?.includes('-') ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
+                    {stat.trend ? stat.trend.replace(/[+-]/, '') : '0'}
+                  </S.TrendBadge>
+                  <span style={{ fontSize: '0.625rem', color: '#64748b', fontWeight: '900', whiteSpace: 'nowrap' }}>
+                    {i === 0 || selectedPeriod === 'MONTH' ? '전월 대비' : '전기 대비'}
+                  </span>
+                </div>
               </S.StatValueRow>
             </S.StatContent>
             <S.BackgroundIcon>
@@ -175,7 +236,7 @@ const AdminMonitoring = () => {
       </S.StatsGrid>
 
       <S.AnalysisGrid>
-        {/* Monthly Trend Chart */}
+        {/* 월별 추이 차트 */}
         <S.TrendChartCard>
           <S.ChartHeader>
             <S.ChartTitles>
@@ -186,15 +247,39 @@ const AdminMonitoring = () => {
               <p>상담 빈도와 평균 스트레스 수치의 상관관계</p>
             </S.ChartTitles>
             <S.Legend>
-              <S.LegendItem color="#818cf8">
+              <S.LegendItem
+                onClick={() => toggleMetric('consultation')}
+                style={{
+                  cursor: 'pointer',
+                  opacity: activeMetric === 'ALL' || activeMetric === 'consultation' ? 1 : 0.3,
+                  transition: 'opacity 0.2s'
+                }}
+                color="#818cf8"
+              >
                 <div />
                 <span>상담 건수</span>
               </S.LegendItem>
-              <S.LegendItem color="#fb7185">
+              <S.LegendItem
+                onClick={() => toggleMetric('stress')}
+                style={{
+                  cursor: 'pointer',
+                  opacity: activeMetric === 'ALL' || activeMetric === 'stress' ? 1 : 0.3,
+                  transition: 'opacity 0.2s'
+                }}
+                color="#fb7185"
+              >
                 <div />
                 <span>스트레스 %</span>
               </S.LegendItem>
-              <S.LegendItem color="#fb923c">
+              <S.LegendItem
+                onClick={() => toggleMetric('cooldown')}
+                style={{
+                  cursor: 'pointer',
+                  opacity: activeMetric === 'ALL' || activeMetric === 'cooldown' ? 1 : 0.3,
+                  transition: 'opacity 0.2s'
+                }}
+                color="#fb923c"
+              >
                 <div />
                 <span>쿨다운 횟수</span>
               </S.LegendItem>
@@ -238,21 +323,48 @@ const AdminMonitoring = () => {
                   itemStyle={{ fontWeight: 900 }}
                   labelStyle={{ color: '#fff', fontWeight: 'bold', marginBottom: '8px' }}
                 />
-                <Area name="상담" type="monotone" dataKey="consultation" stroke="#818cf8" strokeWidth={3} fillOpacity={1} fill="url(#colorConsult)" />
-                <Area name="스트레스" type="monotone" dataKey="stress" stroke="#fb7185" strokeWidth={3} fillOpacity={1} fill="url(#colorStress)" />
-                <Area name="쿨다운" type="monotone" dataKey="cooldown" stroke="#fb923c" strokeWidth={3} fillOpacity={1} fill="url(#colorCooldown)" />
+                <Area
+                  name="상담"
+                  type="monotone"
+                  dataKey="consultation"
+                  stroke="#818cf8"
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#colorConsult)"
+                  hide={activeMetric !== 'ALL' && activeMetric !== 'consultation'}
+                />
+                <Area
+                  name="스트레스"
+                  type="monotone"
+                  dataKey="stress"
+                  stroke="#fb7185"
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#colorStress)"
+                  hide={activeMetric !== 'ALL' && activeMetric !== 'stress'}
+                />
+                <Area
+                  name="쿨다운"
+                  type="monotone"
+                  dataKey="cooldown"
+                  stroke="#fb923c"
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#colorCooldown)"
+                  hide={activeMetric !== 'ALL' && activeMetric !== 'cooldown'}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </S.ChartWrapper>
         </S.TrendChartCard>
 
-        {/* Stress Distribution */}
+        {/* 스트레스 수준 분포 */}
         <S.DistributionCard>
           <div style={{ marginBottom: '2rem' }}>
             <S.ChartTitles>
               <h3>
                 <PieIcon size={20} color="#fb7185" />
-                스트레스 수준 분포
+                {getPeriodPrefix()} 스트레스 수준 분포
               </h3>
               <p uppercase>Emotional Baseline Distribution</p>
             </S.ChartTitles>
@@ -271,7 +383,12 @@ const AdminMonitoring = () => {
                   dataKey="value"
                 >
                   {distribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.color}
+                      stroke="none"
+                      fillOpacity={activeStressLevel === 'ALL' || activeStressLevel === entry.name ? 1 : 0.1}
+                    />
                   ))}
                 </Pie>
                 <Tooltip
@@ -288,7 +405,19 @@ const AdminMonitoring = () => {
 
           <S.DistributionList>
             {distribution.map((item, i) => (
-              <S.DistItem key={i}>
+              <S.DistItem
+                key={i}
+                onClick={() => toggleStressLevel(item.name)}
+                style={{
+                  cursor: 'pointer',
+                  opacity: activeStressLevel === 'ALL' || activeStressLevel === item.name ? 1 : 0.3,
+                  transition: 'opacity 0.2s',
+                  backgroundColor: activeStressLevel === item.name ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
+                  borderRadius: '8px',
+                  padding: '4px 8px',
+                  margin: '0 -8px'
+                }}
+              >
                 <div>
                   <S.ColorDot color={item.color} />
                   <span>{item.name}</span>
@@ -301,13 +430,13 @@ const AdminMonitoring = () => {
       </S.AnalysisGrid>
 
       <S.BottomGrid>
-        {/* Dept Comparison */}
+        {/* 부서별 비교 차트 */}
         <S.ComparisonCard>
           <S.ChartHeader>
             <S.ChartTitles>
               <h3>
                 <BarChart3 size={20} color="#60a5fa" />
-                부서별 스트레스 비교
+                {getPeriodPrefix()} 부서별 스트레스 비교
               </h3>
               <p italic>Average vs High Risk Individuals per Dept</p>
             </S.ChartTitles>
@@ -336,12 +465,12 @@ const AdminMonitoring = () => {
           </div>
         </S.ComparisonCard>
 
-        {/* Stress Factors Horizontal */}
+        {/* 주요 스트레스 요인 분석 */}
         <S.FactorsCard>
           <S.ChartTitles>
             <h3>
               <AlertTriangle size={20} color="#fb923c" />
-              주요 스트레스 요인 분석
+              {getPeriodPrefix()} 주요 스트레스 요인 분석
             </h3>
             <p uppercase>Primary Emotional Triggers</p>
           </S.ChartTitles>

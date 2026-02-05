@@ -246,7 +246,7 @@ const Dashboard = () => {
       <S.StatsGrid>
         <S.StatCard $align="center">
           <S.StatHeader $mb="1rem">
-            <span>스트레스 지수</span>
+            <span>최근 7일 스트레스 지수</span>
             <AlertCircle />
           </S.StatHeader>
           <StressGauge percentage={dashboardData.stressStats.score} />
