@@ -6,7 +6,8 @@ import {
   Lock,
   User as UserIcon,
   ArrowLeft,
-  Save
+  Save,
+  Calendar
 } from 'lucide-react';
 import * as S from './MyPage.styles';
 import useStore from '../../../store/useStore';
@@ -17,6 +18,7 @@ const AdminProfileEditView = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [joinDate, setJoinDate] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -34,6 +36,7 @@ const AdminProfileEditView = () => {
         if (response.success && response.data) {
           setEmail(response.data.email || '');
           setPhone(response.data.phone || '');
+          setJoinDate(response.data.joinDate ? response.data.joinDate.replace(/\./g, '-') : '');
         }
       } catch (error) {
         console.error('프로필 로딩 실패:', error);
@@ -49,7 +52,7 @@ const AdminProfileEditView = () => {
     department: user?.department || '운영 전략 본부',
     email: email || user?.id || user?.email || 'admin@calmdesk.com',
     phone: phone || user?.phone || '010-0000-0000',
-    joinDate: user?.joinDate || '2020.01.01',
+    joinDate: joinDate ? joinDate.replace(/-/g, '.') : (user?.joinDate || ''),
     avatar: '🛡️'
   };
 
@@ -58,10 +61,11 @@ const AdminProfileEditView = () => {
       setLoading(true);
       
       // 프로필 수정
-      if (email || phone) {
+      if (email || phone || joinDate !== undefined) {
         await adminMypageApi.updateProfile(adminMemberId, {
           email: email || adminInfo.email,
-          phone: phone || adminInfo.phone
+          phone: phone || adminInfo.phone,
+          joinDate: joinDate.trim() ? joinDate : null
         });
       }
 
@@ -141,6 +145,18 @@ const AdminProfileEditView = () => {
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={adminInfo.email}
+                />
+              </S.InputWrapper>
+            </S.InputGroup>
+            <S.InputGroup>
+              <label>입사일</label>
+              <S.InputWrapper active>
+                <Calendar size={18} color="#64748b" style={{ flexShrink: 0 }} />
+                <input 
+                  type="date" 
+                  value={joinDate}
+                  onChange={(e) => setJoinDate(e.target.value)}
+                  style={{ paddingLeft: '0.5rem' }}
                 />
               </S.InputWrapper>
             </S.InputGroup>

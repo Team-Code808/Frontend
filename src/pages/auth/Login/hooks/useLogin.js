@@ -44,11 +44,17 @@ export const useLogin = (onLogin) => {
           joinStatus: response.joinStatus,
         });
 
-        navigate("/app/dashboard");
+        if (response.joinStatus === "REJECTED" || response.joinStatus === "R") {
+          alert("입사 신청이 반려되었습니다.");
+          navigate("/auth?step=SIGNUP_TYPE");
+        } else {
+          navigate("/app/dashboard");
+        }
       }
     } catch (error) {
       console.error("로그인 실패:", error);
-      alert(error.message || "로그인에 실패했습니다.");
+      const message = error.response?.data?.message || error.message || "로그인에 실패했습니다.";
+      alert(message);
     }
   };
 

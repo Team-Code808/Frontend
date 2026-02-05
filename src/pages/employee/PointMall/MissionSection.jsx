@@ -25,7 +25,6 @@ const MissionSection = ({ missions, refreshData }) => {
         try {
             // 스토어 액션 호출
             await completeMission(missionId, user.id);
-
             
             alert('미션 보상이 지급되었습니다!');
             

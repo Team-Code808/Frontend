@@ -17,11 +17,13 @@ import {
   Sparkles,
   AlertCircle,
   History,
-  Briefcase
+  Briefcase,
+  MessageSquare
 } from 'lucide-react';
 import * as S from './Attendance.styles';
 
 const API_BASE_URL = '/employee/attendance';
+const VACATION_API_URL = '/employee/vacation'; // 휴가 신청/취소는 별도 컨트롤러
 
 const Attendance = () => {
   const { user } = useStore();
@@ -37,6 +39,7 @@ const Attendance = () => {
   const [summary, setSummary] = useState(null);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [leaveRequests, setLeaveRequests] = useState([]);
+  const [consultationRequests, setConsultationRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -105,22 +108,133 @@ const Attendance = () => {
     }
   };
 
+  const fetchConsultations = async () => {
+    try {
+      const response = await apiClient.get('/consultations/me');
+      const list = response.data || [];
+      setConsultationRequests(list);
+    } catch (err) {
+      console.error('Failed to fetch consultations:', err);
+      setConsultationRequests([]);
+    }
+  };
+
   // 데이터 로딩
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       setError(null);
-      await Promise.all([fetchSummary(), fetchHistory(), fetchLeaves()]);
+      await Promise.all([fetchSummary(), fetchHistory(), fetchLeaves(), fetchConsultations()]);
       setLoading(false);
     };
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year, month, memberId]);
 
+  // 날짜 범위가 겹치는지 확인하는 함수
+  const checkDateOverlap = (startDate1, endDate1, startDate2, endDate2) => {
+    const start1 = new Date(startDate1);
+    const end1 = new Date(endDate1);
+    const start2 = new Date(startDate2);
+    const end2 = new Date(endDate2);
+    return start1 <= end2 && start2 <= end1;
+  };
+
+  // 휴가 일수 계산 (반차는 0.5일, 연차는 실제 일수, 워케이션은 0일)
+  const calculateVacationDays = (type, startDate, endDate) => {
+    if (type === '워케이션') {
+      return 0;
+    }
+    if (type === '반차') {
+      return 0.5;
+    }
+    // 연차: 시작일과 종료일 사이의 일수 계산 (포함)
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    return diffDays;
+  };
+
+  // 휴가 신청 전 중복 체크 및 남은 휴가 개수 체크
+  const checkVacationValidation = (type, startDate, endDate) => {
+    // 중복 체크
+    const activeLeaves = leaveRequests.filter(
+      leave => leave.status === '승인완료' || leave.status === '승인대기'
+    );
+
+    for (const leave of activeLeaves) {
+      if (!leave.period) continue;
+
+      // period 형식: "2026.01.25 - 01.26" 또는 "2026.01.14 (오후)" 또는 "2026.01.14"
+      const parts = leave.period.split(' - ');
+      let leaveStartDate, leaveEndDate;
+
+      if (parts.length === 2) {
+        // 기간 휴가: "2026.01.25 - 01.26"
+        const startMatch = parts[0].match(/(\d{4})\.(\d{2})\.(\d{2})/);
+        const endMatch = parts[1].match(/(\d{2})\.(\d{2})/);
+        if (startMatch && endMatch) {
+          const startYear = parseInt(startMatch[1]);
+          const startMonth = parseInt(startMatch[2]);
+          const startDay = parseInt(startMatch[3]);
+          const endMonth = parseInt(endMatch[1]);
+          const endDay = parseInt(endMatch[2]);
+          
+          // 종료일의 연도는 시작일과 같은 연도이거나 다음 연도
+          const endYear = endMonth < startMonth ? startYear + 1 : startYear;
+          
+          leaveStartDate = `${startYear}-${String(startMonth).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`;
+          leaveEndDate = `${endYear}-${String(endMonth).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`;
+        }
+      } else {
+        // 단일 날짜 휴가: "2026.01.14 (오후)" 또는 "2026.01.14"
+        const match = leave.period.match(/(\d{4})\.(\d{2})\.(\d{2})/);
+        if (match) {
+          const leaveYear = parseInt(match[1]);
+          const leaveMonth = parseInt(match[2]);
+          const leaveDay = parseInt(match[3]);
+          leaveStartDate = `${leaveYear}-${String(leaveMonth).padStart(2, '0')}-${String(leaveDay).padStart(2, '0')}`;
+          leaveEndDate = leaveStartDate;
+        }
+      }
+
+      if (leaveStartDate && leaveEndDate) {
+        if (checkDateOverlap(startDate, endDate, leaveStartDate, leaveEndDate)) {
+          return { isValid: false, message: '해당 기간에 이미 신청되거나 승인된 휴가가 있습니다.' };
+        }
+      }
+    }
+    
+    // 남은 휴가 개수 체크 (워케이션은 제외)
+    if (type !== '워케이션' && summary) {
+      const requestedDays = calculateVacationDays(type, startDate, endDate);
+      const remainingDays = summary.remainingVacation || 0;
+      
+      if (requestedDays > remainingDays) {
+        return { isValid: false, message: `남은 휴가가 부족합니다. (남은 휴가: ${remainingDays}일, 신청하려는 휴가: ${requestedDays}일)` };
+      }
+    }
+    
+    return { isValid: true };
+  };
+
   // 휴가 신청 처리
   const handleVacationSubmit = async () => {
     if (!vacationForm.startDate || !vacationForm.endDate) {
       alert('시작일과 종료일을 모두 입력해주세요.');
+      return;
+    }
+
+    // 중복 체크 및 남은 휴가 개수 체크
+    const validation = checkVacationValidation(
+      vacationForm.type,
+      vacationForm.startDate,
+      vacationForm.endDate
+    );
+    
+    if (!validation.isValid) {
+      alert(validation.message);
       return;
     }
 
@@ -137,7 +251,7 @@ const Attendance = () => {
         requestData.halfDayType = vacationForm.halfDayType;
       }
 
-      const response = await apiClient.post(`${API_BASE_URL}/vacation`, requestData, {
+      const response = await apiClient.post(VACATION_API_URL, requestData, {
         params: {
           memberId: memberId
         }
@@ -168,6 +282,39 @@ const Attendance = () => {
     }
   };
 
+  // 휴가 취소 처리
+  const handleCancelVacation = async (vacationId) => {
+    if (!confirm('휴가 신청을 취소하시겠습니까?')) {
+      return;
+    }
+
+    try {
+      const response = await apiClient.delete(`${VACATION_API_URL}/${vacationId}`, {
+        params: {
+          memberId: memberId
+        }
+      });
+
+      if (response.data && response.data.id) {
+        alert('휴가 신청이 취소되었습니다.');
+        // 휴가 목록 및 요약 정보 새로고침
+        await Promise.all([fetchLeaves(), fetchSummary()]);
+      } else if (response.data && response.data.message) {
+        alert(response.data.message);
+      } else {
+        alert('휴가 신청이 취소되었습니다.');
+        await Promise.all([fetchLeaves(), fetchSummary()]);
+      }
+    } catch (err) {
+      console.error('Failed to cancel vacation request:', err);
+      if (err.response?.data?.message) {
+        alert(err.response.data.message);
+      } else {
+        alert('휴가 취소에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      }
+    }
+  };
+
   // 동적으로 해당 월의 일수와 시작 요일 계산
   const getDaysInMonth = (y, m) => new Date(y, m + 1, 0).getDate();
   const getStartDayOffset = (y, m) => new Date(y, m, 1).getDay(); // 0(일) ~ 6(토)
@@ -187,8 +334,13 @@ const Attendance = () => {
 
   // 휴가 날짜 추출 (API 데이터에서)
   const getLeaveDays = () => {
-    const leaveDaysMap = new Map(); // day -> { type, isWorkcation }
+    const leaveDaysMap = new Map(); // day -> { type, isWorkcation, status }
     leaveRequests.forEach(leave => {
+      // 승인된 휴가와 반려된 휴가는 캘린더에 표시 (대기 중인 휴가는 표시하지 않음)
+      if (leave.status !== '승인완료' && leave.status !== '반려') {
+        return;
+      }
+      
       if (leave.period) {
         // period 형식: "2026.01.25 - 01.26" 또는 "2026.01.14 (오후)" 또는 "2026.01.14"
         const parts = leave.period.split(' - ');
@@ -208,12 +360,12 @@ const Attendance = () => {
               // 같은 월 내에서의 기간
               if (endMonth === month + 1) {
                 for (let d = startDay; d <= endDay; d++) {
-                  leaveDaysMap.set(d, { type: leave.type, isWorkcation: leave.type === '워케이션' });
+                  leaveDaysMap.set(d, { type: leave.type, isWorkcation: leave.type === '워케이션', status: leave.status });
                 }
               } else {
                 // 시작일부터 월말까지
                 for (let d = startDay; d <= daysInMonth; d++) {
-                  leaveDaysMap.set(d, { type: leave.type, isWorkcation: leave.type === '워케이션' });
+                  leaveDaysMap.set(d, { type: leave.type, isWorkcation: leave.type === '워케이션', status: leave.status });
                 }
               }
             }
@@ -221,7 +373,7 @@ const Attendance = () => {
             else if (startYear === year && endMonth === month + 1) {
               // 월초부터 종료일까지
               for (let d = 1; d <= endDay; d++) {
-                leaveDaysMap.set(d, { type: leave.type, isWorkcation: leave.type === '워케이션' });
+                leaveDaysMap.set(d, { type: leave.type, isWorkcation: leave.type === '워케이션', status: leave.status });
               }
             }
           }
@@ -233,7 +385,7 @@ const Attendance = () => {
             const leaveMonth = parseInt(match[2]);
             const leaveDay = parseInt(match[3]);
             if (leaveYear === year && leaveMonth === month + 1) {
-              leaveDaysMap.set(leaveDay, { type: leave.type, isWorkcation: leave.type === '워케이션' });
+              leaveDaysMap.set(leaveDay, { type: leave.type, isWorkcation: leave.type === '워케이션', status: leave.status });
             }
           }
         }
@@ -243,6 +395,21 @@ const Attendance = () => {
   };
 
   const leaveDaysMap = getLeaveDays();
+
+  // 상담 신청일 기준으로 day -> 상담 목록 (현재 연·월만)
+  const getConsultationDaysMap = () => {
+    const map = new Map();
+    consultationRequests.forEach((c) => {
+      if (!c.createdDate) return;
+      const d = new Date(c.createdDate);
+      if (d.getFullYear() !== year || d.getMonth() !== month) return;
+      const day = d.getDate();
+      if (!map.has(day)) map.set(day, []);
+      map.get(day).push({ id: c.id, title: c.title, status: c.status, createdDate: c.createdDate });
+    });
+    return map;
+  };
+  const consultationDaysMap = getConsultationDaysMap();
 
   const calendarDays = Array.from({ length: 42 }, (_, i) => {
     const day = i - startDayOffset + 1;
@@ -258,7 +425,10 @@ const Attendance = () => {
     // 휴가 날짜 확인 (우선순위가 높음)
     if (leaveDaysMap.has(day)) {
       const leaveInfo = leaveDaysMap.get(day);
-      if (leaveInfo.isWorkcation) {
+      if (leaveInfo.status === '반려') {
+        // 반려된 휴가는 대기 상태처럼 회색으로 표시
+        status = 'leave-rejected';
+      } else if (leaveInfo.isWorkcation) {
         status = 'workcation';
       } else {
         status = 'leave';
@@ -279,7 +449,8 @@ const Attendance = () => {
       }
     }
 
-    return { day, status };
+    const hasConsultation = consultationDaysMap.has(day);
+    return { day, status, hasConsultation };
   });
 
   const getSelectedDayDetails = () => {
@@ -287,14 +458,58 @@ const Attendance = () => {
 
     const history = attendanceHistory.find(h => h.day === selectedDay);
 
-    // 휴가 확인
-    // 백엔드 period 포맷이 "YYYY.MM.DD - MM.DD"라서 시작일만 연도가 있어
-    // 문자열 includes로는 기간 중간 날짜를 매칭 못함 → calendar에서 만든 leaveDaysMap으로 판별
+    // 휴가 확인 - 승인된 휴가만 캘린더에 표시되지만, 상세 현황에서는 모든 상태의 휴가를 확인
     const leaveInfo = leaveDaysMap.get(selectedDay);
     const leaveType = leaveInfo?.type ?? null;
+    
+    // 해당 날짜에 해당하는 모든 휴가 신청 찾기 (상태 포함)
+    const leaveForDay = leaveRequests.find(leave => {
+      if (!leave.period) return false;
+      const parts = leave.period.split(' - ');
+      if (parts.length === 2) {
+        // 기간 휴가
+        const startMatch = parts[0].match(/(\d{4})\.(\d{2})\.(\d{2})/);
+        const endMatch = parts[1].match(/(\d{2})\.(\d{2})/);
+        if (startMatch && endMatch) {
+          const startYear = parseInt(startMatch[1]);
+          const startMonth = parseInt(startMatch[2]);
+          const startDay = parseInt(startMatch[3]);
+          const endMonth = parseInt(endMatch[1]);
+          const endDay = parseInt(endMatch[2]);
+          
+          if (startYear === year && startMonth === month + 1) {
+            if (endMonth === month + 1) {
+              return selectedDay >= startDay && selectedDay <= endDay;
+            } else {
+              return selectedDay >= startDay;
+            }
+          } else if (startYear === year && endMonth === month + 1) {
+            return selectedDay <= endDay;
+          }
+        }
+      } else {
+        // 단일 날짜 휴가
+        const match = leave.period.match(/(\d{4})\.(\d{2})\.(\d{2})/);
+        if (match) {
+          const leaveYear = parseInt(match[1]);
+          const leaveMonth = parseInt(match[2]);
+          const leaveDay = parseInt(match[3]);
+          return leaveYear === year && leaveMonth === month + 1 && leaveDay === selectedDay;
+        }
+      }
+      return false;
+    });
 
-    const isLeave = !!leaveType;
-    const isWorkcation = leaveType === '워케이션';
+    const isLeave = !!leaveForDay;
+    const isWorkcation = leaveForDay?.type === '워케이션';
+    const leaveStatus = leaveForDay?.status || null;
+
+    // 해당 날짜에 신청한 상담 목록 (createdDate 기준)
+    const consultationsForDay = consultationRequests.filter((c) => {
+      if (!c.createdDate) return false;
+      const d = new Date(c.createdDate);
+      return d.getFullYear() === year && d.getMonth() === month && d.getDate() === selectedDay;
+    });
 
     // 현재 월의 오늘 날짜 확인
     const currentYear = new Date().getFullYear();
@@ -303,9 +518,11 @@ const Attendance = () => {
     const isFuture = isCurrentMonth && selectedDay > today;
 
     let statusLabel = '';
-    if (isLeave) statusLabel = leaveType;
+    if (isLeave) statusLabel = leaveForDay.type;
     else if (isFuture) statusLabel = '미정';
     else statusLabel = history?.status || '기록 없음';
+
+    const consultationStatusLabel = (s) => (s === 'WAITING' ? '대기' : s === 'IN_PROGRESS' ? '진행중' : s === 'COMPLETED' ? '완료' : s === 'CANCELLED' ? '취소' : s);
 
     return {
       day: selectedDay,
@@ -313,8 +530,11 @@ const Attendance = () => {
       isLeave,
       isWorkcation,
       isFuture,
-      leaveType,
-      status: statusLabel
+      leaveType: leaveForDay?.type || null,
+      leaveStatus,
+      status: statusLabel,
+      consultationsForDay,
+      consultationStatusLabel
     };
   };
 
@@ -331,7 +551,7 @@ const Attendance = () => {
     );
   }
 
-  if (error && !summary && attendanceHistory.length === 0 && leaveRequests.length === 0) {
+  if (error && !summary && attendanceHistory.length === 0 && leaveRequests.length === 0 && consultationRequests.length === 0) {
     return (
       <S.Container>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: '1rem' }}>
@@ -341,7 +561,7 @@ const Attendance = () => {
             onClick={() => {
               setError(null);
               setLoading(true);
-              Promise.all([fetchSummary(), fetchHistory(), fetchLeaves()]).finally(() => setLoading(false));
+              Promise.all([fetchSummary(), fetchHistory(), fetchLeaves(), fetchConsultations()]).finally(() => setLoading(false));
             }}
             style={{ padding: '0.5rem 1rem', backgroundColor: '#6366f1', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}
           >
@@ -428,8 +648,10 @@ const Attendance = () => {
                     onClick={() => setSelectedDay(date.day)}
                     $isSelected={selectedDay === date.day}
                     $status={date.status}
+                    $hasConsultation={date.hasConsultation}
                   >
-                    {date.day}
+                    <span>{date.day}</span>
+                    {date.hasConsultation && <MessageSquare size={10} className="consultation-dot" />}
                   </S.DayButton>
                 ) : <div style={{ width: '2.5rem', height: '2.5rem' }} />}
               </S.DayCell>
@@ -442,6 +664,7 @@ const Attendance = () => {
               { label: '휴가', color: 'indigo' },
               { label: '워케이션', color: 'yellow' },
               { label: '지각', color: 'red' },
+              { label: '상담', color: 'pink' },
               { label: '미정', color: 'slate' }
             ].map((l) => (
               <S.LegendItem key={l.label} $color={l.color}>
@@ -480,14 +703,27 @@ const Attendance = () => {
                     {details.isWorkcation ? <Briefcase size={48} color="#ca8a04" /> : <Plane size={48} color="#6366f1" />}
                   </S.PlaneIconWrapper>
                   <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                    <S.LeaveTitle>[{details.leaveType}] {details.isFuture ? '예정' : '진행 중'}</S.LeaveTitle>
-                    <S.LeaveDesc>
-                      {details.isWorkcation
-                        ? '새로운 환경에서의 리프레시와 업무 집중! 성공적인 워케이션 되세요.'
-                        : (details.isFuture
-                          ? '다가오는 휴가 일정이 확인되었습니다. 즐거운 휴식 되세요!'
-                          : '승인된 휴가로 인해 근무 기록이 없습니다. 에너지를 충전하는 소중한 시간이 되시길 바랍니다!')
+                    <S.LeaveTitle>
+                      [{details.leaveType}] {
+                        details.leaveStatus === '승인완료' 
+                          ? (details.isFuture ? '예정' : '진행 중')
+                          : details.leaveStatus === '승인대기'
+                          ? '승인 대기'
+                          : '반려'
                       }
+                    </S.LeaveTitle>
+                    <S.LeaveDesc>
+                      {details.leaveStatus === '승인완료' ? (
+                        details.isWorkcation
+                          ? '새로운 환경에서의 리프레시와 업무 집중! 성공적인 워케이션 되세요.'
+                          : (details.isFuture
+                            ? '다가오는 휴가 일정이 확인되었습니다. 즐거운 휴식 되세요!'
+                            : '승인된 휴가로 인해 근무 기록이 없습니다. 에너지를 충전하는 소중한 시간이 되시길 바랍니다!')
+                      ) : details.leaveStatus === '승인대기' ? (
+                        '관리자의 승인을 기다리고 있습니다.'
+                      ) : (
+                        '반려된 휴가 신청입니다.'
+                      )}
                     </S.LeaveDesc>
                   </div>
                   <S.InfoGrid>
@@ -495,9 +731,21 @@ const Attendance = () => {
                       <p>휴가 종류</p>
                       <p>{details.leaveType}</p>
                     </S.InfoBox>
-                    <S.InfoBox $highlight={details.isFuture ? '#3b82f6' : '#16a34a'}>
+                    <S.InfoBox $highlight={
+                      details.leaveStatus === '승인완료' 
+                        ? (details.isFuture ? '#3b82f6' : '#16a34a')
+                        : details.leaveStatus === '승인대기'
+                        ? '#f59e0b'
+                        : '#ef4444'
+                    }>
                       <p>결재 상태</p>
-                      <p>{details.isFuture ? '승인 완료' : '사용 중'}</p>
+                      <p>{
+                        details.leaveStatus === '승인완료'
+                          ? (details.isFuture ? '승인 완료' : '사용 중')
+                          : details.leaveStatus === '승인대기'
+                          ? '승인 대기'
+                          : '반려'
+                      }</p>
                     </S.InfoBox>
                   </S.InfoGrid>
                 </S.LeaveState>
@@ -545,6 +793,25 @@ const Attendance = () => {
                   </div>
                   <p style={{ fontWeight: 700, color: '#94a3b8' }}>해당 일자의 데이터가 없습니다.</p>
                 </S.EmptyState>
+              )}
+
+              {details?.consultationsForDay?.length > 0 && (
+                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(30,41,59,0.2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', fontWeight: 700, color: '#6366f1' }}>
+                    <MessageSquare size={18} />
+                    상담 신청
+                  </div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {details.consultationsForDay.map((c) => (
+                      <li key={c.id} style={{ padding: '0.5rem 0.75rem', background: 'rgba(99,102,241,0.08)', borderRadius: '0.5rem', fontSize: '0.875rem' }}>
+                        <span style={{ fontWeight: 600 }}>{c.title}</span>
+                        <span style={{ marginLeft: '0.5rem', color: '#64748b', fontSize: '0.75rem' }}>
+                          {details.consultationStatusLabel(c.status)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </S.DetailsContent>
           </S.DetailsCard>
@@ -605,7 +872,9 @@ const Attendance = () => {
                 <S.LeavePeriod>{leave.period}</S.LeavePeriod>
                 <S.LeaveCardFooter>
                   <span>사용: <span>{leave.days}</span></span>
-                  {leave.status === '승인대기' && <button>취소</button>}
+                  {leave.status === '승인대기' && (
+                    <button onClick={() => handleCancelVacation(leave.id)}>취소</button>
+                  )}
                 </S.LeaveCardFooter>
               </S.LeaveCard>
             ))}

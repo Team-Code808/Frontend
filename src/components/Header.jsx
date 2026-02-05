@@ -187,7 +187,7 @@ const Header = () => {
       id: NavItemType.ADMIN_USERS,
       label: "팀원관리",
       icon: Users,
-      path: "/app/users",
+      path: "/app/teammanagement",
     },
     {
       id: NavItemType.ADMIN_MONITORING,
