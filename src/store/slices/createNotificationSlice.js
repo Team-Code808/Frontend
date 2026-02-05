@@ -2,23 +2,38 @@
 import axios from 'axios';
 import { API_URL } from '../../Config';
 
-// 알림 전용 기본 경로 설정
 const NOTI_API = `${API_URL}/api/notifications`;
+
+// 토큰 가져오기 유틸리티
+const getAuthHeader = () => {
+    const token = localStorage.getItem('authToken'); // 키값이 'token'인지 'authToken'인지 확인하세요!
+    return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 export const createNotificationSlice = (set, get) => ({
   notifications: [],
   isLoading: false,
 
-  // SSE 실시간 알림 구독
   subscribeToNotifications: (userId) => {
-    // EventSource는 axios를 쓰지 않고 브라우저 표준 API를 사용합니다.
     const eventSource = new EventSource(`${NOTI_API}/subscribe?userId=${userId}`);
 
     eventSource.addEventListener("notification", (event) => {
-      const newNotif = JSON.parse(event.data);
-      set((state) => ({
-        notifications: [newNotif, ...state.notifications]
-      }));
+      try {
+        const data = JSON.parse(event.data);
+        console.log("🔔 실시간 알림 수신:", data);
+        
+        set((state) => ({
+          notifications: [{
+            id: data.id,
+            title: data.title,
+            message: data.message,
+            read: data.isRead,
+            createdAt: data.createdAt
+          }, ...state.notifications]
+        })); 
+      } catch (err) {
+        console.error("알림 파싱 실패:", err);
+      }
     });
 
     eventSource.onerror = (err) => {
@@ -33,8 +48,8 @@ export const createNotificationSlice = (set, get) => ({
   fetchNotifications: async () => {
     set({ isLoading: true });
     try {
-      // 엔드포인트: http://localhost:8080/api/notifications
-      const response = await axios.get(NOTI_API);
+      // headers 추가
+      const response = await axios.get(NOTI_API, { headers: getAuthHeader() });
       set({ notifications: response.data, isLoading: false });
     } catch (error) {
       console.error("알림 로드 실패:", error);
@@ -45,8 +60,9 @@ export const createNotificationSlice = (set, get) => ({
   // 2. 단일 알림 읽음 처리 (PATCH)
   markAsRead: async (id) => {
     try {
-      // 엔드포인트: http://localhost:8080/api/notifications/{id}/read
-      await axios.patch(`${NOTI_API}/${id}/read`);
+      // PATCH 요청: 세 번째 인자가 config(headers)입니다.
+      await axios.patch(`${NOTI_API}/${id}/read`, {}, { headers: getAuthHeader() });
+      
       set((state) => ({
         notifications: state.notifications.map((n) =>
           n.id === id ? { ...n, read: true } : n
@@ -60,8 +76,9 @@ export const createNotificationSlice = (set, get) => ({
   // 3. 모든 알림 읽음 처리 (POST)
   markAllAsRead: async () => {
     try {
-      // 엔드포인트: http://localhost:8080/api/notifications/read-all
-      await axios.post(`${NOTI_API}/read-all`);
+      // POST 요청: 세 번째 인자가 config(headers)입니다.
+      await axios.post(`${NOTI_API}/read-all`, {}, { headers: getAuthHeader() });
+      
       set((state) => ({
         notifications: state.notifications.map((n) => ({ ...n, read: true })),
       }));

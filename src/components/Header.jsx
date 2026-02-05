@@ -24,12 +24,17 @@ import * as S from "./Header.styles";
 
 const AllNotificationsModal = ({ onClose }) => {
   const [filter, setFilter] = useState("ALL");
-  const { notifications, markAsRead } = useStore();
+  const { notifications, markAsRead, isAdminMode } = useStore(); // isAdminMode 추가
 
-  const filtered = notifications.filter(
-    (n) => filter === "ALL" || !n.read
-  );
-
+  const filtered = notifications.filter((n) => {
+    // 1차 필터: 관리자/직원 권한 구분
+    const roleMatch = isAdminMode ? n.type === "ADMIN" : n.type !== "ADMIN";
+    
+    // 2차 필터: 전체/안읽음 구분
+    const statusMatch = filter === "ALL" || !n.read;
+    
+    return roleMatch && statusMatch;
+  });
   return (
     <S.ModalOverlay>
       <S.Backdrop onClick={onClose} />
@@ -152,9 +157,21 @@ const Header = () => {
     }
   }, [user?.id, subscribeToNotifications]);
 
+
+
+const filteredNotifications = notifications.filter(notif => {
+  if (isAdminMode) {
+    // 관리자 모드일 때는 type이 'ADMIN'인 것만 보여줌
+    return notif.type === "ADMIN";
+  } else {
+    // 직원 모드일 때는 type이 'ADMIN'이 아닌 것만 보여줌
+    return notif.type !== "ADMIN";
+  }
+});
+
   // 3. 파생 상태값 (항상 최신 notifications 기반으로 계산됨)
-  const hasUnread = notifications.some(n => !n.read);
-  const recentNotifications = notifications.slice(0, 3);
+  const hasUnread = filteredNotifications.some(n => !n.read);
+  const recentNotifications = filteredNotifications.slice(0, 3);
   
  
   // 클릭 외부 감지 로직 (기존과 동일)
@@ -357,7 +374,7 @@ const Header = () => {
                           <button onClick={markAllAsRead}>모두 읽음</button> {/* 기능 연결 */}
                         </S.NotiHeader>
                         <S.NotiList>
-                          {notifications.map((notif) => (
+                          {recentNotifications.map((notif) => (
                             <S.NotiItem
                                 key={notif.id}
                                 $isAdminMode={isAdminMode}
