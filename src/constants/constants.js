@@ -1,22 +1,3 @@
-
-export const MOCK_USER = {
-  name: "김철수",
-  position: "상담 전문위원",
-  department: "고객행복 1팀",
-  email: "cs.kim@calmdesk.com",
-  phone: "010-1234-5678",
-  joinDate: "2022.05.10",
-  avatar: "👨‍💻",
-  point: "2,450"
-};
-
-// MyPage.tsx 요구사항에 맞춰 상태(status) 필드 추가
-export const COUPONS = [
-  { id: 1, name: '스타벅스 아메리카노', shop: 'Starbucks', date: '2026.12.31 까지', color: 'bg-emerald-500', icon: '☕', status: 'AVAILABLE' },
-  { id: 2, name: '배달의민족 1만원권', shop: 'Baemin', date: '2026.06.15 까지', color: 'bg-cyan-500', icon: '🛵', status: 'AVAILABLE' },
-  { id: 3, name: 'BHC 후라이드 치킨', shop: 'BHC', date: '2026.05.20 까지', color: 'bg-amber-500', icon: '🍗', status: 'AVAILABLE' },
-];
-
 export const NOTIFICATIONS_DATA = [
   {
     id: 1,
