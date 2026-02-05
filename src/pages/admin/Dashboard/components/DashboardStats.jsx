@@ -1,33 +1,38 @@
+// src/pages/admin/Dashboard/components/DashboardStats.jsx
 import React from "react";
 import { Activity, CalendarCheck, MessageSquare, FileText } from "lucide-react";
 import * as S from "../Dashboard.styles";
 
-const DashboardStats = () => {
+const DashboardStats = ({ companyStats }) => {
   const stats = [
     {
       label: "평균 스트레스",
-      val: "34%",
-      trend: "-4%",
+      val: `${companyStats.avgStressPercentage}%`,
+      trend: `${companyStats.stressChange > 0 ? "+" : ""}${
+        companyStats.stressChange
+      }%`,
       color: "indigo",
       icon: Activity,
     },
     {
       label: "전체 출근률",
-      val: "94.2%",
-      trend: "+2.1%",
+      val: `${companyStats.todayAttendance}%`,
+      trend: `${companyStats.attendanceChange > 0 ? "+" : ""}${
+        companyStats.attendanceChange
+      }%`,
       color: "blue",
       icon: CalendarCheck,
     },
     {
       label: "상담 요청",
-      val: "12건",
+      val: `${companyStats.consultationCount}건`,
       trend: "오늘 기준",
       color: "orange",
       icon: MessageSquare,
     },
     {
       label: "휴가(근태) 요청",
-      val: "5건",
+      val: `${companyStats.vacationCount}건`,
       trend: "승인 대기",
       color: "emerald",
       icon: FileText,
