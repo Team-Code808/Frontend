@@ -11,10 +11,41 @@ import {
   Cell,
 } from "recharts";
 import * as S from "../Dashboard.styles";
-import { deptStressData, deptCooldownData } from "../data/mockData";
 
-const DashboardChart = () => {
-  const [chartType, setChartType] = useState("stress"); // 'stress' or 'cooldown'
+const DashboardChart = ({ departmentStats }) => {
+  const [chartType, setChartType] = useState("stress");
+
+  const deptStressData = React.useMemo(
+    () =>
+      departmentStats.map((dept) => ({
+        dept: dept.departmentName,
+        stress: dept.avgStressPercentage,
+      })),
+    [departmentStats]
+  );
+
+  const deptCooldownData = React.useMemo(
+    () =>
+      departmentStats.map((dept) => ({
+        dept: dept.departmentName,
+        count: dept.cooldownCount,
+      })),
+    [departmentStats]
+  );
+
+  const avgStress = React.useMemo(
+    () =>
+      Math.round(
+        deptStressData.reduce((acc, d) => acc + d.stress, 0) /
+          deptStressData.length
+      ),
+    [deptStressData]
+  );
+
+  const totalCooldown = React.useMemo(
+    () => deptCooldownData.reduce((acc, d) => acc + d.count, 0),
+    [deptCooldownData]
+  );
 
   return (
     <S.ChartSection>
@@ -29,14 +60,14 @@ const DashboardChart = () => {
             ) : (
               <>
                 <Activity size={20} color="#60a5fa" />
-                주간 부서별 누적 쿨다운 횟수
+                부서별 누적 쿨다운 횟수
               </>
             )}
           </h3>
           <p>
             {chartType === "stress"
-              ? "실시간 부서별 멘탈 건강 통합 지표 분석"
-              : "지난 7일간 부서별 쿨다운(휴식) 요청 빈도 분석"}
+              ? "전일 부서별 멘탈 건강 통합 지표 분석"
+              : "전일 부서별 쿨다운(휴식) 요청 빈도 분석"}
           </p>
         </S.HeaderLeft>
 
@@ -58,7 +89,11 @@ const DashboardChart = () => {
         </S.ChartTabContainer>
 
         <S.AvgBadge>
-          <span>{chartType === "stress" ? "평균 34%" : "총 45회"}</span>
+          <span>
+            {chartType === "stress"
+              ? `평균 ${avgStress}%`
+              : `총 ${totalCooldown}회`}
+          </span>
         </S.AvgBadge>
       </S.SectionHeader>
 
@@ -117,7 +152,7 @@ const DashboardChart = () => {
                           : entry.stress > 35
                           ? "#818cf8"
                           : "#475569"
-                        : entry.count > 10
+                        : entry.count > 2
                         ? "#60a5fa"
                         : "#475569"
                     }
