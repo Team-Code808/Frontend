@@ -217,10 +217,15 @@ const AdminMonitoring = () => {
               </S.StatHeader>
               <S.StatValueRow>
                 <p>{loading ? '...' : stat.val}</p>
-                <S.TrendBadge trend={stat.trend?.includes('-') ? 'down' : 'up'}>
-                  {stat.trend?.includes('-') ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
-                  {stat.trend ? stat.trend.replace(/[+-]/, '') : '0'}
-                </S.TrendBadge>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                  <S.TrendBadge trend={stat.trend?.includes('-') ? 'down' : 'up'}>
+                    {stat.trend?.includes('-') ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
+                    {stat.trend ? stat.trend.replace(/[+-]/, '') : '0'}
+                  </S.TrendBadge>
+                  <span style={{ fontSize: '0.625rem', color: '#64748b', fontWeight: '900', whiteSpace: 'nowrap' }}>
+                    {i === 0 ? '전월 대비' : '전기 대비'}
+                  </span>
+                </div>
               </S.StatValueRow>
             </S.StatContent>
             <S.BackgroundIcon>
