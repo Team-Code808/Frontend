@@ -8,9 +8,12 @@ export const createAuthSlice = (set) => ({
   setIsAdminMode: (mode) => set({ isAdminMode: mode }),
 
   login: (user) => {
+    const decoded = user.token ? decodeToken(user.token) : null;
     const role =
       user.role || (user.token ? decodeToken(user.token)?.role : null);
-    const isAdmin = role === "ADMIN";
+   
+       const companyId = user.companyId || decoded?.companyId;
+      const isAdmin = role === "ADMIN";
 
     if (user.token) {
       localStorage.setItem("authToken", user.token);
@@ -23,6 +26,7 @@ export const createAuthSlice = (set) => ({
     set({
       user: {
         ...user,
+        companyId: companyId,
         role: role,
         memberId: user.memberId || user.id, // memberId 저장
       },
