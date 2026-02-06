@@ -7,9 +7,9 @@ import {
   Briefcase,
   Phone,
   Mail,
-  Lock
+  Lock,
+  Calendar
 } from 'lucide-react';
-import { MOCK_USER } from '../../../constants/constants';
 import * as S from './MyPage.styles';
 import useStore from '../../../store/useStore';
 import { mypageApi } from '../../../api/mypageApi';
@@ -19,6 +19,7 @@ const ProfileEditView = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [joinDate, setJoinDate] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
@@ -42,15 +43,18 @@ const ProfileEditView = () => {
         if (res.success && res.data) {
           setEmail(res.data.email || '');
           setPhone(res.data.phone || '');
+          setJoinDate(res.data.joinDate ? res.data.joinDate.replace(/\./g, '-') : '');
         } else {
-          setEmail(user?.email || MOCK_USER.email || '');
-          setPhone(user?.phone || MOCK_USER.phone || '');
+          setEmail(user?.email || '');
+          setPhone(user?.phone || '');
+          setJoinDate('');
         }
       } catch (err) {
         console.error('프로필 로드 실패:', err);
         setError(err.response?.data?.message || '프로필을 불러오지 못했습니다.');
-        setEmail(user?.email || MOCK_USER.email || '');
-        setPhone(user?.phone || MOCK_USER.phone || '');
+        setEmail(user?.email || '');
+        setPhone(user?.phone || '');
+        setJoinDate('');
       } finally {
         setLoading(false);
       }
@@ -59,12 +63,10 @@ const ProfileEditView = () => {
   }, [memberId]);
 
   const displayUser = {
-    ...MOCK_USER,
-    ...(user ? {
-      name: user.name,
-      department: user.department,
-      joinDate: user.joinDate || MOCK_USER.joinDate
-    } : {})
+    avatar: '👤',
+    name: user?.name ?? '-',
+    department: user?.department ?? '-',
+    joinDate: joinDate ? joinDate.replace(/-/g, '.') : (user?.joinDate ?? '-')
   };
 
   const handleSave = async () => {
@@ -93,7 +95,8 @@ const ProfileEditView = () => {
     try {
       const res = await mypageApi.updateProfile(memberId, {
         email: email.trim() || null,
-        phone: trimmedPhone
+        phone: trimmedPhone,
+        joinDate: joinDate.trim() || null
       });
       if (!res.success) {
         setError(res.message || '프로필 수정에 실패했습니다.');
@@ -202,6 +205,17 @@ const ProfileEditView = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="이메일 입력"
+                  />
+                </S.InputField>
+              </S.InputGroup>
+              <S.InputGroup>
+                <S.Label>입사일</S.Label>
+                <S.InputField>
+                  <Calendar size={18} color="#3b82f6" />
+                  <input
+                    type="date"
+                    value={joinDate}
+                    onChange={(e) => setJoinDate(e.target.value)}
                   />
                 </S.InputField>
               </S.InputGroup>

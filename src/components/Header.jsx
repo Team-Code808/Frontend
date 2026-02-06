@@ -147,7 +147,7 @@ const Header = () => {
   ];
   const adminNavItems = [
     { id: NavItemType.DASHBOARD, label: "통합현황", icon: LayoutDashboard, path: "/app/dashboard" },
-    { id: NavItemType.ADMIN_USERS, label: "팀원관리", icon: Users, path: "/app/users" },
+    { id: NavItemType.ADMIN_USERS, label: "팀원관리", icon: Users, path: "/app/teammanagement" },
     { id: NavItemType.ADMIN_MONITORING, label: "상세분석", icon: Activity, path: "/app/monitoring" },
     { id: NavItemType.ADMIN_APPLICATIONS, label: "신청관리", icon: ClipboardList, path: "/app/applications" },
     { id: "ADMIN_GIFTICONS", label: "기프티콘 관리", icon: Coins, path: "/app/gifticons" },

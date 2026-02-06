@@ -1,8 +1,9 @@
+// src/pages/admin/Dashboard/components/DashboardBanner.jsx
 import React from "react";
 import { ShieldAlert, Activity } from "lucide-react";
 import * as S from "../Dashboard.styles";
 
-const DashboardBanner = () => {
+const DashboardBanner = ({ companyStats }) => {
   return (
     <S.QuickBanner>
       <S.BannerContent>
@@ -11,12 +12,17 @@ const DashboardBanner = () => {
         </S.ShieldIconBox>
         <S.BannerText>
           <h2>ADMINISTRATION CONSOLE</h2>
-          <p>실시간 센터 활성도: 88% | 총 42명 근무 중</p>
+          <p>
+            총 {companyStats.totalMembers}명 등록 | 출근률{" "}
+            {companyStats.todayAttendance}%
+          </p>
         </S.BannerText>
       </S.BannerContent>
       <S.BannerStats>
-        <S.StatBadge>Active Sessions: 28</S.StatBadge>
-        <S.StatBadge alert>Stress Alerts: 4</S.StatBadge>
+        <S.StatBadge>총 인원: {companyStats.totalMembers}명</S.StatBadge>
+        <S.StatBadge alert>
+          고위험군: {companyStats.highRiskCount}명
+        </S.StatBadge>
       </S.BannerStats>
       <S.BannerDecor>
         <Activity size={192} />
