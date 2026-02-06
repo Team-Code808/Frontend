@@ -23,6 +23,11 @@ const AdminApplications = () => {
   const [statusFilter, setStatusFilter] = useState('전체');
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [calendarDate, setCalendarDate] = useState(() => {
+    const d = new Date();
+    d.setDate(1);
+    return d;
+  });
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [consultationRequests, setConsultationRequests] = useState([]);
   const [joinRequests, setJoinRequests] = useState([]);
@@ -32,20 +37,27 @@ const AdminApplications = () => {
   const fetchLeaves = useCallback(async () => {
     try {
       const data = await applicationsApi.getLeaves();
-      setLeaveRequests((data || []).map((item) => ({
-        id: item.id,
-        name: item.requestMemberName || '-',
-        dept: item.departmentName || '-',
-        type: item.type,
-        period: item.period,
-        status: statusMap[item.status] ?? item.status,
-        reason: item.reason || '',
-        day: item.startDate ? new Date(item.startDate).getDate() : null,
-        avatar: '👤'
-      })));
+      setLeaveRequests((data || []).map((item) => {
+        const startDate = item.startDate ? new Date(item.startDate) : null;
+        return {
+          id: item.id,
+          name: item.requestMemberName || '-',
+          dept: item.departmentName || '-',
+          type: item.type,
+          period: item.period,
+          status: statusMap[item.status] ?? item.status,
+          reason: item.reason || '',
+          day: startDate ? startDate.getDate() : null,
+          date: item.startDate || null,
+          avatar: '👤'
+        };
+      }));
     } catch (e) {
       setLeaveRequests([]);
-      if (e.response?.status !== 401) setError(e.message || '휴가 목록 조회 실패');
+      if (e.response?.status !== 401) {
+        const msg = e.response?.data?.message || e.message || '휴가 목록 조회 실패';
+        setError(msg);
+      }
     }
   }, []);
 
@@ -63,12 +75,16 @@ const AdminApplications = () => {
           status: consultationStatusMap[item.status] ?? item.status ?? '대기',
           message: item.description || '',
           day: created ? created.getDate() : null,
+          date: item.createdDate || null,
           avatar: '👤'
         };
       }));
     } catch (e) {
       setConsultationRequests([]);
-      if (e.response?.status !== 401) setError(e.message || '상담 목록 조회 실패');
+      if (e.response?.status !== 401) {
+        const msg = e.response?.data?.message || e.message || '상담 목록 조회 실패';
+        setError(msg);
+      }
     }
   }, []);
 
@@ -90,7 +106,10 @@ const AdminApplications = () => {
       })));
     } catch (e) {
       setJoinRequests([]);
-      if (e.response?.status !== 401) setError(e.message || '입사 신청 목록 조회 실패');
+      if (e.response?.status !== 401) {
+        const msg = e.response?.data?.message || e.message || '입사 신청 목록 조회 실패';
+        setError(msg);
+      }
     }
   }, []);
 
@@ -174,18 +193,55 @@ const AdminApplications = () => {
     return list.filter(req => req.status === statusFilter);
   }, [activeSubTab, statusFilter, leaveRequests, consultationRequests, joinRequests]);
 
-  const calendarGrid = useMemo(() => Array.from({ length: 35 }, (_, i) => {
-    const day = i - 5 + 1;
-    if (day <= 0 || day > 31) return null;
-    const leaves = leaveRequests.filter(l => l.day === day);
-    const consults = consultationRequests.filter(c => c.day === day);
-    return { day, leaves, consults };
-  }), [leaveRequests, consultationRequests]);
+  const calendarGrid = useMemo(() => {
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startWeekday = firstDay.getDay();
+    const totalCells = 42;
+    const cells = [];
+    for (let i = 0; i < totalCells; i++) {
+      const dayIndex = i - startWeekday + 1;
+      if (dayIndex < 1 || dayIndex > daysInMonth) {
+        cells.push(null);
+        continue;
+      }
+      const day = dayIndex;
+      const leaves = leaveRequests.filter((l) => {
+        if (!l.date) return l.day === day;
+        const d = new Date(l.date);
+        return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day;
+      });
+      const consults = consultationRequests.filter((c) => {
+        if (!c.date) return c.day === day;
+        const d = new Date(c.date);
+        return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day;
+      });
+      cells.push({ day, leaves, consults });
+    }
+    return cells;
+  }, [calendarDate, leaveRequests, consultationRequests]);
 
   const getRequestsForSelectedDay = () => {
     if (selectedDay === null) return [];
-    const leaves = leaveRequests.filter(l => l.day === selectedDay).map(l => ({ ...l, category: 'LEAVE' }));
-    const consults = consultationRequests.filter(c => c.day === selectedDay).map(c => ({ ...c, category: 'CONSULTATION' }));
+    const year = calendarDate.getFullYear();
+    const month = calendarDate.getMonth();
+    const leaves = leaveRequests
+      .filter((l) => {
+        if (!l.date) return l.day === selectedDay;
+        const d = new Date(l.date);
+        return d.getFullYear() === year && d.getMonth() === month && d.getDate() === selectedDay;
+      })
+      .map((l) => ({ ...l, category: 'LEAVE' }));
+    const consults = consultationRequests
+      .filter((c) => {
+        if (!c.date) return c.day === selectedDay;
+        const d = new Date(c.date);
+        return d.getFullYear() === year && d.getMonth() === month && d.getDate() === selectedDay;
+      })
+      .map((c) => ({ ...c, category: 'CONSULTATION' }));
     return [...leaves, ...consults];
   };
 
@@ -242,14 +298,42 @@ const AdminApplications = () => {
                     <CalendarIcon size={24} />
                   </S.MonthIconBox>
                   <S.MonthText>
-                    <h3>2026년 1월</h3>
-                    <p>March Overview</p>
+                    <h3>{calendarDate.getFullYear()}년 {calendarDate.getMonth() + 1}월</h3>
+                    <p>Calendar Overview</p>
                   </S.MonthText>
                 </S.MonthTitle>
                 <S.CalendarControls>
-                  <S.NavButton><ChevronLeft size={20} /></S.NavButton>
-                  <S.TodayButton>오늘</S.TodayButton>
-                  <S.NavButton><ChevronRightIcon size={20} /></S.NavButton>
+                  <S.NavButton
+                    type="button"
+                    onClick={() => setCalendarDate((prev) => {
+                      const d = new Date(prev);
+                      d.setMonth(d.getMonth() - 1);
+                      return d;
+                    })}
+                  >
+                    <ChevronLeft size={20} />
+                  </S.NavButton>
+                  <S.TodayButton
+                    type="button"
+                    onClick={() => {
+                      const today = new Date();
+                      const d = new Date(today.getFullYear(), today.getMonth(), 1);
+                      setCalendarDate(d);
+                      setSelectedDay(today.getDate());
+                    }}
+                  >
+                    오늘
+                  </S.TodayButton>
+                  <S.NavButton
+                    type="button"
+                    onClick={() => setCalendarDate((prev) => {
+                      const d = new Date(prev);
+                      d.setMonth(d.getMonth() + 1);
+                      return d;
+                    })}
+                  >
+                    <ChevronRightIcon size={20} />
+                  </S.NavButton>
                 </S.CalendarControls>
               </S.CalendarHeader>
 
@@ -380,7 +464,7 @@ const AdminApplications = () => {
                 </S.ModalIconBox>
                 <S.ModalTexts>
                   <h3>
-                    {selectedRequest ? `${selectedRequest.name}님 상세 신청` : `3월 ${selectedDay}일 신청 현황`}
+                    {selectedRequest ? `${selectedRequest.name}님 상세 신청` : `${calendarDate.getFullYear()}년 ${calendarDate.getMonth() + 1}월 ${selectedDay}일 신청 현황`}
                   </h3>
                   <p>Daily Review & Decisions</p>
                 </S.ModalTexts>
