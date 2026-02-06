@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import * as S from "./Dashboard.styles";
 import useDashboardData from "./hooks/useDashboardData";
+import { teamApi } from "../../../api/teamApi";
 
 import DashboardBanner from "./components/DashboardBanner";
 import DashboardStats from "./components/DashboardStats";
@@ -11,6 +12,20 @@ import MemberDetailModal from "../TeamManagement/components/MemberDetailModal";
 const AdminDashboard = () => {
   const { dashboardData, loading, error } = useDashboardData();
   const [selectedMember, setSelectedMember] = useState(null);
+  const [allMembers, setAllMembers] = useState([]);
+
+  // 전체 팀원 데이터 가져오기
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try {
+        const members = await teamApi.getMembers();
+        setAllMembers(members);
+      } catch (err) {
+        console.error("팀원 데이터 로드 실패:", err);
+      }
+    };
+    fetchMembers();
+  }, []);
 
   if (loading) {
     return (
@@ -53,45 +68,49 @@ const AdminDashboard = () => {
   }
 
   const handleSelectMember = (member) => {
-    // MemberDetailModal이 기대하는 형식으로 데이터 변환
-    const adaptedMember = {
-      id: member.memberId,
-      name: member.memberName,
-      dept: member.departmentName,
-      stress: member.stressPercentage,
-      // 필요한 다른 필드들은 기본값 처리
-      role: member.rankName || "-",
-      phone: member.phone || "-",
-      email: member.email || "-",
-      joinDate: member.joinDate || "-",
-      status: member.attendanceStatus || "-",
-      metrics: {
-        cooldowns: 0,
-        leave: "-",
-        alerts: 0,
-        ...member.metrics,
-      },
-    };
-    setSelectedMember(adaptedMember);
-  };
+    console.log("member : ", member);
 
-  // Mock 근태 데이터 생성 함수 (API가 없을 때 사용)
-  const fetchMockAttendance = async (memberId, year, month) => {
-    // 0.5초 딜레이로 API 호출 흉내
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // allMembers에서 해당 멤버의 전체 정보 찾기
+    const fullData = allMembers.find((m) => m.memberId === member.memberId);
 
-    const daysInMonth = new Date(year, month, 0).getDate();
-    const mockData = {};
-
-    for (let i = 1; i <= daysInMonth; i++) {
-      // 랜덤하게 상태 생성 (대부분 출근)
-      const rand = Math.random();
-      if (rand > 0.95) mockData[i] = "결근";
-      else if (rand > 0.9) mockData[i] = "지각";
-      else if (rand > 0.85) mockData[i] = "휴가";
-      else mockData[i] = "출근";
+    if (fullData) {
+      const adaptedMember = {
+        id: fullData.memberId,
+        name: fullData.name,
+        dept: fullData.departmentName,
+        stress: member.stressPercentage || fullData.stress,
+        role: fullData.rankName || "-",
+        phone: fullData.phone || "-",
+        email: fullData.email || "-",
+        joinDate: fullData.joinDate || "-",
+        status: fullData.attendanceStatus || "-",
+        metrics: {
+          cooldowns: fullData.cooldownCount || 0,
+          leave: fullData.remainingLeave || "-",
+          alerts: 0,
+        },
+      };
+      setSelectedMember(adaptedMember);
+    } else {
+      // fullData를 못 찾은 경우 기본 데이터로 표시
+      const adaptedMember = {
+        id: member.memberId,
+        name: member.memberName,
+        dept: member.departmentName,
+        stress: member.stressPercentage,
+        role: "-",
+        phone: "-",
+        email: "-",
+        joinDate: "-",
+        status: "-",
+        metrics: {
+          cooldowns: 0,
+          leave: "-",
+          alerts: 0,
+        },
+      };
+      setSelectedMember(adaptedMember);
     }
-    return mockData;
   };
 
   return (
@@ -114,7 +133,6 @@ const AdminDashboard = () => {
         <MemberDetailModal
           member={selectedMember}
           onClose={() => setSelectedMember(null)}
-          fetchAttendance={fetchMockAttendance}
         />
       )}
     </S.Container>

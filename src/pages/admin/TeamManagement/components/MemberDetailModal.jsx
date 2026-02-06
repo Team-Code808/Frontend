@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   X,
   Phone,
@@ -13,11 +13,11 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
-} from 'lucide-react';
-import * as S from '../TeamManagement.styles';
-import { teamApi } from '../../../../api/teamApi';
+} from "lucide-react";
+import * as S from "../TeamManagement.styles";
+import { teamApi } from "../../../../api/teamApi";
 
-const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
 function getDaysInMonth(year, month) {
   return new Date(year, month, 0).getDate();
@@ -28,15 +28,25 @@ function getFirstDayOffset(year, month) {
 }
 
 const LEGEND_ITEMS = [
-  { label: '출근', bg: 'rgba(34, 197, 94, 0.2)' },
-  { label: '지각', bg: 'rgba(234, 179, 8, 0.2)' },
-  { label: '결근', bg: 'rgba(239, 68, 68, 0.2)' },
-  { label: '휴가/휴가예정', bg: 'rgba(167, 139, 250, 0.2)' },
+  { label: "출근", bg: "rgba(34, 197, 94, 0.2)" },
+  { label: "지각", bg: "rgba(234, 179, 8, 0.2)" },
+  { label: "결근", bg: "rgba(239, 68, 68, 0.2)" },
+  { label: "휴가/휴가예정", bg: "rgba(167, 139, 250, 0.2)" },
 ];
 
 const MOCK_HISTORY = [
-  { title: '심층 심리 상담 완료', date: '2026.01.20', type: 'Consultation', icon: <MessageCircle size={18} /> },
-  { title: '반차 휴가 사용', date: '2026.01.14', type: 'Leave', icon: <Palmtree size={18} /> },
+  {
+    title: "심층 심리 상담 완료",
+    date: "2026.01.20",
+    type: "Consultation",
+    icon: <MessageCircle size={18} />,
+  },
+  {
+    title: "반차 휴가 사용",
+    date: "2026.01.14",
+    type: "Leave",
+    icon: <Palmtree size={18} />,
+  },
 ];
 
 export default function MemberDetailModal({ member, onClose }) {
@@ -59,7 +69,9 @@ export default function MemberDetailModal({ member, onClose }) {
       .catch(() => {
         if (!cancelled) setAttendanceRecord({});
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [member?.id, displayYear, displayMonth]);
 
   if (!member) return null;
@@ -85,7 +97,7 @@ export default function MemberDetailModal({ member, onClose }) {
     }
   };
 
-  const monthLabel = `${displayYear}.${String(displayMonth).padStart(2, '0')}`;
+  const monthLabel = `${displayYear}.${String(displayMonth).padStart(2, "0")}`;
 
   return (
     <S.ModalOverlay>
@@ -96,7 +108,9 @@ export default function MemberDetailModal({ member, onClose }) {
           <S.ModalInfo>
             <S.NameTitle>
               <h2>{member.name}</h2>
-              <span>{member.role} • {member.dept}</span>
+              <span>
+                {member.role} • {member.dept}
+              </span>
             </S.NameTitle>
             <S.ContactRow>
               <S.ContactChip>
@@ -109,11 +123,16 @@ export default function MemberDetailModal({ member, onClose }) {
               </S.ContactChip>
               <S.ContactChip>
                 <Calendar />
-                <span>{member.joinDate ? `${member.joinDate} 입사` : '-'}</span>
+                <span>{member.joinDate ? `${member.joinDate} 입사` : "-"}</span>
               </S.ContactChip>
               <S.ContactChip>
                 <Palmtree size={14} />
-                <span>잔여 연차: {typeof member.remainingLeave === 'number' ? `${member.remainingLeave}일` : (member.remainingLeave ?? member.metrics?.leave ?? '-')}</span>
+                <span>
+                  잔여 연차:{" "}
+                  {typeof member.remainingLeave === "number"
+                    ? `${member.remainingLeave}일`
+                    : member.remainingLeave ?? member.metrics?.leave ?? "-"}
+                </span>
               </S.ContactChip>
             </S.ContactRow>
           </S.ModalInfo>
@@ -127,25 +146,41 @@ export default function MemberDetailModal({ member, onClose }) {
             <S.LeftColumn>
               <S.CalendarWidget>
                 <S.WidgetHeader>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                    }}
+                  >
                     <button
                       type="button"
                       onClick={goPrevMonth}
                       aria-label="이전 달"
                       style={{
-                        padding: '0.25rem',
-                        background: 'transparent',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: '#94a3b8',
-                        display: 'flex',
-                        alignItems: 'center',
+                        padding: "0.25rem",
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        color: "#94a3b8",
+                        display: "flex",
+                        alignItems: "center",
                       }}
                     >
                       <ChevronLeft size={20} />
                     </button>
-                    <p style={{ margin: 0, minWidth: '7rem', textAlign: 'center' }}>
-                      <Calendar size={12} color="#818cf8" style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                    <p
+                      style={{
+                        margin: 0,
+                        minWidth: "7rem",
+                        textAlign: "center",
+                      }}
+                    >
+                      <Calendar
+                        size={12}
+                        color="#818cf8"
+                        style={{ verticalAlign: "middle", marginRight: "4px" }}
+                      />
                       근태 현황 ({monthLabel})
                     </p>
                     <button
@@ -153,13 +188,13 @@ export default function MemberDetailModal({ member, onClose }) {
                       onClick={goNextMonth}
                       aria-label="다음 달"
                       style={{
-                        padding: '0.25rem',
-                        background: 'transparent',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: '#94a3b8',
-                        display: 'flex',
-                        alignItems: 'center',
+                        padding: "0.25rem",
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        color: "#94a3b8",
+                        display: "flex",
+                        alignItems: "center",
                       }}
                     >
                       <ChevronRight size={20} />
@@ -167,20 +202,27 @@ export default function MemberDetailModal({ member, onClose }) {
                   </div>
                   <div
                     style={{
-                      display: 'flex',
-                      gap: '0.5rem',
-                      fontSize: '0.625rem',
-                      color: '#64748b',
-                      alignItems: 'center',
+                      display: "flex",
+                      gap: "0.5rem",
+                      fontSize: "0.625rem",
+                      color: "#64748b",
+                      alignItems: "center",
                     }}
                   >
                     {LEGEND_ITEMS.map(({ label, bg }) => (
-                      <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      <div
+                        key={label}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "2px",
+                        }}
+                      >
                         <div
                           style={{
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '2px',
+                            width: "8px",
+                            height: "8px",
+                            borderRadius: "2px",
                             background: bg,
                           }}
                         />
@@ -198,7 +240,10 @@ export default function MemberDetailModal({ member, onClose }) {
                   ))}
                   {Array.from({ length: daysInMonth }, (_, i) => {
                     const day = i + 1;
-                    const status = attendanceRecord[day] || attendanceRecord[String(day)] || '';
+                    const status =
+                      attendanceRecord[day] ||
+                      attendanceRecord[String(day)] ||
+                      "";
                     return (
                       <S.DayCell key={day} status={status}>
                         {day}
@@ -248,13 +293,36 @@ export default function MemberDetailModal({ member, onClose }) {
                     <S.WellnessLabel>현재 스트레스</S.WellnessLabel>
                   </S.WellnessLeft>
                   <S.WellnessValue color="#f43f5e">
-                    <p>{typeof member.stress === 'number' ? `${member.stress}%` : '-'}</p>
-                    {typeof member.stress === 'number' && member.stress >= 80 && (
-                      <span style={{ fontSize: '12px', color: '#dc2626', fontWeight: 600 }}>위험군</span>
-                    )}
-                    {typeof member.stress === 'number' && member.stress >= 70 && member.stress < 80 && (
-                      <span style={{ fontSize: '12px', color: '#ea580c', fontWeight: 600 }}>주의 필요</span>
-                    )}
+                    <p>
+                      {typeof member.stress === "number"
+                        ? `${member.stress}%`
+                        : "-"}
+                    </p>
+                    {typeof member.stress === "number" &&
+                      member.stress >= 80 && (
+                        <span
+                          style={{
+                            fontSize: "12px",
+                            color: "#dc2626",
+                            fontWeight: 600,
+                          }}
+                        >
+                          위험군
+                        </span>
+                      )}
+                    {typeof member.stress === "number" &&
+                      member.stress >= 70 &&
+                      member.stress < 80 && (
+                        <span
+                          style={{
+                            fontSize: "12px",
+                            color: "#ea580c",
+                            fontWeight: 600,
+                          }}
+                        >
+                          주의 필요
+                        </span>
+                      )}
                   </S.WellnessValue>
                 </S.WellnessItem>
               </S.WellnessSection>
@@ -271,7 +339,9 @@ export default function MemberDetailModal({ member, onClose }) {
                         <S.HistoryIcon>{item.icon}</S.HistoryIcon>
                         <S.HistoryText>
                           <p>{item.title}</p>
-                          <p>{item.date} • {item.type}</p>
+                          <p>
+                            {item.date} • {item.type}
+                          </p>
                         </S.HistoryText>
                       </S.HistoryContent>
                       <ExternalLink size={12} color="#475569" />
