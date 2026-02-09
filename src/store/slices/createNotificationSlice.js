@@ -22,18 +22,22 @@ export const createNotificationSlice = (set, get) => ({
                 message: noti.content,
                 read: noti.status === 'Y',
                 time: new Date(noti.createDate).toLocaleDateString(),
-                targetRole: noti.targetRole || "USER"
+                targetRole: noti.targetRole || "USER",
+                redirectUrl: noti.redirectUrl
             }));
+
             set({ notifications: formattedData });
         } catch (error) {
             console.error("알림 목록 로드 실패:", error);
         }
     },
 
+
     // 2. 실시간 새 알림 추가 (로컬 상태만 변경하므로 헤더 필요 없음)
     addNotification: (newNoti) => set((state) => ({
         notifications: [newNoti, ...state.notifications]
     })),
+
 
     // 3. 개별 알림 읽음 처리 (헤더 추가)
     markAsRead: async (notificationId) => {
@@ -52,6 +56,7 @@ export const createNotificationSlice = (set, get) => ({
         }
     },
 
+    
     // 4. 모든 알림 읽음 처리 (헤더 추가)
     markAllAsRead: async (memberId) => {
         try {

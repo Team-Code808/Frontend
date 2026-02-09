@@ -123,6 +123,7 @@ const Header = () => {
         message: data.content,
         time: "방금 전",
         read: data.status === "Y",
+        redirectUrl: data.redirectUrl,
         // ⭐ 백엔드에서 온 targetRole을 그대로 저장
         targetRole: data.targetRole, 
         type: data.targetRole === "ADMIN" ? "alert" : "success"
@@ -228,7 +229,20 @@ const Header = () => {
                         </S.NotiHeader>
                         <S.NotiList>
                           {recentNotifications.map((notif) => (
-                            <S.NotiItem key={notif.id} read={notif.read} onClick={() => markAsRead(notif.id)}>
+                            <S.NotiItem 
+                                key={notif.id} 
+                                read={notif.read} 
+                                onClick={() => {
+                                  // 1. 읽음 처리
+                                  markAsRead(notif.id);
+                                  
+                                  // 2. 경로가 있다면 해당 페이지로 이동
+                                  if (notif.redirectUrl) {
+                                    navigate(notif.redirectUrl);
+                                    setShowNotifications(false); // 알림 팝업 닫기
+                                  }
+                                }}
+                              >
                               <S.NotiItemHeader>
                                 <span>{notif.title}</span>
                                 <span>{notif.time}</span>
