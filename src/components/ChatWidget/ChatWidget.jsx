@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send } from 'lucide-react';
 import useStore from '../../store/useStore';
+import { chatApi } from '../../api/chatApi';
 import * as S from './ChatWidget.styles';
-
-const PLACEHOLDER_REPLY =
-  'Spring AI 연동 후 답변이 표시됩니다. 백엔드 챗봇 API를 연결해 주세요.';
 
 const formatTime = () => {
   const now = new Date();
@@ -49,20 +47,33 @@ const ChatWidget = () => {
     setInputValue('');
     setIsSending(true);
 
-    // TODO: Spring AI API 연동 시 여기서 요청 후 응답 메시지 추가
-    // const response = await chatApi.sendMessage(text);
-    setTimeout(() => {
+    try {
+      const res = await chatApi.sendMessage(text);
+      const reply = res?.data?.reply ?? '응답을 불러오지 못했습니다.';
       setMessages((prev) => [
         ...prev,
         {
           id: `bot-${Date.now()}`,
           role: 'assistant',
-          content: PLACEHOLDER_REPLY,
+          content: reply,
           time: formatTime(),
         },
       ]);
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.message || err.message || '챗봇 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `bot-${Date.now()}`,
+          role: 'assistant',
+          content: errorMsg,
+          time: formatTime(),
+        },
+      ]);
+    } finally {
       setIsSending(false);
-    }, 400);
+    }
   };
 
   const handleKeyDown = (e) => {
