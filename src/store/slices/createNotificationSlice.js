@@ -21,7 +21,8 @@ export const createNotificationSlice = (set, get) => ({
                 title: noti.title,
                 message: noti.content,
                 read: noti.status === 'Y',
-                time: noti.createDate
+                time: new Date(noti.createDate).toLocaleDateString(),
+                targetRole: noti.targetRole || "USER"
             }));
             set({ notifications: formattedData });
         } catch (error) {

@@ -13,11 +13,18 @@ import * as S from "./Header.styles";
 // --- 1. 전체 알림 모달 컴포넌트 ---
 const AllNotificationsModal = ({ onClose }) => {
   const [filter, setFilter] = useState("ALL");
-  const { notifications, markAsRead } = useStore();
+  const { notifications, markAsRead , isAdminMode} = useStore();
   
-  const filtered = notifications.filter(
-    (n) => filter === "ALL" || !n.read
-  );
+  const filtered = notifications.filter((n) => {
+    // 1. 역할 기반 필터링 (가장 중요!)
+    // 관리자 모드면 ADMIN 알림만, 직원 모드면 USER 알림만 보여줌
+    const roleMatch = isAdminMode ? n.targetRole === "ADMIN" : n.targetRole === "USER";
+    
+    // 2. 읽음/안 읽음 탭 필터링
+    const statusMatch = filter === "ALL" || !n.read;
+    
+    return roleMatch && statusMatch;
+  });
 
   return (
     <S.ModalOverlay>
@@ -87,7 +94,9 @@ const Header = () => {
   const [showAllNotificationsModal, setShowAllNotificationsModal] = useState(false);
   const notificationRef = useRef(null);
 
-  const recentNotifications = notifications.slice(0, 5); // 최근 5개 표시
+ const recentNotifications = notifications
+    .filter(n => isAdminMode ? n.targetRole === "ADMIN" : n.targetRole === "USER")
+    .slice(0, 5); // 최근 5개 표시
 
   // [수정된 부분] 초기 데이터 로딩 및 SSE 연결
   useEffect(() => {
@@ -103,16 +112,20 @@ const Header = () => {
     console.log(`${memberId}번 유저 SSE 구독 시작`);
 
   eventSource.addEventListener("notification", (event) => {
-      const data = JSON.parse(event.data);
-      console.log("실시간 알림 수신:", data); // 데이터 구조를 콘솔로 꼭 확인해보세요!
+    const data = JSON.parse(event.data);
+    console.log("실제 받은 데이터:", data);
+  // 현재 헤더의 관리자 모드 여부와 알림의 타겟 롤을 비교
+  // 예: 관리자 모드인데 알림이 ADMIN용이면 알림창에서 더 강조하거나 별도 처리
 
-      addNotification({
-        id: data.id || Date.now(),
+   addNotification({
+        id: data.id,
         title: data.title,
-        message: data.content, // ⭐ 백엔드 DTO의 'content'를 리액트의 'message'로 매핑
-        time: "방금 전",       // LocalDateTime을 포맷팅하기 전까진 하드코딩 권장
-        read: data.status === "READ", 
-        type: "success"
+        message: data.content,
+        time: "방금 전",
+        read: data.status === "Y",
+        // ⭐ 백엔드에서 온 targetRole을 그대로 저장
+        targetRole: data.targetRole, 
+        type: data.targetRole === "ADMIN" ? "alert" : "success"
       });
     });
 
@@ -124,7 +137,7 @@ const Header = () => {
     return () => {
       eventSource.close();
     };
-  }, [memberId, fetchNotifications, addNotification]);
+  }, [memberId, isAdminMode, fetchNotifications, addNotification]);
 
   // 클릭 외부 감지 (유지)
   useEffect(() => {
@@ -202,7 +215,9 @@ const Header = () => {
                   <div style={{ position: "relative" }} ref={notificationRef}>
                     <S.IconButton onClick={() => setShowNotifications(!showNotifications)} $active={showNotifications} $isAdminMode={isAdminMode}>
                       <Bell size={20} />
-                      {notifications.some(n => !n.read) && <S.NotiDot />}
+                     {notifications.some(n => 
+                      !n.read && (isAdminMode ? n.targetRole === "ADMIN" : n.targetRole === "USER")
+                      ) && <S.NotiDot />}
                     </S.IconButton>
 
                     {showNotifications && (
