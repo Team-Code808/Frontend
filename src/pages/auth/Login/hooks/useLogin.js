@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../api/Loginapi";
+import { login } from "../api/loginApi";
 import { decodeToken } from "../../../../utils/jwtUtils";
+import { tokenManager } from "../../../../utils/tokenManager";
 
 export const useLogin = (onLogin) => {
   const navigate = useNavigate();
@@ -24,9 +25,9 @@ export const useLogin = (onLogin) => {
         password: formData.password,
       });
 
-      if (response.token) {
-        localStorage.setItem("authToken", response.token);
-        const payload = decodeToken(response.token);
+      if (response.accessToken) {
+        tokenManager.setAccessToken(response.accessToken);
+        const payload = decodeToken(response.accessToken);
 
         onLogin({
           id: response.memberId,
@@ -40,7 +41,7 @@ export const useLogin = (onLogin) => {
           department: response.departmentName,
           departmentId: response.departmentId,
           phone: response.phone,
-          token: response.token,
+          // token: response.token,
           joinStatus: response.joinStatus,
         });
 
@@ -53,7 +54,10 @@ export const useLogin = (onLogin) => {
       }
     } catch (error) {
       console.error("로그인 실패:", error);
-      const message = error.response?.data?.message || error.message || "로그인에 실패했습니다.";
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "로그인에 실패했습니다.";
       alert(message);
     }
   };

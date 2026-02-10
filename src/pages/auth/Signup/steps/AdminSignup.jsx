@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import * as S from "../Signup.style";
-import { generateCompanyCode } from "../api/Signupapi";
+import { generateCompanyCode } from "../api/signupApi";
 
 const AdminSignup = ({ formData, onChange, onSubmit, setFormData }) => {
   const navigate = useNavigate();
