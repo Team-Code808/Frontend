@@ -71,7 +71,7 @@ function App() {
       }
       isInitialized.current = true;
 
-      if (tokenManager.getAccessToken()) {
+      if (tokenManager.getAccessToken() && user) {
         setInitializing(false);
         return;
       }

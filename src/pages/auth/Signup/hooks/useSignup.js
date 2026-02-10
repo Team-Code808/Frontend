@@ -73,9 +73,9 @@ export const useSignup = (onLogin) => {
       maxValue: formData.maxValue,
     });
 
-    if (response.accessToken) {
-      tokenManager.setAccessToken(response.accessToken);
-      const payload = decodeToken(response.accesstoken);
+    if (response.token) {
+      tokenManager.setAccessToken(response.token);
+      const payload = decodeToken(response.token);
 
       onLogin({
         email: payload?.sub || formData.email,
@@ -102,9 +102,9 @@ export const useSignup = (onLogin) => {
       rankId: formData.rankId,
     });
 
-    if (response.accessToken) {
-      tokenManager.setAccessToken(response.accessToken);
-      const payload = decodeToken(response.accessToken);
+    if (response.token) {
+      tokenManager.setAccessToken(response.token);
+      const payload = decodeToken(response.token);
 
       onLogin({
         email: payload?.sub || formData.email,

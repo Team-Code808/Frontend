@@ -22,7 +22,7 @@ export const basicSignup = async (data) => {
 
 export const registerCompany = async (data) => {
   try {
-    const response = await apiClient.post("/companies/register", {
+    const response = await apiClient.post(`/companies/register`, {
       companyName: data.companyName,
       companyCode: data.companyCode,
       category: data.category,
