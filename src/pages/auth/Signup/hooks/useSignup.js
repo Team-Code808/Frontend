@@ -5,8 +5,9 @@ import {
   registerCompany,
   joinCompany,
   verifyCompanyCode,
-} from "../api/Signupapi";
+} from "../api/signupApi";
 import { decodeToken } from "../../../../utils/jwtUtils";
+import { tokenManager } from "../../../../utils/tokenManager";
 
 export const useSignup = (onLogin) => {
   const navigate = useNavigate();
@@ -54,8 +55,8 @@ export const useSignup = (onLogin) => {
       phone: formData.phone,
     });
 
-    if (response.token) {
-      localStorage.setItem("authToken", response.token);
+    if (response.accessToken) {
+      tokenManager.setAccessToken(response.accessToken);
     }
 
     return response;
@@ -72,9 +73,9 @@ export const useSignup = (onLogin) => {
       maxValue: formData.maxValue,
     });
 
-    if (response.token) {
-      localStorage.setItem("authToken", response.token);
-      const payload = decodeToken(response.token);
+    if (response.accessToken) {
+      tokenManager.setAccessToken(response.accessToken);
+      const payload = decodeToken(response.accesstoken);
 
       onLogin({
         email: payload?.sub || formData.email,
@@ -83,7 +84,7 @@ export const useSignup = (onLogin) => {
         companyCode: formData.companyCode,
         companyName: formData.companyName,
         phone: formData.phone,
-        token: response.token,
+        // token: response.token,
       });
 
       navigate("/app/dashboard");
@@ -101,9 +102,9 @@ export const useSignup = (onLogin) => {
       rankId: formData.rankId,
     });
 
-    if (response.token) {
-      const token = localStorage.setItem("authToken", response.token);
-      const payload = decodeToken(response.token);
+    if (response.accessToken) {
+      tokenManager.setAccessToken(response.accessToken);
+      const payload = decodeToken(response.accessToken);
 
       onLogin({
         email: payload?.sub || formData.email,
@@ -112,7 +113,7 @@ export const useSignup = (onLogin) => {
         companyCode: formData.companyCode.toUpperCase(),
         companyName: companyVerification.companyName,
         phone: formData.phone,
-        token: response.token,
+        // token: response.token,
         joinStatus: response.joinStatus,
       });
 

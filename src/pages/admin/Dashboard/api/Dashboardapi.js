@@ -1,16 +1,11 @@
-import axios from "axios";
-import { API_URL } from "../../../../Config.jsx";
+import apiClient from "../../../../api/axios";
 
 export const getDashboardStats = async (companyId, date) => {
-  const token = localStorage.getItem("authToken");
   try {
-    const response = await axios.get(`${API_URL}/api/dashboard/stats`, {
+    const response = await apiClient.get("/dashboard/stats", {
       params: {
         companyId,
         date,
-      },
-      headers: {
-        Authorization: `Bearer ${token}`,
       },
     });
     return response.data;

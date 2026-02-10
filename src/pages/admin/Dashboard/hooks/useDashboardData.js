@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getDashboardStats } from "../api/Dashboardapi";
+import { getDashboardStats } from "../api/dashboardApi";
 
 const useDashboardData = (initialCompanyId = 1, initialDate = "2026-02-05") => {
   const [dashboardData, setDashboardData] = useState(null);

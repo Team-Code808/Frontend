@@ -1,37 +1,32 @@
 import { decodeToken } from "../../utils/jwtUtils";
+import { tokenManager } from "../../utils/tokenManager";
 
 export const createAuthSlice = (set) => ({
   user: null,
   isAdminMode: false,
+  isInitializing: true,
 
   setUser: (user) => set({ user }),
   setIsAdminMode: (mode) => set({ isAdminMode: mode }),
+  setInitializing: (status) => set({ isInitializing: status }),
 
   login: (user) => {
     const role =
       user.role || (user.token ? decodeToken(user.token)?.role : null);
     const isAdmin = role === "ADMIN";
 
-    if (user.token) {
-      localStorage.setItem("authToken", user.token);
-    }
-
-    console.log("User:", user);
-    console.log("Role:", role);
-    console.log("Is Admin:", isAdmin);
-
     set({
       user: {
         ...user,
         role: role,
-        memberId: user.memberId || user.id, // memberId 저장
+        memberId: user.memberId || user.id,
       },
       isAdminMode: isAdmin,
     });
   },
 
   logout: () => {
-    localStorage.removeItem("authToken");
+    tokenManager.clearAccessToken();
 
     set({
       user: null,
