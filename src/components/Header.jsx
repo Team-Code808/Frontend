@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Info,
+  MessageCircle,
 } from "lucide-react";
 import { NavItemType } from "../constants/types";
 import Logo from "./Logo";
@@ -314,6 +315,14 @@ const Header = () => {
                 </S.ProfileButton>
 
                 <S.ActionDivider $isAdminMode={isAdminMode}>
+                  {/* 채팅 버튼 */}
+                  <S.IconButton
+                    onClick={() => navigate("/app/chat")}
+                    $isAdminMode={isAdminMode}
+                  >
+                    <MessageCircle size={20} />
+                  </S.IconButton>
+
                   {/* 알림 버튼 및 팝업 */}
                   <div style={{ position: "relative" }} ref={notificationRef}>
                     <S.IconButton
