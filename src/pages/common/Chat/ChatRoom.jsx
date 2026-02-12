@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import useStore from '../../../store/useStore';
-import { ChatArea, MessageList, MessageBubble, InputArea } from './Chat.styles';
+import { ChatArea, MessageList, MessageBubble, InputArea, DateSeparator } from './Chat.styles';
 import axios from '../../../api/axios';
 
 const ChatRoom = ({ isDark }) => {
@@ -86,6 +86,13 @@ const ChatRoom = ({ isDark }) => {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
+    // 날짜 포맷팅 헬퍼 함수 (YYYY년 MM월 DD일)
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div style={{
@@ -111,12 +118,24 @@ const ChatRoom = ({ isDark }) => {
                     // Ensure robust comparison (string vs number)
                     const isMe = user && (String(myId) === String(msg.senderId));
 
+                    // 날짜 변경 확인 로직
+                    const currentDate = new Date(msg.createdDate).toDateString();
+                    const prevDate = index > 0 ? new Date(messages[index - 1].createdDate).toDateString() : null;
+                    const showDateSeparator = index === 0 || currentDate !== prevDate;
+
                     return (
-                        <MessageBubble key={msg.id || index} $isMe={isMe} $isDark={isDark}>
-                            {!isMe && <div className="sender">{msg.senderName}</div>}
-                            <div>{msg.content}</div>
-                            <div className="time">{formatTime(msg.createdDate)}</div>
-                        </MessageBubble>
+                        <React.Fragment key={msg.id || index}>
+                            {showDateSeparator && (
+                                <DateSeparator $isDark={isDark}>
+                                    {formatDate(msg.createdDate)}
+                                </DateSeparator>
+                            )}
+                            <MessageBubble $isMe={isMe} $isDark={isDark}>
+                                {!isMe && <div className="sender">{msg.senderName}</div>}
+                                <div>{msg.content}</div>
+                                <div className="time">{formatTime(msg.createdDate)}</div>
+                            </MessageBubble>
+                        </React.Fragment>
                     );
                 })}
                 <div ref={messageEndRef} />

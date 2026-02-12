@@ -183,3 +183,21 @@ export const EmptyState = styled.div`
     color: ${props => props.$isDark ? darkTheme.textSecondary : '#888'};
     font-size: 1.1rem;
 `;
+
+export const DateSeparator = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+    color: ${props => props.$isDark ? darkTheme.textSecondary : '#888'};
+    font-size: 0.85rem;
+    font-weight: 500;
+
+    &::before,
+    &::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid ${props => props.$isDark ? darkTheme.border : '#e0e0e0'};
+        margin: 0 10px;
+    }
+`;
