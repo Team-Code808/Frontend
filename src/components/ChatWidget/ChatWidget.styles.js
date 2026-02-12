@@ -10,6 +10,12 @@ const pulse = keyframes`
   50% { box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5); }
 `;
 
+const typingDots = keyframes`
+  0%, 20% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+`;
+
 export const WidgetWrapper = styled.div`
   position: fixed;
   bottom: 1.5rem;
@@ -106,6 +112,30 @@ export const MessageTime = styled.span`
   margin-top: 0.25rem;
   font-size: 0.6875rem;
   opacity: 0.8;
+`;
+
+export const TypingIndicator = styled.div`
+  align-self: flex-start;
+  padding: 0.75rem 1.25rem;
+  border-radius: 1rem;
+  border-bottom-left-radius: 0.25rem;
+  background: ${(p) => (p.$admin ? '#1e293b' : '#f1f5f9')};
+  border: 1px solid ${(p) => (p.$admin ? '#334155' : '#e2e8f0')};
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+
+  span {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: ${(p) => (p.$admin ? '#94a3b8' : '#64748b')};
+    animation: ${typingDots} 1.4s ease-in-out infinite both;
+
+    &:nth-child(1) { animation-delay: 0s; }
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+  }
 `;
 
 export const InputArea = styled.div`

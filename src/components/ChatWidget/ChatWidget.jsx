@@ -107,6 +107,13 @@ const ChatWidget = () => {
               <S.MessageTime>{msg.time}</S.MessageTime>
             </S.MessageBubble>
           ))}
+          {isSending && (
+            <S.TypingIndicator $admin={isAdminMode} aria-label="응답 생성 중">
+              <span />
+              <span />
+              <span />
+            </S.TypingIndicator>
+          )}
         </S.MessageList>
         <S.InputArea $admin={isAdminMode}>
           <S.ChatInput
