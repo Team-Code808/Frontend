@@ -1,28 +1,31 @@
-
-import apiClient from './axios';
+import apiClient from "./axios";
 
 export const applicationsApi = {
   /** 관리자: 회사 전체 휴가 신청 목록 (백엔드: GET /api/admin/vacation) */
   getLeaves: async () => {
-    const response = await apiClient.get('/admin/vacation');
+    const response = await apiClient.get("/admin/vacation");
     return response.data;
   },
 
   /** 휴가 승인 */
   approveLeave: async (vacationId) => {
-    const response = await apiClient.put(`/admin/vacation/${vacationId}/approve`);
+    const response = await apiClient.put(
+      `/admin/vacation/${vacationId}/approve`
+    );
     return response.data;
   },
 
   /** 휴가 반려 (승인과 동일하게 본문 없이 PUT) */
   rejectLeave: async (vacationId) => {
-    const response = await apiClient.put(`/admin/vacation/${vacationId}/reject`);
+    const response = await apiClient.put(
+      `/admin/vacation/${vacationId}/reject`
+    );
     return response.data;
   },
 
   /** 상담 신청 목록 (관리자, 회사별) - 휴가/입사처럼 전체 상태 유지 */
   getConsultations: async () => {
-    const response = await apiClient.get('/admin/consultations');
+    const response = await apiClient.get("/admin/consultations");
     return response.data;
   },
 
@@ -38,7 +41,7 @@ export const applicationsApi = {
 
   /** 관리자: 입사 신청(대기) 목록 (백엔드: GET /api/admin/joins) */
   getJoins: async () => {
-    const response = await apiClient.get('/admin/joins');
+    const response = await apiClient.get("/admin/joins");
     return response.data;
   },
 

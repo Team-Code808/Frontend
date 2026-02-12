@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_URL } from "../../../../Config.jsx";
+import apiClient from "../../../../api/axios";
 
 export const basicSignup = async (data) => {
   try {
@@ -20,23 +21,14 @@ export const basicSignup = async (data) => {
 };
 
 export const registerCompany = async (data) => {
-  const token = localStorage.getItem("authToken");
   try {
-    const response = await axios.post(
-      `${API_URL}/api/companies/register`,
-      {
-        companyName: data.companyName,
-        companyCode: data.companyCode,
-        category: data.category,
-        minValue: data.minValue,
-        maxValue: data.maxValue,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await apiClient.post(`/companies/register`, {
+      companyName: data.companyName,
+      companyCode: data.companyCode,
+      category: data.category,
+      minValue: data.minValue,
+      maxValue: data.maxValue,
+    });
     return response.data;
   } catch (error) {
     console.error("관리자 회원가입 실패:", error);
@@ -45,21 +37,12 @@ export const registerCompany = async (data) => {
 };
 
 export const joinCompany = async (data) => {
-  const token = localStorage.getItem("authToken");
   try {
-    const response = await axios.post(
-      `${API_URL}/api/companies/join`,
-      {
-        companyCode: data.companyCode,
-        departmentId: data.departmentId,
-        rankId: data.rankId,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await apiClient.post(`/companies/join`, {
+      companyCode: data.companyCode,
+      departmentId: data.departmentId,
+      rankId: data.rankId,
+    });
     return response.data;
   } catch (error) {
     console.error("직원 회원가입 실패:", error);
