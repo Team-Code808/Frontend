@@ -1,18 +1,18 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
-// Dark Mode Colors
+// 다크 모드 색상
 const darkTheme = {
-    bg: '#0f172a',       // Slate 900
-    sidebar: '#1e293b',  // Slate 800
-    border: '#334155',   // Slate 700
-    text: '#f1f5f9',     // Slate 100
-    textSecondary: '#94a3b8', // Slate 400
+    bg: '#0f172a',
+    sidebar: '#1e293b',
+    border: '#334155',
+    text: '#f1f5f9',
+    textSecondary: '#94a3b8',
     hover: 'rgba(255, 255, 255, 0.05)',
-    active: 'rgba(59, 130, 246, 0.1)', // Blue tint
-    messageBg: '#334155', // Slate 700
-    myMessageBg: '#3b82f6', // Blue 500
+    active: 'rgba(59, 130, 246, 0.1)',
+    messageBg: '#334155',
+    myMessageBg: '#3b82f6',
     myMessageText: '#ffffff',
-    inputBg: '#020617', // Slate 950
+    inputBg: '#020617',
 };
 
 export const ChatContainer = styled.div`
@@ -93,8 +93,21 @@ export const MessageList = styled.div`
     background-color: ${props => props.$isDark ? darkTheme.bg : '#f9f9f9'};
 `;
 
+export const MessageRow = styled.div`
+    display: flex;
+    width: 100%;
+    justify-content: ${props => props.$isMe ? 'flex-end' : 'flex-start'};
+    margin-bottom: 5px;
+`;
+
+export const MessageGroup = styled.div`
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    max-width: 70%; 
+`;
+
 export const MessageBubble = styled.div`
-    max-width: 70%;
     padding: 10px 15px;
     border-radius: 20px;
     background-color: ${(props) => {
@@ -105,16 +118,17 @@ export const MessageBubble = styled.div`
         if (props.$isMe) return props.$isDark ? darkTheme.myMessageText : 'inherit';
         return props.$isDark ? darkTheme.text : 'inherit';
     }};
-    align-self: ${(props) => (props.$isMe ? 'flex-end' : 'flex-start')};
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     position: relative;
-    word-break: break-word;
-
+    word-break: break-all; 
+    word-wrap: break-word; 
+    white-space: pre-wrap; 
+    
     .sender {
         font-size: 0.75rem;
         margin-bottom: 4px;
         color: ${(props) => {
-        if (props.$isMe) return props.$isDark ? '#e2e8f0' : '#e3f2fd'; // Slightly lighter for dark mode
+        if (props.$isMe) return props.$isDark ? '#e2e8f0' : '#e3f2fd'; // 다크 모드에서 약간 더 밝게
         return props.$isDark ? darkTheme.textSecondary : '#888';
     }};
     }
@@ -127,77 +141,157 @@ export const MessageBubble = styled.div`
     }
 `;
 
-export const InputArea = styled.form`
-    padding: 20px;
-    background-color: ${props => props.$isDark ? darkTheme.sidebar : 'white'};
-    border-top: 1px solid ${props => props.$isDark ? darkTheme.border : '#e0e0e0'};
-    display: flex;
-    gap: 10px;
 
-    input {
-        flex: 1;
-        padding: 12px;
-        background-color: ${props => props.$isDark ? darkTheme.inputBg : 'white'};
-        color: ${props => props.$isDark ? darkTheme.text : 'inherit'};
-        border: 1px solid ${props => props.$isDark ? darkTheme.border : '#ddd'};
-        border-radius: 8px;
-        outline: none;
-        font-size: 1rem;
+// 메뉴 등장을 위한 키프레임 애니메이션
+const menuAppear = `
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+  to {
+    opacity: 1;
+    transform: translateY(0);
+}
+`;
 
-        &:focus {
-            border-color: #2196f3;
-        }
-
-        &::placeholder {
-            color: ${props => props.$isDark ? darkTheme.textSecondary : '#aaa'};
-        }
-    }
+export const MessageActionsMenu = styled.div`
+position: absolute;
+top: 0;
+right: calc(100% + 10px); /* 말풍선 왼쪽으로 배치 */
+/* left는 auto */
+background: white;
+border-radius: 12px;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+z-index: 100;
+display: flex;
+flex-direction: column;
+overflow: hidden;
+min-width: 120px;
+border: 1px solid rgba(0, 0, 0, 0.05);
+animation: 0.2s ease-out 0s 1 normal forwards running ${keyframes`
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    `};
 
     button {
-        padding: 0 24px;
-        background-color: #2196f3;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background-color 0.2s;
-
-        &:hover {
-            background-color: #1976d2;
-        }
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    background: none;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #475569;
+    text-align: left;
+    transition: all 0.2s;
+    font-weight: 500;
+    white-space: nowrap; 
         
-        &:disabled {
-            background-color: ${props => props.$isDark ? '#475569' : '#ccc'};
-            color: ${props => props.$isDark ? '#94a3b8' : 'white'};
-            cursor: not-allowed;
+        &:hover {
+        background-color: #f8fafc;
+        color: #1e293b;
+    }
+
+        &:not(:last-child) {
+        border-bottom: 1px solid #f1f5f9;
+    }
+        
+        &.delete-btn {
+        color: #ef4444; /* 삭제 버튼은 빨간색 */
+            &:hover {
+            background-color: #fef2f2;
+            color: #dc2626;
         }
     }
+
+        svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+`;
+
+export const UnreadCount = styled.span`
+font-size: 0.7rem;
+color: #fbbf24; /* 노란색-400 */
+font-weight: bold;
+margin: 0 5px;
+align-self: flex-end;
+margin-bottom: 5px;
+`;
+
+export const InputArea = styled.form`
+padding: 20px;
+background-color: ${props => props.$isDark ? darkTheme.sidebar : 'white'};
+border-top: 1px solid ${props => props.$isDark ? darkTheme.border : '#e0e0e0'};
+display: flex;
+gap: 10px;
+
+    input {
+    flex: 1;
+    padding: 12px;
+    background-color: ${props => props.$isDark ? darkTheme.inputBg : 'white'};
+    color: ${props => props.$isDark ? darkTheme.text : 'inherit'};
+    border: 1px solid ${props => props.$isDark ? darkTheme.border : '#ddd'};
+    border-radius: 8px;
+    outline: none;
+    font-size: 1rem;
+
+        &:focus {
+        border-color: #2196f3;
+    }
+
+        &::placeholder {
+        color: ${props => props.$isDark ? darkTheme.textSecondary : '#aaa'};
+    }
+}
+
+    button {
+    padding: 0 24px;
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+        &:hover {
+        background-color: #1976d2;
+    }
+        
+        &:disabled {
+        background-color: ${props => props.$isDark ? '#475569' : '#ccc'};
+        color: ${props => props.$isDark ? '#94a3b8' : 'white'};
+        cursor: not-allowed;
+    }
+}
 `;
 
 export const EmptyState = styled.div`
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: ${props => props.$isDark ? darkTheme.textSecondary : '#888'};
-    font-size: 1.1rem;
+flex: 1;
+display: flex;
+align-items: center;
+justify-content: center;
+color: ${props => props.$isDark ? darkTheme.textSecondary : '#888'};
+font-size: 1.1rem;
 `;
 
 export const DateSeparator = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 20px 0;
-    color: ${props => props.$isDark ? darkTheme.textSecondary : '#888'};
-    font-size: 0.85rem;
-    font-weight: 500;
+display: flex;
+justify-content: center;
+align-items: center;
+margin: 20px 0;
+color: ${props => props.$isDark ? darkTheme.textSecondary : '#888'};
+font-size: 0.85rem;
+font-weight: 500;
 
     &::before,
     &::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid ${props => props.$isDark ? darkTheme.border : '#e0e0e0'};
-        margin: 0 10px;
-    }
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid ${props => props.$isDark ? darkTheme.border : '#e0e0e0'};
+    margin: 0 10px;
+}
 `;

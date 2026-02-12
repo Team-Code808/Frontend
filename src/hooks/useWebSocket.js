@@ -84,26 +84,38 @@ const useWebSocket = () => {
         if (!currentRoomId || !stompClient || !isConnected) return;
 
         // stompClient가 실제로 연결되어 있는지 확인
-        if (!stompClient.connected) {
-            console.log('STOMP client is not connected yet. Waiting...');
-            return;
-        }
+        if (!stompClient.connected) return;
 
         console.log(`Subscribing to room: ${currentRoomId}`);
         let subscription;
+        let readSubscription;
+
+        const { addMessage, updateReadStatus } = useStore.getState().chat;
 
         try {
             subscription = stompClient.subscribe(
                 `/sub/chat/room/${currentRoomId}`,
                 (message) => {
-                    const receivedMsg = JSON.parse(message.body);
-                    console.log('Received message:', receivedMsg);
-                    addMessage(receivedMsg);
+                    console.log('STOMP Message Received:', message.body);
+                    try {
+                        const receivedMsg = JSON.parse(message.body);
+                        console.log('Parsed Message:', receivedMsg);
+                        addMessage(receivedMsg);
+                    } catch (e) {
+                        console.error('JSON Parse Error:', e);
+                    }
+                }
+            );
+
+            readSubscription = stompClient.subscribe(
+                `/sub/chat/room/${currentRoomId}/read`,
+                (message) => {
+                    const { lastReadMessageId } = JSON.parse(message.body);
+                    updateReadStatus(lastReadMessageId);
                 }
             );
         } catch (error) {
             console.error("Subscription failed:", error);
-            // 구독 실패 시 (연결 끊김 등) isConnected 상태 업데이트 시도
             if (error.message.includes("no underlying STOMP connection")) {
                 setIsConnected(false);
                 setStompClient(null);
@@ -112,15 +124,10 @@ const useWebSocket = () => {
 
         return () => {
             console.log(`Unsubscribing from room: ${currentRoomId}`);
-            if (subscription) {
-                try {
-                    subscription.unsubscribe();
-                } catch (e) {
-                    console.error('Failed to unsubscribe:', e);
-                }
-            }
+            if (subscription) subscription.unsubscribe();
+            if (readSubscription) readSubscription.unsubscribe();
         };
-    }, [currentRoomId, addMessage, isConnected, stompClient]);
+    }, [currentRoomId, isConnected, stompClient, setIsConnected, setStompClient]);
 
     return stompClient;
 };
