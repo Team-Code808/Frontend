@@ -1,6 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import useStore from "./store/useStore";
-import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  useNavigate,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import MainLayout from "./layouts/MainLayout/MainLayout";
 
 // 관리자 페이지
@@ -30,18 +36,74 @@ import PointMall from "./pages/employee/PointMall/PointMall";
 
 import { ShieldAlert, Clock } from "lucide-react";
 import * as S from "./App.styles";
+import { tokenManager } from "./utils/tokenManager";
+import { refreshAccessToken } from "./api/authApi";
+import { decodeToken } from "./utils/jwtUtils";
 
 const ProtectedRoute = ({ children }) => {
-  const user = useStore((state) => state.user);
+  const { user, isInitializing } = useStore();
+
+  if (isInitializing) {
+    return null;
+  }
+
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
+
   return children;
 };
 
 function App() {
-  const { user, isAdminMode } = useStore();
+  const { user, isAdminMode, setInitializing } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  const login = useStore((state) => state.login);
+
+  const isInitialized = React.useRef(false);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      // 이미 초기화가 완료된 경우
+      if (isInitialized.current) {
+        setInitializing(false);
+        return;
+      }
+      isInitialized.current = true;
+
+      if (tokenManager.getAccessToken() && user) {
+        setInitializing(false);
+        return;
+      }
+
+      if (location.pathname.startsWith("/auth") || location.pathname === "/") {
+        setInitializing(false);
+        return;
+      }
+
+      try {
+        const newAccessToken = await refreshAccessToken();
+        tokenManager.setAccessToken(newAccessToken);
+
+        const payload = decodeToken(newAccessToken);
+
+        login({
+          email: payload?.sub,
+          role: payload?.role,
+          memberId: payload?.memberId,
+        });
+      } catch (error) {
+        tokenManager.clearAccessToken();
+
+        if (!window.location.pathname.startsWith("/auth")) {
+          navigate("/auth");
+        }
+      } finally {
+        setInitializing(false);
+      }
+    };
+    initAuth();
+  }, [location.pathname, login, setInitializing, navigate]);
 
   const handleStart = () => navigate("/auth");
   const handleFeatureDetails = () => navigate("/features");
@@ -90,7 +152,8 @@ function App() {
                   title="승인 대기 중"
                   description="관리자의 입사 승인을 기다리고 있습니다."
                 />
-              ) : (user?.joinStatus === "REJECTED" || user?.joinStatus === "R") ? (
+              ) : user?.joinStatus === "REJECTED" ||
+                user?.joinStatus === "R" ? (
                 <Navigate to="/auth?step=SIGNUP_TYPE" replace />
               ) : (
                 <Routes>
@@ -116,10 +179,6 @@ function App() {
                         element={<AdminApplications />}
                       />
                       <Route path="mypage/*" element={<AdminMyPage />} />
-                      {/* <Route
-                        path="*"
-                        element={<Navigate to="/app/dashboard" replace />}
-                      /> */}
                     </>
                   )}
 

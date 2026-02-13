@@ -10,23 +10,23 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import * as S from "../Signup.style";
-import { generateCompanyCode } from "../api/Signupapi";
+import { generateCompanyCode } from "../api/signupApi";
 
 const AdminSignup = ({ formData, onChange, onSubmit, setFormData }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchCompanyCode = async () => {
-      try {
-        const response = await generateCompanyCode();
+  const fetchCompanyCode = async () => {
+    try {
+      const response = await generateCompanyCode();
         setFormData((prev) => ({
           ...prev,
           companyCode: response.companyCode,
         }));
-      } catch (error) {
-        console.error("회사 코드 생성 실패:", error);
-      }
-    };
+    } catch (error) {
+      console.error("회사 코드 생성 실패:", error);
+    }
+  };
 
     // companyCode가 없을 때만 생성
     if (!formData.companyCode) {

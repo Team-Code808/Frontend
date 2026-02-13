@@ -1,11 +1,14 @@
 import { decodeToken } from "../../utils/jwtUtils";
+import { tokenManager } from "../../utils/tokenManager";
 
 export const createAuthSlice = (set) => ({
   user: null,
   isAdminMode: false,
+  isInitializing: true,
 
   setUser: (user) => set({ user }),
   setIsAdminMode: (mode) => set({ isAdminMode: mode }),
+  setInitializing: (status) => set({ isInitializing: status }),
 
   login: (user) => {
     const decoded = user.token ? decodeToken(user.token) : null;
@@ -15,27 +18,25 @@ export const createAuthSlice = (set) => ({
        const companyId = user.companyId || decoded?.companyId;
       const isAdmin = role === "ADMIN";
 
-    if (user.token) {
-      localStorage.setItem("authToken", user.token);
-    }
+    // console.log("=== 로그인 데이터 확인 ===");
+    // console.log("원본 user 객체:", user);
+    // console.log("디코딩된 토큰:", decoded);
+    // console.log("최종 추출된 companyId:", companyId);
 
-    console.log("User:", user);
-    console.log("Role:", role);
-    console.log("Is Admin:", isAdmin);
 
     set({
       user: {
         ...user,
         companyId: companyId,
         role: role,
-        memberId: user.memberId || user.id, // memberId 저장
+        memberId: user.memberId || user.id,
       },
       isAdminMode: isAdmin,
     });
   },
 
   logout: () => {
-    localStorage.removeItem("authToken");
+    tokenManager.clearAccessToken();
 
     set({
       user: null,

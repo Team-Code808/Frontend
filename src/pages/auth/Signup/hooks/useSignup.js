@@ -5,8 +5,9 @@ import {
   registerCompany,
   joinCompany,
   verifyCompanyCode,
-} from "../api/Signupapi";
+} from "../api/signupApi";
 import { decodeToken } from "../../../../utils/jwtUtils";
+import { tokenManager } from "../../../../utils/tokenManager";
 
 export const useSignup = (onLogin) => {
   const navigate = useNavigate();
@@ -54,8 +55,8 @@ export const useSignup = (onLogin) => {
       phone: formData.phone,
     });
 
-    if (response.token) {
-      localStorage.setItem("authToken", response.token);
+    if (response.accessToken) {
+      tokenManager.setAccessToken(response.accessToken);
     }
 
     return response;
@@ -73,7 +74,7 @@ export const useSignup = (onLogin) => {
     });
 
     if (response.token) {
-      localStorage.setItem("authToken", response.token);
+      tokenManager.setAccessToken(response.token);
       const payload = decodeToken(response.token);
 
       onLogin({
@@ -83,7 +84,7 @@ export const useSignup = (onLogin) => {
         companyCode: formData.companyCode,
         companyName: formData.companyName,
         phone: formData.phone,
-        token: response.token,
+        // token: response.token,
       });
 
       navigate("/app/dashboard");
@@ -102,7 +103,7 @@ export const useSignup = (onLogin) => {
     });
 
     if (response.token) {
-      const token = localStorage.setItem("authToken", response.token);
+      tokenManager.setAccessToken(response.token);
       const payload = decodeToken(response.token);
 
       onLogin({
@@ -112,7 +113,7 @@ export const useSignup = (onLogin) => {
         companyCode: formData.companyCode.toUpperCase(),
         companyName: companyVerification.companyName,
         phone: formData.phone,
-        token: response.token,
+        // token: response.token,
         joinStatus: response.joinStatus,
       });
 
