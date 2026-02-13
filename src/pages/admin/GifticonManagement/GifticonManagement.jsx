@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Gift, CheckCircle2, XCircle, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../../../store/useStore';
@@ -6,9 +6,17 @@ import * as S from './GifticonManagement.styles';
 
 const AdminGifticonManagement = () => {
     const navigate = useNavigate();
-    const { items, toggleItemStatus, activateAll, deactivateAll, updateItemQuantity } = useStore();
+
+    const { items, fetchItems, toggleItemStatus, activateAll, deactivateAll, updateItemQuantity } = useStore();
     const [editingQuantity, setEditingQuantity] = useState({});
 
+    useEffect(() => {
+        fetchItems();
+         console.log(items);
+    }, [fetchItems]);
+
+    
+    
     return (
         <S.Container>
             <S.PageHeader>
@@ -21,11 +29,11 @@ const AdminGifticonManagement = () => {
                         <ShoppingBag size={18} />
                         구매 내역
                     </S.BulkButton>
-                    <S.BulkButton onClick={activateAll} variant="activate">
+                    <S.BulkButton onClick={activateAll} $variant="activate">
                         <CheckCircle2 size={18} />
                         전체 활성화
                     </S.BulkButton>
-                    <S.BulkButton onClick={deactivateAll} variant="deactivate">
+                    <S.BulkButton onClick={deactivateAll} $variant="deactivate">
                         <XCircle size={18} />
                         전체 비활성화
                     </S.BulkButton>
@@ -34,8 +42,8 @@ const AdminGifticonManagement = () => {
 
             <S.Grid>
                 {items.map(item => (
-                    <S.ItemCard key={item.id} active={item.isActive}>
-                        <S.ItemImage active={item.isActive}>
+                    <S.ItemCard key={item.id} $activeStatus={item.active}>
+                        <S.ItemImage $activeStatus={item.active}>
                             {item.img}
                         </S.ItemImage>
                         <S.ItemInfo>
@@ -95,11 +103,11 @@ const AdminGifticonManagement = () => {
                         </S.QuantityRow>
 
                         <S.StatusRow>
-                            <S.StatusBadge active={item.isActive}>
-                                {item.isActive ? '판매중' : '비활성'}
+                            <S.StatusBadge $activeStatus={item.active}>
+                                {item.active ? '판매중' : '비활성'}
                             </S.StatusBadge>
                             <S.ToggleButton
-                                active={item.isActive}
+                                $activeStatus={item.active}
                                 onClick={() => toggleItemStatus(item.id)}
                             />
                         </S.StatusRow>

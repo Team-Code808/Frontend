@@ -1,13 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
 import useStore from "./store/useStore";
-import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  useNavigate,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import MainLayout from "./layouts/MainLayout/MainLayout";
 
-
 // 관리자 페이지
+import AdminDashboard from "./pages/admin/Dashboard/Dashboard";
 import AdminGifticonManagement from "./pages/admin/GifticonManagement/GifticonManagement";
-import PurchaseHistory from "./pages/admin/GifticonManagement/PurchaseHistory";
-
+import PurchaseHistory from "./pages/admin/GifticonManagement/PurchaseHistory/PurchaseHistory";
+import Monitoring from "./pages/admin/Monitoring/Monitoring";
+import AdminMyPage from "./pages/admin/Mypage/MyPage";
+import AdminApplications from "./pages/admin/Applications/Applications";
+import AdminTeamManagement from "./pages/admin/TeamManagement/TeamManagement";
 
 // 공통 페이지 (Common Pages)
 import LandingPage from "./pages/common/Landing/Landing";
@@ -18,24 +27,83 @@ import NotFound from "./pages/common/NotFound/NotFound";
 import AuthPage from "./pages/auth/Login/Login";
 
 // 직원 페이지 (Employee Pages)
-import Consultation from './pages/employee/Consultation/Consultation';
-import PointMall from './pages/employee/PointMall/PointMall';
-
+import MyPage from "./pages/employee/MyPage/MyPage";
+import Department from "./pages/employee/Department/Department";
+import Attendance from "./pages/employee/Attendance/Attendance";
+import Consultation from "./pages/employee/Consultation/Consultation";
+import Dashboard from "./pages/employee/Dashboard/Dashboard";
+import PointMall from "./pages/employee/PointMall/PointMall";
 
 import { ShieldAlert, Clock } from "lucide-react";
 import * as S from "./App.styles";
+import { tokenManager } from "./utils/tokenManager";
+import { refreshAccessToken } from "./api/authApi";
+import { decodeToken } from "./utils/jwtUtils";
 
 const ProtectedRoute = ({ children }) => {
-  const user = useStore((state) => state.user);
+  const { user, isInitializing } = useStore();
+
+  if (isInitializing) {
+    return null;
+  }
+
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
+
   return children;
 };
 
 function App() {
-  const { user, isAdminMode } = useStore();
+  const { user, isAdminMode, setInitializing } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  const login = useStore((state) => state.login);
+
+  const isInitialized = React.useRef(false);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      // 이미 초기화가 완료된 경우
+      if (isInitialized.current) {
+        setInitializing(false);
+        return;
+      }
+      isInitialized.current = true;
+
+      if (tokenManager.getAccessToken() && user) {
+        setInitializing(false);
+        return;
+      }
+
+      if (location.pathname.startsWith("/auth") || location.pathname === "/") {
+        setInitializing(false);
+        return;
+      }
+
+      try {
+        const newAccessToken = await refreshAccessToken();
+        tokenManager.setAccessToken(newAccessToken);
+
+        const payload = decodeToken(newAccessToken);
+
+        login({
+          email: payload?.sub,
+          role: payload?.role,
+          memberId: payload?.memberId,
+        });
+      } catch (error) {
+        tokenManager.clearAccessToken();
+
+        if (!window.location.pathname.startsWith("/auth")) {
+          navigate("/auth");
+        }
+      } finally {
+        setInitializing(false);
+      }
+    };
+    initAuth();
+  }, [location.pathname, login, setInitializing, navigate]);
 
   const handleStart = () => navigate("/auth");
   const handleFeatureDetails = () => navigate("/features");
@@ -78,36 +146,55 @@ function App() {
         element={
           <ProtectedRoute>
             <MainLayout>
-              {user?.joinStatus === "PENDING" ? (
+              {user?.joinStatus === "N" ? (
                 <StatusPlaceholder
                   icon={Clock}
                   title="승인 대기 중"
                   description="관리자의 입사 승인을 기다리고 있습니다."
                 />
-              ) : user?.joinStatus === "REJECTED" ? (
-                <StatusPlaceholder
-                  icon={ShieldAlert}
-                  title="신청 반려됨"
-                  description="입사 신청이 반려되었습니다."
-                />
+              ) : user?.joinStatus === "REJECTED" ||
+                user?.joinStatus === "R" ? (
+                <Navigate to="/auth?step=SIGNUP_TYPE" replace />
               ) : (
                 <Routes>
                   {/* 관리자 라우트 */}
                   {isAdminMode && (
                     <>
-                      <Route path="gifticons" element={<AdminGifticonManagement />} />
-                      <Route path="gifticons/history" element={<PurchaseHistory />} />
+                      <Route path="dashboard" element={<AdminDashboard />} />
+                      <Route
+                        path="teammanagement"
+                        element={<AdminTeamManagement />}
+                      />
+                      <Route path="monitoring" element={<Monitoring />} />
+                      <Route
+                        path="gifticons"
+                        element={<AdminGifticonManagement />}
+                      />
+                      <Route
+                        path="gifticons/history"
+                        element={<PurchaseHistory />}
+                      />
+                      <Route
+                        path="applications"
+                        element={<AdminApplications />}
+                      />
+                      <Route path="mypage/*" element={<AdminMyPage />} />
                     </>
                   )}
 
-
-                  {/* 직원 라우트 */}
+                  {/* 직원 라우트 — Header 메뉴와 경로 일치 */}
                   {!isAdminMode && (
                     <>
+                      <Route path="department" element={<Department />} />
+                      <Route path="attendance" element={<Attendance />} />
                       <Route path="consultation" element={<Consultation />} />
-                      <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
                       <Route path="pointmall" element={<PointMall />} />
-
+                      <Route path="dashboard" element={<Dashboard />} />
+                      <Route path="mypage/*" element={<MyPage />} />
+                      <Route
+                        path="*"
+                        element={<Navigate to="/app/dashboard" replace />}
+                      />
                     </>
                   )}
                 </Routes>

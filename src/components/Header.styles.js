@@ -547,7 +547,7 @@ export const ModalTabButton = styled.button`
   font-weight: 900;
   transition: all 0.2s;
   
-  ${props => props.active ? css`
+  ${props => props.$active ? css`
     background-color: white;
     box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
     border: 1px solid #f1f5f9;

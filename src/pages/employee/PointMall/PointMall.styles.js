@@ -33,7 +33,7 @@ export const BannerSection = styled.section`
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   transition: all 0.5s;
   
-  ${props => props.tab === 'SHOP'
+  ${props => props.$tab === 'SHOP'
     ? 'background-color: #f59e0b; box-shadow: 0 20px 25px -5px rgba(254, 243, 199, 0.5);' /* amber-500 */
     : 'background-color: #4f46e5; box-shadow: 0 20px 25px -5px rgba(224, 231, 255, 0.5);' /* indigo-600 */
   }
@@ -121,13 +121,13 @@ export const TabButton = styled.button`
   font-weight: 900;
   transition: all 0.2s;
   
-  ${props => props.active
+  ${props => props.$active
     ? 'background-color: white; shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);'
     : 'color: #94a3b8; &:hover { color: #475569; }'
   }
   
-  ${props => props.active && props.mode === 'SHOP' && 'color: #d97706;'} /* amber-600 */
-  ${props => props.active && props.mode === 'MISSIONS' && 'color: #4f46e5;'} /* indigo-600 */
+  ${props => props.$active && props.$mode === 'SHOP' && 'color: #d97706;'} /* amber-600 */
+  ${props => props.$active && props.$mode === 'MISSIONS' && 'color: #4f46e5;'} /* indigo-600 */
 `;
 
 /* Shop Section */
@@ -367,7 +367,7 @@ export const StatusPill = styled.span`
   font-weight: 900;
   text-transform: uppercase;
   
-  ${props => props.status === '완료'
+  ${props => props.$status === '완료'
     ? 'background-color: #dcfce7; color: #16a34a;' /* green-100 green-600 */
     : 'background-color: #f1f5f9; color: #94a3b8;' /* slate-100 slate-400 */
   }
@@ -424,22 +424,46 @@ export const ProgressBarBg = styled.div`
 export const ProgressBarFill = styled.div`
   height: 100%;
   transition: width 1s ease-out;
-  width: ${props => props.width}%;
-  background-color: ${props => props.complete ? '#22c55e' : '#6366f1'}; /* green-500 : indigo-500 */
+  width: ${props => props.$width}%;
+  background-color: ${props => props.$complete ? '#22c55e' : '#6366f1'}; /* green-500 : indigo-500 */
 `;
 
 export const ActionBtn = styled.button`
   width: 100%;
   padding: 0.625rem;
   border-radius: 0.75rem;
-  font-size: 0.75rem; /* xs */
+  font-size: 0.75rem;
   font-weight: 900;
   transition: all 0.2s;
-  
-  ${props => props.complete
-    ? 'background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed;'
-    : 'background-color: #4f46e5; color: white; box-shadow: 0 10px 15px -3px rgba(238, 242, 255, 1); &:hover { background-color: #4338ca; }'
-  }
+  cursor: pointer;
+
+  /* 1. 이미 보상을 받은 경우 (회색) */
+  ${props => props.$complete && `
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+  `}
+
+  /* 2. 아직 미션 진행 중인 경우 (연한 파란색 또는 테두리만) */
+  ${props => !props.$complete && !props.$canClick && `
+    background-color: #e0e7ff; /* 연한 보라/파랑 */
+    color: #a5b4fc;
+    cursor: not-allowed;
+  `}
+
+  /* 3. 미션 완료! 보상 받을 수 있는 상태 (진한 파란색 + 호버) */
+  ${props => !props.$complete && props.$canClick && `
+    background-color: #4f46e5;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+    &:hover {
+      background-color: #4338ca;
+      transform: translateY(-1px);
+    }
+    &:active {
+      transform: translateY(0);
+    }
+  `}
 `;
 
 const zoomIn = keyframes`

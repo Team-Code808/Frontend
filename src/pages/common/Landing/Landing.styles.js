@@ -174,7 +174,7 @@ export const HeroButton = styled.button`
   }
 
   /* Primary Variant */
-  ${props => props.variant === 'primary' && css`
+  ${props => props.$variant === 'primary' && css`
     background-color: #2563eb;
     color: white;
     box-shadow: 0 25px 50px -12px rgba(191, 219, 254, 1);
@@ -190,7 +190,7 @@ export const HeroButton = styled.button`
   `}
 
   /* Secondary Variant */
-  ${props => props.variant === 'secondary' && css`
+  ${props => props.$variant === 'secondary' && css`
     background-color: white;
     color: #475569; /* text-slate-600 */
     border: 1px solid #e2e8f0; /* border-slate-200 */
@@ -235,17 +235,17 @@ export const FeatureIconBox = styled.div`
   margin-bottom: 1.5rem;
   box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 
-  ${props => props.variant === 'rose' && css`
+  ${props => props.$variant === 'rose' && css`
     background-color: #fff1f2; /* bg-rose-50 */
     color: #f43f5e; /* text-rose-500 */
   `}
   
-  ${props => props.variant === 'amber' && css`
+  ${props => props.$variant === 'amber' && css`
     background-color: #fffbeb; /* bg-amber-50 */
     color: #f59e0b; /* text-amber-500 */
   `}
 
-  ${props => props.variant === 'indigo' && css`
+  ${props => props.$variant === 'indigo' && css`
     background-color: #eef2ff; /* bg-indigo-50 */
     color: #6366f1; /* text-indigo-500 */
   `}
