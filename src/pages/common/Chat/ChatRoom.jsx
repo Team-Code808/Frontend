@@ -62,6 +62,8 @@ const ChatRoom = ({ isDark }) => {
         fetchHistory();
     }, [currentRoomId, setMessages, user]);
 
+    const [lastMarkedReadId, setLastMarkedReadId] = useState(null);
+
     // 메시지 스크롤 하단 고정 및 읽음 처리
     useEffect(() => {
         messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -69,11 +71,16 @@ const ChatRoom = ({ isDark }) => {
         if (messages.length > 0 && user) {
             const lastMessage = messages[messages.length - 1];
             const myId = user.memberId || user.id;
+
+            // 내가 보낸 메시지가 아니고, 아직 읽음 처리 요청을 안 했으면 요청
             if (String(lastMessage.senderId) !== String(myId)) {
-                markAsRead(lastMessage.id);
+                if (lastMarkedReadId !== lastMessage.id) {
+                    markAsRead(lastMessage.id);
+                    setLastMarkedReadId(lastMessage.id);
+                }
             }
         }
-    }, [messages, user]);
+    }, [messages, user, lastMarkedReadId]);
 
     // 메뉴 외부 클릭 시 닫기
     useEffect(() => {
@@ -238,7 +245,7 @@ const ChatRoom = ({ isDark }) => {
                             <MessageRow $isMe={isMe}>
                                 <MessageGroup>
                                     {isMe && msg.unreadCount > 0 && (
-                                        <UnreadCount>{msg.unreadCount}</UnreadCount>
+                                        <UnreadCount $isMe={true}>{msg.unreadCount}</UnreadCount>
                                     )}
                                     <MessageBubble
                                         $isMe={isMe}
@@ -274,6 +281,9 @@ const ChatRoom = ({ isDark }) => {
                                             </MessageActionsMenu>
                                         )}
                                     </MessageBubble>
+                                    {!isMe && msg.unreadCount > 0 && (
+                                        <UnreadCount $isMe={false}>{msg.unreadCount}</UnreadCount>
+                                    )}
                                 </MessageGroup>
                             </MessageRow>
                         </React.Fragment>

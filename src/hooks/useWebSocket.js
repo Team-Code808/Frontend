@@ -15,6 +15,8 @@ const useWebSocket = () => {
         stompClient // Store에서 가져옴
     } = useStore((state) => state.chat);
 
+    const user = useStore((state) => state.user);
+
     // clientRef는 connection effect 내부에서만 인스턴스 관리를 위해 사용
     // (Strict Mode 대응 및 cleanup 시점 관리)
     const clientRef = useRef(null);
@@ -113,8 +115,9 @@ const useWebSocket = () => {
             readSubscription = stompClient.subscribe(
                 `/sub/chat/room/${currentRoomId}/read`,
                 (message) => {
-                    const { lastReadMessageId } = JSON.parse(message.body);
-                    updateReadStatus(lastReadMessageId);
+                    console.log('[useWebSocket] Read Event Received:', message.body);
+                    const { fromMessageId, toMessageId } = JSON.parse(message.body);
+                    updateReadStatus(fromMessageId, toMessageId);
                 }
             );
         } catch (error) {
@@ -163,7 +166,10 @@ const useWebSocket = () => {
         return () => {
             if (userSubscription) userSubscription.unsubscribe();
         };
-    }, [isConnected, stompClient]);
+        return () => {
+            if (userSubscription) userSubscription.unsubscribe();
+        };
+    }, [isConnected, stompClient, user?.email]);
 
     return stompClient;
 };

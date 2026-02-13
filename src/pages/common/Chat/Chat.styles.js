@@ -221,7 +221,8 @@ export const UnreadCount = styled.div`
     font-weight: 600;
     margin-bottom: 2px;
     align-self: flex-end;
-    margin-right: 4px;
+    margin-right: ${props => props.$isMe ? '4px' : '0'};
+    margin-left: ${props => props.$isMe ? '0' : '4px'};
 `;
 
 // 채팅방 목록의 안 읽은 메시지 수 뱃지
@@ -313,4 +314,136 @@ font-weight: 500;
     border-bottom: 1px solid ${props => props.$isDark ? darkTheme.border : '#e0e0e0'};
     margin: 0 10px;
 }
+`;
+
+export const Overlay = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+`;
+
+export const ModalContainer = styled.div`
+    background-color: ${props => props.$isDark ? darkTheme.sidebar : 'white'};
+    width: 400px;
+    max-height: 80vh;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: ${props => props.$isDark ? darkTheme.text : 'inherit'};
+`;
+
+export const ModalHeader = styled.div`
+    padding: 16px 20px;
+    border-bottom: 1px solid ${props => props.$isDark ? darkTheme.border : '#eee'};
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+`;
+
+export const SearchInput = styled.input`
+    margin: 15px 20px 10px;
+    padding: 10px;
+    border: 1px solid ${props => props.$isDark ? darkTheme.border : '#ddd'};
+    border-radius: 8px;
+    background-color: ${props => props.$isDark ? darkTheme.bg : '#f9f9f9'};
+    color: ${props => props.$isDark ? darkTheme.text : 'inherit'};
+    outline: none;
+
+    &:focus {
+        border-color: #2196f3;
+    }
+`;
+
+export const UserList = styled.div`
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 10px;
+`;
+
+export const UserItem = styled.div`
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: ${props => props.$isDark ? darkTheme.hover : '#f5f5f5'};
+    }
+
+    input[type="checkbox"] {
+        margin-right: 12px;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        
+        .name {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        
+        .dept {
+            font-size: 0.8rem;
+            color: ${props => props.$isDark ? darkTheme.textSecondary : '#888'};
+        }
+    }
+`;
+
+export const ButtonGroup = styled.div`
+    padding: 15px 20px;
+    border-top: 1px solid ${props => props.$isDark ? darkTheme.border : '#eee'};
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+`;
+
+export const ConfirmButton = styled.button`
+    padding: 8px 16px;
+    background-color: #2196f3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:disabled {
+        background-color: #90caf9;
+        cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+        background-color: #1976d2;
+    }
+`;
+
+export const CancelButton = styled.button`
+    padding: 8px 16px;
+    background-color: transparent;
+    color: ${props => props.$isDark ? darkTheme.text : '#666'};
+    border: 1px solid ${props => props.$isDark ? darkTheme.border : '#ddd'};
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+        background-color: ${props => props.$isDark ? 'rgba(255,255,255,0.05)' : '#f5f5f5'};
+    }
 `;

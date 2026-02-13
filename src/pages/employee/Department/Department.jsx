@@ -81,8 +81,8 @@ const Department = () => {
     try {
       const response = await apiClient.post('/chat/room', { targetMemberId });
       const roomId = response.data;
-      setCurrentRoomId(roomId);
-      navigate('/app/chat');
+      // setCurrentRoomId(roomId); // ChatPage에서 처리하도록 변경
+      navigate('/app/chat', { state: { roomId } });
     } catch (error) {
       console.error("Failed to start chat", error);
       alert("채팅방 생성에 실패했습니다.");
