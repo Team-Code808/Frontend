@@ -22,6 +22,7 @@ import {
 import { NavItemType } from "../constants/types";
 import Logo from "./Logo";
 import useStore from "../store/useStore"; // 스토어 임포트 위치 확인
+import axios from "../api/axios";
 import * as S from "./Header.styles";
 
 // --- 1. 전체 알림 모달 컴포넌트 ---
@@ -97,8 +98,11 @@ const AllNotificationsModal = ({ onClose }) => {
 const Header = () => {
   const {
     isAdminMode, setIsAdminMode, logout, user,
-    notifications, addNotification, markAsRead, markAllAsRead, fetchNotifications
+    notifications, addNotification, markAsRead, markAllAsRead, fetchNotifications,
+    chat // chat 스토어 추가
   } = useStore();
+
+  const { chatRooms, setChatRooms } = chat;
 
   const { name: userName, department, id: memberId } = user || {};
 
@@ -153,6 +157,22 @@ const Header = () => {
       eventSource.close();
     };
   }, [memberId, isAdminMode, fetchNotifications, addNotification]);
+
+  // [추가] 채팅방 목록 초기 로딩 (안 읽은 메시지 배지 표시용)
+  useEffect(() => {
+    if (memberId) {
+      axios.get('/chat/rooms')
+        .then(res => {
+          if (res.data) {
+            setChatRooms(res.data);
+          }
+        })
+        .catch(err => console.error("Failed to fetch chat rooms in Header:", err));
+    }
+  }, [memberId, setChatRooms]);
+
+  // 전체 안 읽은 메시지 수 계산
+  const totalUnreadChatCount = chatRooms.reduce((sum, room) => sum + (room.unreadCount || 0), 0);
 
   // 클릭 외부 감지 (유지)
   useEffect(() => {
@@ -233,6 +253,11 @@ const Header = () => {
                     $isAdminMode={isAdminMode}
                   >
                     <MessageCircle size={20} />
+                    {totalUnreadChatCount > 0 && (
+                      <S.UnreadCountBadge $isAdminMode={isAdminMode}>
+                        {totalUnreadChatCount > 99 ? "99+" : totalUnreadChatCount}
+                      </S.UnreadCountBadge>
+                    )}
                   </S.IconButton>
 
                   {/* 알림 버튼 및 팝업 */}
