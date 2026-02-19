@@ -33,7 +33,19 @@ export const createChatSlice = (set, get) => ({
             const existingIndex = state.chat.messages.findIndex(m => m.id === message.id);
             if (existingIndex !== -1) {
                 const newMessages = [...state.chat.messages];
-                newMessages[existingIndex] = { ...newMessages[existingIndex], ...message };
+                // 기존 메시지 가져오기
+                const existingMsg = newMessages[existingIndex];
+
+                // 수정/삭제 이벤트로 인해 unreadCount가 0으로 들어오는 경우, 기존 값을 유지
+                const preservedUnreadCount = (message.unreadCount !== undefined && message.unreadCount !== 0)
+                    ? message.unreadCount
+                    : existingMsg.unreadCount;
+
+                newMessages[existingIndex] = {
+                    ...existingMsg,
+                    ...message,
+                    unreadCount: preservedUnreadCount
+                };
                 return { chat: { ...state.chat, messages: newMessages } };
             } else {
                 return { chat: { ...state.chat, messages: [...state.chat.messages, message] } };
@@ -70,7 +82,17 @@ export const createChatSlice = (set, get) => ({
             chat: {
                 ...state.chat,
                 messages: state.chat.messages.map(msg =>
-                    msg.id === updatedMessage.id ? { ...msg, ...updatedMessage } : msg
+                    msg.id === updatedMessage.id
+                        ? {
+                            ...msg,
+                            ...updatedMessage,
+                            // unreadCount가 0이더라도, 수정/삭제 이벤트에서 온 0값이라면 무시하고 기존 값 유지
+                            // 단, 읽음 처리 로직에 의해 0이 된 경우는 다름 (이 함수는 주로 내용 변경용)
+                            unreadCount: (updatedMessage.unreadCount !== undefined && updatedMessage.unreadCount !== 0)
+                                ? updatedMessage.unreadCount
+                                : msg.unreadCount
+                        }
+                        : msg
                 )
             }
         })),
