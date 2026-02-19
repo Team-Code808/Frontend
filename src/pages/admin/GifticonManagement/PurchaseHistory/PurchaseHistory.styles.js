@@ -49,6 +49,49 @@ export const Filters = styled.div`
   flex-wrap: wrap;
 `;
 
+
+export const Pagination = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 0;
+    border-top: 1px solid #494444;
+`;
+
+export const PageButton = styled.button`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background-color: white;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+        background-color: #f8f9fa;
+        border-color: #bbb;
+    }
+
+    &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+`;
+
+export const PageNumber = styled.span`
+    font-size: 14px;
+    color: #666;
+    strong {
+        color: #009688; /* 포인트 컬러 */
+        font-weight: 600;
+    }
+`;
+
 export const SearchWrapper = styled.div`
   position: relative;
   display: flex;
@@ -121,24 +164,59 @@ export const DateInput = styled.input`
 `;
 
 export const TableContainer = styled.div`
-  background: rgba(30, 41, 59, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.1);
-  border-radius: 16px;
-  overflow: hidden;
-  margin-bottom: 1.5rem;
+    position: relative; /* 중요: 오버레이의 기준점 */
+    width: 100%;
+    min-height: 480px;  /* 페이지 이동 시 높이 덜컹거림 방지 */
+    background: rgba(2, 2, 27, 0.6);;
+    border-radius: 12px;
+    border: 2px solid #1f1e1e;
+    display: flex;     /* Flexbox 활성화 */
+    flex-direction: column;
+`;
+
+export const LoadingOverlay = styled.div`
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(12, 10, 10, 0.6); /* 배경 살짝 흐리게 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    backdrop-filter: blur(2px); /* 현대적인 블러 효과 */
+`;
+
+// 간단한 스피너 애니메이션 (선택 사항)
+export const Spinner = styled.div`
+    width: 30px;
+    height: 30px;
+    border: 3px solid #423f3f;
+    border-top: 3px solid #009688;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 `;
 
 export const EmptyState = styled.div`
+  /* flex: 1을 추가하여 TableContainer의 전체 높이를 차지하게 합니다. */
+  flex: 1; 
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 4rem 2rem;
+  justify-content: center; /* 세로 중앙 정렬 */
+  padding: 2rem;
   color: #94a3b8;
   gap: 1rem;
 
   svg {
     opacity: 0.5;
+    /* 아이콘이 너무 작아 보이면 크기를 고정하거나 키울 수 있습니다. */
   }
 
   p {

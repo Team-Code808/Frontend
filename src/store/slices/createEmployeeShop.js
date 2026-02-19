@@ -1,5 +1,4 @@
-import axios from "axios";
-import { API_URL } from "../../Config";
+
 import apiClient from "../../api/axios";
 
 // const getAuthHeader = () => {
@@ -11,27 +10,39 @@ export const createEmployeeShop = (set, get) => ({
   mallData: {
     currentPoint: 0,
     missions: [],
-    shopItems: [],
+    shopItems: []
   },
   loading: false,
+
   purchaseHistory: [],
 
+ purchasePagination: {
+        currentPage: 0,
+        totalPages: 0,
+        totalElements: 0,
+        isLast: true,
+    },
   // 1. 포인트몰 데이터 로드 로그 추가
   fetchPointMallData: async (userId) => {
     try {
       set({ loading: true });
 
-      // const headers = getAuthHeader();
-      const url = `/employee/shop/${userId}`;
+            const user = get().user;
+            const companyId = user?.companyId;
+
+
+            const url = `/employee/shop/${userId}`;
 
       // 요청 정보 로깅
       console.log(
         `%c🚀 GET 요청 시도: ${url}`,
         "color: #2196F3; font-weight: bold"
       );
-      // console.log("Headers:", headers);
+      
 
-      const response = await apiClient.get(url);
+      const response = await apiClient.get(url, {
+              params: { companyId: companyId } // ?companyId=11 형태로 전송됨
+             });
 
       console.log(
         "%c✅ 데이터 로드 성공:",
@@ -167,28 +178,43 @@ export const createEmployeeShop = (set, get) => ({
     }
   },
 
-  // createEmployeeShop.js
-  fetchAllPurchaseHistory: async () => {
+    // createEmployeeShop.js
+   fetchAllPurchaseHistory: async (page = 0, size = 6) => {
     try {
-      set({ loading: true });
-      // const headers = getAuthHeader();
-      // 모든 내역을 가져오는 엔드포인트
-      const url = `/employee/shop/history/all`;
+        set({ loading: true });
 
-      console.log(
-        `%c🌐 전체 구매 내역 요청: ${url}`,
-        "color: #009688; font-weight: bold"
-      );
+        const user = get().user;
+        const companyId = user?.companyId;
+       
+       const url = `/admin/shop/history/all`;
 
-      const response = await apiClient.get(url);
+        console.log(`%c🌐 회사[${companyId}] 내역 요청 (Page: ${page})`, 'color: #009688; font-weight: bold');
 
-      // 스토어의 purchaseHistory 상태 업데이트
-      set({ purchaseHistory: response.data });
-      console.log("✅ 전체 내역 로드 성공:", response.data.length, "건");
+        const response = await apiClient.get(url, {
+            params: {
+                companyId: companyId,
+                page: page,   // 현재 요청 페이지
+                size: size,   // 한 페이지당 개수
+                sort: 'createDate,desc' // 최신순 정렬 명시 (선택)
+            }
+        });
+
+        // 중요: Spring Page 객체는 실제 데이터를 'content' 필드에 담고 있습니다.
+        set({
+            purchaseHistory: response.data.content, // 배열 데이터만 추출
+            purchasePagination: {                           // 페이징 정보 저장
+                currentPage: response.data.number,
+                totalPages: response.data.totalPages,
+                totalElements: response.data.totalElements,
+                isLast: response.data.last
+            }
+        });
+
+        console.log('✅ 내역 로드 성공:', response.data.content.length, '건');
     } catch (error) {
-      console.error("❌ 전체 내역 로드 실패:", error);
+        console.error("❌ 내역 로드 실패:", error);
     } finally {
-      set({ loading: false });
+        set({ loading: false });
     }
-  },
+},
 });

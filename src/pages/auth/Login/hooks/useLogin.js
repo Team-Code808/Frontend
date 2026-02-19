@@ -39,6 +39,7 @@ export const useLogin = (onLogin) => {
           companyName: response.companyName,
           departmentName: response.departmentName,
           department: response.departmentName,
+          companyId : response.companyId,
           departmentId: response.departmentId,
           phone: response.phone,
           // token: response.token,

@@ -1,6 +1,3 @@
-import axios from "axios";
-
-import { API_URL } from "../../Config";
 
 import apiClient from "../../api/axios";
 
@@ -18,21 +15,22 @@ export const createAdminShopSlice = (set, get) => ({
   items: [],
   purchaseHistory: [],
 
-  // 1. 초기 데이터 로드: 백엔드에서 모든 아이템 가져오기
-  fetchItems: async (companyId) => {
-    // 1. 아직 로그인 로직이 없으므로, 전달받은 id가 없으면 가상의 1번을 사용
-    const targetId = companyId || get().user?.companyId || 1;
+    // 1. 초기 데이터 로드: 백엔드에서 모든 아이템 가져오기
+    fetchItems: async (companyId) => {
+        // 1. 아직 로그인 로직이 없으므로, 전달받은 id가 없으면 가상의 1번을 사용
+       const rawId = companyId || get().user?.companyId || 444;
+       const targetId = parseInt(String(rawId).split(':')[0], 10);
+       console.log("요청하는 Company ID:", targetId);
 
     set({ isLoading: true });
     try {
       // 2. 가상의 targetId를 쿼리 스트링으로 전달
       const res = await apiClient.get(`/admin/shop/items`, {
-        params: { companyId: targetId }, // axios의 params 옵션을 쓰면 ?companyId=11 로 자동 변환됨
-        // headers: getAuthHeader() // 헤더 추가
+        params: { companyId: targetId }// axios의 params 옵션을 쓰면 ?companyId=11 로 자동 변환됨
       });
 
-      console.log("📡 서버 응답 전체:", res);
-      console.log("📦 실제 데이터 배열:", res.data);
+    //   console.log("📡 서버 응답 전체:", res);
+    //   console.log("📦 실제 데이터 배열:", res.data);
       console.log(`✅ 회사 ID [${targetId}] 기프티콘 로드 완료:`, res.data);
       set({ items: Array.isArray(res.data) ? res.data : [], isLoading: false });
     } catch (error) {
@@ -46,10 +44,7 @@ export const createAdminShopSlice = (set, get) => ({
     try {
       await apiClient.patch(
         `/admin/shop/items/${id}/toggle`,
-        {},
-        {
-          // headers: getAuthHeader()
-        }
+        {}
       );
 
       set((state) => ({
@@ -65,6 +60,7 @@ export const createAdminShopSlice = (set, get) => ({
 
   // 3. 전체 아이템 활성화
   activateAll: async () => {
+    const targetId = parseInt(String(get().user?.companyId || 444).split(':')[0], 10);
     const previousItems = get().items;
     set((state) => ({
       items: state.items.map((item) => ({ ...item, active: true })),
@@ -75,9 +71,8 @@ export const createAdminShopSlice = (set, get) => ({
         `/admin/shop/items/activate-all`,
         {},
         {
-          // headers: getAuthHeader() // 👈 헤더 추가
-        }
-      );
+        params: { companyId: targetId },
+      });
     } catch (error) {
       set({ items: previousItems });
       alert("전체 활성화 실패!");
@@ -86,6 +81,8 @@ export const createAdminShopSlice = (set, get) => ({
 
   // 4. 전체 아이템 비활성화
   deactivateAll: async () => {
+    const rawId = get().user?.companyId || 444;
+    const targetId = parseInt(String(rawId).split(':')[0], 10);
     const previousItems = get().items;
     set((state) => ({
       items: state.items.map((item) => ({ ...item, active: false })),
@@ -96,9 +93,8 @@ export const createAdminShopSlice = (set, get) => ({
         `/admin/shop/items/deactivate-all`,
         {},
         {
-          // headers: getAuthHeader() // 👈 헤더 추가
-        }
-      );
+         params: { companyId: targetId },
+        });
     } catch (error) {
       set({ items: previousItems });
       alert("전체 비활성화 실패!");

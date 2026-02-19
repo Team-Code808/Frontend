@@ -25,7 +25,7 @@ const PointMall = () => {
 
     return (
         <S.Container>
-            <S.BannerSection tab={pointMallTab}>
+            <S.BannerSection $tab={pointMallTab}>
                 <S.BannerContent>
                     <h1>{pointMallTab === 'SHOP' ? '포인트 몰' : '미션 도전'}</h1>
                     <p>
