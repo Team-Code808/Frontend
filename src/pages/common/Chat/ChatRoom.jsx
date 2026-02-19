@@ -31,52 +31,135 @@ const ChatRoom = ({ isDark }) => {
 
     const currentRoomName = getCurrentRoomName();
 
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
+    const prevScrollHeightRef = useRef(null);
+    const messageEndRef = useRef(null);
+
     const [inputText, setInputText] = useState('');
     const [editingMessageId, setEditingMessageId] = useState(null);
     const [editContent, setEditContent] = useState('');
     const [activeMessageId, setActiveMessageId] = useState(null); // 메뉴 표시용 ID
 
-    const messageEndRef = useRef(null);
-
-    // 채팅방 변경 시 이전 기록 가져오기
+    // 채팅방 변경 시 초기 메시지 로드
     useEffect(() => {
         if (!currentRoomId) return;
 
-        console.log('Current Room ID changed:', currentRoomId);
+        setMessages([]); // 메시지 초기화
+        setHasMore(true);
+        setIsLoading(false);
 
-        const fetchHistory = async () => {
-            try {
-                const response = await axios.get(`/chat/history/${currentRoomId}`);
-                setMessages(response.data);
+        fetchHistory(); // 초기 로드 (최신 메시지)
+    }, [currentRoomId, setMessages]); // user 의존성 제거 (무한 루프 방지)
 
-                // 마지막 메시지 읽음 처리
-                if (response.data.length > 0) {
-                    const lastMessage = response.data[response.data.length - 1];
-                    markAsRead(lastMessage.id);
-                }
-            } catch (error) {
-                console.error('Failed to fetch chat history:', error);
+    const fetchHistory = async (lastId = null) => {
+        if (!currentRoomId || isLoading) return;
+
+        setIsLoading(true);
+        try {
+            const params = { size: 50 };
+            if (lastId) {
+                params.lastMessageId = lastId;
             }
-        };
 
-        fetchHistory();
-    }, [currentRoomId, setMessages, user]);
+            const response = await axios.get(`/chat/history/${currentRoomId}`, { params });
+            const newMessages = response.data;
+
+            if (newMessages.length < 50) {
+                setHasMore(false);
+            }
+
+            // 현재 상태의 메시지 가져오기 (getState 사용)
+            const currentMessages = useStore.getState().chat.messages;
+
+            let updatedMessages;
+            if (lastId) {
+                // 과거 메시지 로드: 앞에 추가
+                // 중복 제거
+                const existingIds = new Set(currentMessages.map(m => m.id));
+                const filteredNew = newMessages.filter(m => !existingIds.has(m.id));
+                updatedMessages = [...filteredNew, ...currentMessages];
+            } else {
+                // 초기 로드: 그냥 설정 (또는 최신순으로 덮어쓰기)
+                updatedMessages = newMessages;
+            }
+
+            setMessages(updatedMessages);
+
+            // 초기 로드인 경우 맨 아래로 스크롤
+            if (!lastId && newMessages.length > 0) {
+                setTimeout(() => {
+                    messageEndRef.current?.scrollIntoView();
+                }, 0);
+            }
+
+            // 마지막 메시지 읽음 처리 (초기 로드 시에만)
+            if (!lastId && newMessages.length > 0) {
+                const lastMessage = newMessages[newMessages.length - 1];
+                markAsRead(lastMessage.id);
+            }
+
+        } catch (error) {
+            console.error('Failed to fetch chat history:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleScroll = (e) => {
+        const { scrollTop, scrollHeight } = e.target;
+
+        // 맨 위로 스크롤 시 이전 메시지 로드
+        if (scrollTop === 0 && hasMore && !isLoading && messages.length > 0) {
+            prevScrollHeightRef.current = scrollHeight; // 현재 스크롤 높이 저장
+            const firstMessageId = messages[0].id;
+            fetchHistory(firstMessageId);
+        }
+    };
+
+    // 메시지 추가 시 스크롤 위치 조정 (과거 메시지 로드 시)
+    useEffect(() => {
+        if (prevScrollHeightRef.current) {
+            const messageList = document.querySelector('.message-list-container');
+            if (messageList) {
+                const newScrollHeight = messageList.scrollHeight;
+                const scrollDiff = newScrollHeight - prevScrollHeightRef.current;
+                messageList.scrollTop = scrollDiff;
+                prevScrollHeightRef.current = null;
+            }
+        }
+    }, [messages]);
 
     const [lastMarkedReadId, setLastMarkedReadId] = useState(null);
 
-    // 메시지 스크롤 하단 고정 및 읽음 처리
+    const lastMessageIdRef = useRef(null);
+
+    // 새 메시지 수신 시 스크롤 하단 이동 및 읽음 처리
     useEffect(() => {
-        messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-
-        if (messages.length > 0 && user) {
+        if (messages.length > 0) {
             const lastMessage = messages[messages.length - 1];
-            const myId = user.memberId || user.id;
+            const isNewMessage = lastMessageIdRef.current !== lastMessage.id;
 
-            // 내가 보낸 메시지가 아니고, 아직 읽음 처리 요청을 안 했으면 요청
-            if (String(lastMessage.senderId) !== String(myId)) {
-                if (lastMarkedReadId !== lastMessage.id) {
-                    markAsRead(lastMessage.id);
-                    setLastMarkedReadId(lastMessage.id);
+            // 마지막 메시지가 변경되었을 때만 스크롤 (새 메시지 수신/발신)
+            // 단, 과거 메시지 로딩 시에는 lastMessage가 변하지 않으므로 스크롤되지 않음
+            if (isNewMessage) {
+                lastMessageIdRef.current = lastMessage.id;
+
+                if (!prevScrollHeightRef.current) {
+                    setTimeout(() => {
+                        messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                }
+            }
+
+            if (user) {
+                const myId = user.memberId || user.id;
+                // 내가 보낸 메시지가 아니고, 아직 읽음 처리 요청을 안 했으면 요청
+                if (String(lastMessage.senderId) !== String(myId)) {
+                    if (lastMarkedReadId !== lastMessage.id) {
+                        markAsRead(lastMessage.id);
+                        setLastMarkedReadId(lastMessage.id);
+                    }
                 }
             }
         }
@@ -197,7 +280,16 @@ const ChatRoom = ({ isDark }) => {
                     {isConnected ? '● 연결됨' : '○ 연결 중...'}
                 </div>
             </div>
-            <MessageList $isDark={isDark}>
+            <MessageList
+                $isDark={isDark}
+                onScroll={handleScroll}
+                className="message-list-container"
+            >
+                {isLoading && messages.length > 0 && (
+                    <div style={{ textAlign: 'center', padding: '10px', fontSize: '0.8rem', color: '#888' }}>
+                        이전 메시지 불러오는 중...
+                    </div>
+                )}
                 {messages.map((msg, index) => {
                     const myId = user?.memberId || user?.id;
                     const isMe = user && (String(myId) === String(msg.senderId));

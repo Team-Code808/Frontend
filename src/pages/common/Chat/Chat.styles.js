@@ -17,9 +17,10 @@ const darkTheme = {
 
 export const ChatContainer = styled.div`
     display: flex;
-    height: calc(100vh - 80px); /* 헤더 높이 제외 */
+    height: calc(100vh - 260px); /* 헤더 및 여백 고려하여 조정 */
     background-color: ${props => props.$isDark ? darkTheme.bg : '#f4f6f8'};
     color: ${props => props.$isDark ? darkTheme.text : 'inherit'};
+    overflow: hidden; /* 전체 스크롤 방지 */
 `;
 
 export const Sidebar = styled.div`
