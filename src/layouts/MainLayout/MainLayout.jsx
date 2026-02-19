@@ -2,6 +2,7 @@ import React from 'react';
 import useStore from '../../store/useStore';
 import Header from '../../components/Header';
 import FooterLinks from '../../components/Footer';
+import ChatWidget from '../../components/ChatWidget/ChatWidget';
 import * as S from './MainLayout.styles';
 import useWebSocket from '../../hooks/useWebSocket';
 
@@ -23,6 +24,7 @@ const MainLayout = ({ children }) => {
                     <FooterLinks />
                 </S.FooterContent>
             </S.Footer>
+            <ChatWidget />
         </S.AppContainer>
     );
 };
