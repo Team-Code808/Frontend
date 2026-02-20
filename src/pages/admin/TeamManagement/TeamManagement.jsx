@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTeamMembers } from './hooks/useTeamMembers';
 import { teamApi } from '../../../api/teamApi';
 import apiClient from '../../../api/axios';
@@ -32,10 +33,10 @@ const emptyMessageStyle = {
 };
 
 const AdminTeamManagement = () => {
-  const { teamMembers, teamList, loading, error } = useTeamMembers();
   const navigate = useNavigate();
   const { user } = useStore();
   const { setCurrentRoomId } = useStore(state => state.chat);
+  const { teamMembers, teamList, loading, error, pagination, handlePageChange } = useTeamMembers();
 
   const [selectedDept, setSelectedDept] = useState('전체');
   const [searchQuery, setSearchQuery] = useState('');
@@ -135,6 +136,32 @@ const AdminTeamManagement = () => {
           />
         ))}
       </S.MemberList>
+
+      {pagination.totalPages > 1 && (
+        <S.Pagination>
+          <S.PageButton
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={pagination.currentPage === 0}
+          >
+            <ChevronLeft size={20} />
+          </S.PageButton>
+          <S.PageNumber>
+            <strong>{pagination.currentPage + 1}</strong> / {pagination.totalPages}
+          </S.PageNumber>
+          <S.PageButton
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={pagination.currentPage === pagination.totalPages - 1}
+          >
+            <ChevronRight size={20} />
+          </S.PageButton>
+        </S.Pagination>
+      )}
+
+      {pagination.totalElements > 0 && (
+        <S.PaginationInfo>
+          전체 <strong>{pagination.totalElements}명</strong> 중 현재 페이지
+        </S.PaginationInfo>
+      )}
 
       {selectedMember && (
         <MemberDetailModal member={selectedMember} onClose={() => setSelectedMember(null)} />
