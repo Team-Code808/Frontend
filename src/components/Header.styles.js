@@ -504,38 +504,55 @@ export const Backdrop = styled.div`
 
 export const ModalContent = styled.div`
   position: relative;
-  background-color: white;
   width: 100%;
   max-width: 32rem;
   border-radius: 2rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   overflow: hidden;
-  border: 1px solid #f1f5f9;
+  border: 1px solid;
   display: flex;
   flex-direction: column;
   max-height: 80vh;
   animation: ${zoomIn} 0.2s ease-out;
+
+  ${props => props.$isAdminMode ? css`
+    background-color: #0f172a;
+    border-color: #1e293b;
+  ` : css`
+    background-color: white;
+    border-color: #f1f5f9;
+  `}
 `;
 
 export const ModalHeader = styled.div`
   padding: 1.5rem;
-  border-bottom: 1px solid #f8fafc;
+  border-bottom: 1px solid;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: white;
   z-index: 10;
+
+  ${props => props.$isAdminMode ? css`
+    background-color: rgba(30, 41, 59, 0.8);
+    border-color: #1e293b;
+    h2 { color: #f1f5f9; }
+    p { color: #64748b; }
+  ` : css`
+    background-color: white;
+    border-color: #f8fafc;
+    h2 { color: #1e293b; }
+    p { color: #94a3b8; }
+  `}
   
   h2 {
     font-size: 1.25rem;
     font-weight: 900;
-    color: #1e293b;
+    margin-top: 0.25rem;
   }
   
   p {
     font-size: 0.75rem;
     font-weight: 700;
-    color: #94a3b8;
     margin-top: 0.25rem;
   }
 `;
@@ -544,20 +561,29 @@ export const CloseButton = styled.button`
   padding: 0.5rem;
   border-radius: 9999px;
   transition: background-color 0.2s;
-  
-  &:hover { background-color: #f8fafc; }
-  
-  svg {
-    color: #94a3b8;
-  }
+
+  ${props => props.$isAdminMode ? css`
+    &:hover { background-color: rgba(255,255,255, 0.1); }
+    svg { color: #64748b; }
+  ` : css`
+    &:hover { background-color: #f8fafc; }
+    svg { color: #94a3b8; }
+  `}
 `;
 
 export const ModalTabs = styled.div`
   padding: 0.75rem 1.5rem;
-  background-color: rgba(248, 250, 252, 0.5);
   display: flex;
   gap: 0.5rem;
-  border-bottom: 1px solid #f8fafc;
+  border-bottom: 1px solid;
+
+  ${props => props.$isAdminMode ? css`
+    background-color: rgba(15, 23, 42, 0.8);
+    border-color: #1e293b;
+  ` : css`
+    background-color: rgba(248, 250, 252, 0.5);
+    border-color: #f8fafc;
+  `}
 `;
 
 export const ModalTabButton = styled.button`
@@ -568,13 +594,13 @@ export const ModalTabButton = styled.button`
   transition: all 0.2s;
   
   ${props => props.$active ? css`
-    background-color: white;
+    background-color: ${props.$isAdminMode ? '#1e293b' : 'white'};
     box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
-    border: 1px solid #f1f5f9;
-    color: ${props.color || '#1e293b'};
+    border: 1px solid ${props.$isAdminMode ? '#334155' : '#f1f5f9'};
+    color: ${props.color || (props.$isAdminMode ? '#f1f5f9' : '#1e293b')};
   ` : css`
-    color: #94a3b8;
-    &:hover { color: #475569; }
+    color: ${props.$isAdminMode ? '#475569' : '#94a3b8'};
+    &:hover { color: ${props.$isAdminMode ? '#94a3b8' : '#475569'}; }
   `}
 `;
 
@@ -585,6 +611,10 @@ export const ModalList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
+
+  ${props => props.$isAdminMode && css`
+    background-color: #0f172a;
+  `}
 `;
 
 export const ModalItem = styled.div`
@@ -595,13 +625,25 @@ export const ModalItem = styled.div`
   border: 1px solid;
   transition: background-color 0.2s;
   
-  ${props => props.read ? css`
-    background-color: white;
-    border-color: #f1f5f9;
-    &:hover { background-color: #f8fafc; }
+  ${props => props.$isAdminMode ? css`
+    ${props.read ? css`
+      background-color: #0f172a;
+      border-color: #1e293b;
+      &:hover { background-color: #1e293b; }
+    ` : css`
+      background-color: rgba(99, 102, 241, 0.08);
+      border-color: rgba(99, 102, 241, 0.25);
+      &:hover { background-color: rgba(99, 102, 241, 0.15); }
+    `}
   ` : css`
-    background-color: rgba(238, 242, 255, 0.3);
-    border-color: #e0e7ff;
+    ${props.read ? css`
+      background-color: white;
+      border-color: #f1f5f9;
+      &:hover { background-color: #f8fafc; }
+    ` : css`
+      background-color: rgba(238, 242, 255, 0.3);
+      border-color: #e0e7ff;
+    `}
   `}
 `;
 
@@ -634,13 +676,16 @@ export const ListHeader = styled.div`
   h4 {
     font-size: 0.875rem;
     font-weight: 900;
-    color: ${props => props.read ? '#475569' : '#0f172a'};
+    color: ${props => props.$isAdminMode
+    ? (props.read ? '#64748b' : '#e2e8f0')
+    : (props.read ? '#475569' : '#0f172a')
+  };
   }
   
   span {
     font-size: 0.625rem;
     font-weight: 700;
-    color: #94a3b8;
+    color: ${props => props.$isAdminMode ? '#475569' : '#94a3b8'};
     white-space: nowrap;
     margin-left: 0.5rem;
   }
@@ -648,7 +693,7 @@ export const ListHeader = styled.div`
 
 export const ListMessage = styled.p`
   font-size: 0.75rem;
-  color: #64748b;
+  color: ${props => props.$isAdminMode ? '#475569' : '#64748b'};
   font-weight: 500;
   line-height: 1.625;
 `;
@@ -657,6 +702,6 @@ export const ListUnreadDot = styled.div`
   width: 0.375rem;
   height: 0.375rem;
   border-radius: 9999px;
-  background-color: #6366f1;
+  background-color: ${props => props.$isAdminMode ? '#818cf8' : '#6366f1'};
   margin-top: 0.375rem;
 `;

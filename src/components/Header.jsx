@@ -29,7 +29,7 @@ import * as S from "./Header.styles";
 const AllNotificationsModal = ({ onClose }) => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("ALL");
-  const { notifications, markAsRead, isAdminMode } = useStore();
+  const { notifications, markAsRead, isAdminMode, setIsAdminMode } = useStore();
 
   const filtered = notifications.filter((n) => {
     // 1. 역할 기반 필터링 (가장 중요!)
@@ -45,58 +45,65 @@ const AllNotificationsModal = ({ onClose }) => {
   return (
     <S.ModalOverlay>
       <S.Backdrop onClick={onClose} />
-      <S.ModalContent>
-        <S.ModalHeader>
+      <S.ModalContent $isAdminMode={isAdminMode}>
+        <S.ModalHeader $isAdminMode={isAdminMode}>
           <div>
             <h2>알림 센터</h2>
             <p>받은 알림 내역을 모두 확인합니다.</p>
           </div>
-          <S.CloseButton onClick={onClose}>
+          <S.CloseButton $isAdminMode={isAdminMode} onClick={onClose}>
             <X size={24} />
           </S.CloseButton>
         </S.ModalHeader>
 
-        <S.ModalTabs>
-          <S.ModalTabButton $active={filter === 'ALL'} onClick={() => setFilter('ALL')}>
+        <S.ModalTabs $isAdminMode={isAdminMode}>
+          <S.ModalTabButton $active={filter === 'ALL'} $isAdminMode={isAdminMode} onClick={() => setFilter('ALL')}>
             전체
           </S.ModalTabButton>
-          <S.ModalTabButton $active={filter === 'UNREAD'} onClick={() => setFilter('UNREAD')} color="#4f46e5">
+          <S.ModalTabButton $active={filter === 'UNREAD'} $isAdminMode={isAdminMode} onClick={() => setFilter('UNREAD')} color={isAdminMode ? "#818cf8" : "#4f46e5"}>
             안 읽음
           </S.ModalTabButton>
         </S.ModalTabs>
 
-        <S.ModalList>
+        <S.ModalList $isAdminMode={isAdminMode}>
           {filtered.length > 0 ? (
             filtered.map((item) => (
-              <S.ModalItem style={{ cursor: item.redirectUrl ? "pointer" : "default" }} key={item.id} read={item.read} onClick={() => {
-                      // 읽음 처리
-                      if (!item.read) {
-                        markAsRead(item.id);
-                      }
-
-                      // redirectUrl 있으면 이동
-                      if (item.redirectUrl) {
-                        navigate(item.redirectUrl);
-                        onClose(); // 모달 닫기
-                      }
-
-                    }}>
+              <S.ModalItem
+                style={{ cursor: item.redirectUrl ? "pointer" : "default" }}
+                key={item.id}
+                read={item.read}
+                $isAdminMode={isAdminMode}
+                onClick={() => {
+                  // 읽음 처리
+                  if (!item.read) {
+                    markAsRead(item.id);
+                  }
+                  // redirectUrl 있으면 이동
+                  if (item.redirectUrl) {
+                    // ADMIN 알림이면 관리자 모드로 전환 후 이동
+                    if (item.targetRole === "ADMIN" && !isAdminMode) {
+                      setIsAdminMode(true);
+                    }
+                    navigate(item.redirectUrl);
+                    onClose(); // 모달 닫기
+                  }
+                }}>
                 <S.IconBox type={item.type || "notice"}>
                   {item.type === "success" ? <CheckCircle2 size={18} /> :
                     item.type === "alert" ? <AlertCircle size={18} /> : <Bell size={18} />}
                 </S.IconBox>
                 <S.ListContent>
-                  <S.ListHeader read={item.read}>
+                  <S.ListHeader read={item.read} $isAdminMode={isAdminMode}>
                     <h4>{item.title}</h4>
                     <span>{item.time}</span>
                   </S.ListHeader>
-                  <S.ListMessage>{item.message}</S.ListMessage>
+                  <S.ListMessage $isAdminMode={isAdminMode}>{item.message}</S.ListMessage>
                 </S.ListContent>
-                {!item.read && <S.ListUnreadDot />}
+                {!item.read && <S.ListUnreadDot $isAdminMode={isAdminMode} />}
               </S.ModalItem>
             ))
           ) : (
-            <div style={{ padding: "3rem", textAlign: "center", color: "#94a3b8" }}>
+            <div style={{ padding: "3rem", textAlign: "center", color: isAdminMode ? "#475569" : "#94a3b8" }}>
               <Bell size={40} style={{ opacity: 0.2, marginBottom: "0.5rem" }} />
               <p style={{ fontSize: "0.75rem", fontWeight: 700 }}>표시할 알림이 없습니다.</p>
             </div>
@@ -293,18 +300,23 @@ const Header = () => {
                             <S.NotiItem
                               key={notif.id}
                               read={notif.read}
+                              $isAdminMode={isAdminMode}
                               onClick={() => {
                                 // 1. 읽음 처리
                                 markAsRead(notif.id);
 
                                 // 2. 경로가 있다면 해당 페이지로 이동
                                 if (notif.redirectUrl) {
+                                  // ADMIN 알림이면 관리자 모드로 전환 후 이동
+                                  if (notif.targetRole === "ADMIN" && !isAdminMode) {
+                                    setIsAdminMode(true);
+                                  }
                                   navigate(notif.redirectUrl);
                                   setShowNotifications(false); // 알림 팝업 닫기
                                 }
                               }}
                             >
-                              <S.NotiItemHeader>
+                              <S.NotiItemHeader $isAdminMode={isAdminMode}>
                                 <span>{notif.title}</span>
                                 <span>{notif.time}</span>
                               </S.NotiItemHeader>
