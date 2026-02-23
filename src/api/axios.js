@@ -36,7 +36,7 @@ const handleRefresh = async () => {
 
 apiClient.interceptors.request.use(
   async (config) => {
-    console.log("요청 시작:", config.url);
+    // console.log("요청 시작:", config.url);
     let token = tokenManager.getAccessToken();
 
     // 토큰이 있고 만료된 경우 선제적으로 갱신

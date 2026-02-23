@@ -12,50 +12,62 @@ import {
 } from "recharts";
 import * as S from "../Dashboard.styles";
 
-const DashboardChart = ({ departmentStats }) => {
-  const [chartType, setChartType] = useState("stress");
+const DashboardChart = ({ departmentStats, yesterdayDeptStats }) => {
+  const [chartType, setChartType] = useState("realtime");
 
-  const deptStressData = React.useMemo(
+  const deptRealtimeData = React.useMemo(
     () =>
       departmentStats.map((dept) => ({
         dept: dept.departmentName,
-        stress: dept.avgStressPercentage,
+        val: dept.avgStressPercentage,
       })),
     [departmentStats]
+  );
+
+  const deptYesterdayData = React.useMemo(
+    () =>
+      (yesterdayDeptStats || []).map((dept) => ({
+        dept: dept.departmentName,
+        val: dept.avgStressPercentage,
+      })),
+    [yesterdayDeptStats]
   );
 
   const deptCooldownData = React.useMemo(
     () =>
       departmentStats.map((dept) => ({
         dept: dept.departmentName,
-        count: dept.cooldownCount,
+        val: dept.cooldownCount,
       })),
     [departmentStats]
   );
 
-  const avgStress = React.useMemo(
-    () =>
-      Math.round(
-        deptStressData.reduce((acc, d) => acc + d.stress, 0) /
-          deptStressData.length
-      ),
-    [deptStressData]
-  );
+  const currentData = React.useMemo(() => {
+    if (chartType === "realtime") return deptRealtimeData;
+    if (chartType === "yesterday") return deptYesterdayData;
+    return deptCooldownData;
+  }, [chartType, deptRealtimeData, deptYesterdayData, deptCooldownData]);
 
-  const totalCooldown = React.useMemo(
-    () => deptCooldownData.reduce((acc, d) => acc + d.count, 0),
-    [deptCooldownData]
-  );
+  const avgVal = React.useMemo(() => {
+    if (!currentData.length) return 0;
+    const sum = currentData.reduce((acc, d) => acc + d.val, 0);
+    return chartType === "cooldown" ? sum : Math.round(sum / currentData.length);
+  }, [currentData, chartType]);
 
   return (
     <S.ChartSection>
       <S.SectionHeader>
         <S.HeaderLeft>
           <h3>
-            {chartType === "stress" ? (
+            {chartType === "realtime" ? (
               <>
-                <HeartPulse size={20} color="#fb7185" />
-                부서별 평균 스트레스 지수
+                <Activity size={20} color="#fb7185" />
+                부서별 실시간 스트레스 지수
+              </>
+            ) : chartType === "yesterday" ? (
+              <>
+                <HeartPulse size={20} color="#818cf8" />
+                부서별 전날 스트레스 지수
               </>
             ) : (
               <>
@@ -65,19 +77,28 @@ const DashboardChart = ({ departmentStats }) => {
             )}
           </h3>
           <p>
-            {chartType === "stress"
+            {chartType === "realtime"
+              ? "현재 부서별 멘탈 건강 상태 실시간 분석"
+              : chartType === "yesterday"
               ? "전일 부서별 멘탈 건강 통합 지표 분석"
-              : "전일 부서별 쿨다운(휴식) 요청 빈도 분석"}
+              : "부서별 쿨다운(휴식) 요청 빈도 분석"}
           </p>
         </S.HeaderLeft>
 
         <S.ChartTabContainer>
           <S.ChartTabButton
-            active={chartType === "stress"}
+            active={chartType === "realtime"}
             activeColor="#fb7185"
-            onClick={() => setChartType("stress")}
+            onClick={() => setChartType("realtime")}
           >
-            스트레스
+            실시간
+          </S.ChartTabButton>
+          <S.ChartTabButton
+            active={chartType === "yesterday"}
+            activeColor="#818cf8"
+            onClick={() => setChartType("yesterday")}
+          >
+            전날
           </S.ChartTabButton>
           <S.ChartTabButton
             active={chartType === "cooldown"}
@@ -90,18 +111,16 @@ const DashboardChart = ({ departmentStats }) => {
 
         <S.AvgBadge>
           <span>
-            {chartType === "stress"
-              ? `평균 ${avgStress}%`
-              : `총 ${totalCooldown}회`}
+            {chartType === "cooldown"
+              ? `총 ${avgVal}회`
+              : `평균 ${avgVal}%`}
           </span>
         </S.AvgBadge>
       </S.SectionHeader>
 
       <S.ChartWrapper>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={chartType === "stress" ? deptStressData : deptCooldownData}
-          >
+          <BarChart data={currentData}>
             <CartesianGrid
               strokeDasharray="3 3"
               vertical={false}
@@ -123,7 +142,7 @@ const DashboardChart = ({ departmentStats }) => {
                 padding: "12px",
               }}
               itemStyle={{
-                color: chartType === "stress" ? "#fb7185" : "#60a5fa",
+                color: chartType === "realtime" ? "#fb7185" : chartType === "yesterday" ? "#818cf8" : "#60a5fa",
                 fontWeight: 900,
               }}
               labelStyle={{
@@ -132,33 +151,31 @@ const DashboardChart = ({ departmentStats }) => {
                 marginBottom: "4px",
               }}
               formatter={(value) => [
-                chartType === "stress" ? `${value}%` : `${value}회`,
-                chartType === "stress" ? "스트레스" : "쿨다운",
+                chartType === "cooldown" ? `${value}회` : `${value}%`,
+                chartType === "realtime" ? "실시간" : chartType === "yesterday" ? "전날" : "쿨다운",
               ]}
             />
-            <Bar
-              dataKey={chartType === "stress" ? "stress" : "count"}
-              radius={[8, 8, 0, 0]}
-              barSize={32}
-            >
-              {(chartType === "stress" ? deptStressData : deptCooldownData).map(
-                (entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={
-                      chartType === "stress"
-                        ? entry.stress > 50
-                          ? "#fb7185"
-                          : entry.stress > 35
-                          ? "#818cf8"
-                          : "#475569"
-                        : entry.count > 2
-                        ? "#60a5fa"
+            <Bar dataKey="val" radius={[8, 8, 0, 0]} barSize={32}>
+              {currentData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={
+                    chartType === "realtime"
+                      ? entry.val > 50
+                        ? "#fb7185"
+                        : entry.val > 35
+                        ? "#818cf8"
                         : "#475569"
-                    }
-                  />
-                )
-              )}
+                      : chartType === "yesterday"
+                      ? entry.val > 35
+                        ? "#818cf8"
+                        : "#475569"
+                      : entry.val > 2
+                      ? "#60a5fa"
+                      : "#475569"
+                  }
+                />
+              ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
