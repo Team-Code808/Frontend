@@ -344,6 +344,26 @@ export const NotiDot = styled.span`
   border: 1px solid #0f172a;
 `;
 
+export const UnreadCountBadge = styled.span`
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #ef4444;
+  color: white;
+  border-radius: 9999px;
+  font-size: 0.6rem;
+  font-weight: bold;
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid ${props => props.$isAdminMode ? '#0f172a' : '#ffffff'};
+  transform: translate(25%, -25%);
+  z-index: 10;
+`;
+
 export const NotiPopover = styled.div`
   position: absolute;
   top: 100%;

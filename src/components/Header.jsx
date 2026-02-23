@@ -1,29 +1,44 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard, Users, CalendarCheck, MessageSquareHeart, UserCircle,
-  LogOut, Bell, Coins, ShieldCheck, Activity, ArrowLeftRight,
-  ClipboardList, X, CheckCircle2, AlertCircle, Info,
+  LayoutDashboard,
+  Users,
+  CalendarCheck,
+  MessageSquareHeart,
+  UserCircle,
+  LogOut,
+  Bell,
+  Coins,
+  ShieldCheck,
+  Activity,
+  ArrowLeftRight,
+  ClipboardList,
+  X,
+  CheckCircle2,
+  AlertCircle,
+  Info,
+  MessageCircle,
 } from "lucide-react";
 import { NavItemType } from "../constants/types";
 import Logo from "./Logo";
 import useStore from "../store/useStore"; // 스토어 임포트 위치 확인
+import axios from "../api/axios";
 import * as S from "./Header.styles";
 
 // --- 1. 전체 알림 모달 컴포넌트 ---
 const AllNotificationsModal = ({ onClose }) => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("ALL");
-  const { notifications, markAsRead , isAdminMode} = useStore();
-  
+  const { notifications, markAsRead, isAdminMode } = useStore();
+
   const filtered = notifications.filter((n) => {
     // 1. 역할 기반 필터링 (가장 중요!)
     // 관리자 모드면 ADMIN 알림만, 직원 모드면 USER 알림만 보여줌
     const roleMatch = isAdminMode ? n.targetRole === "ADMIN" : n.targetRole === "USER";
-    
+
     // 2. 읽음/안 읽음 탭 필터링
     const statusMatch = filter === "ALL" || !n.read;
-    
+
     return roleMatch && statusMatch;
   });
 
@@ -67,8 +82,8 @@ const AllNotificationsModal = ({ onClose }) => {
 
                     }}>
                 <S.IconBox type={item.type || "notice"}>
-                  {item.type === "success" ? <CheckCircle2 size={18} /> : 
-                   item.type === "alert" ? <AlertCircle size={18} /> : <Bell size={18} />}
+                  {item.type === "success" ? <CheckCircle2 size={18} /> :
+                    item.type === "alert" ? <AlertCircle size={18} /> : <Bell size={18} />}
                 </S.IconBox>
                 <S.ListContent>
                   <S.ListHeader read={item.read}>
@@ -94,20 +109,23 @@ const AllNotificationsModal = ({ onClose }) => {
 
 // --- 2. 메인 헤더 컴포넌트 ---
 const Header = () => {
-  const { 
-    isAdminMode, setIsAdminMode, logout, user, 
-    notifications, addNotification, markAsRead, markAllAsRead, fetchNotifications 
+  const {
+    isAdminMode, setIsAdminMode, logout, user,
+    notifications, addNotification, markAsRead, markAllAsRead, fetchNotifications,
+    chat // chat 스토어 추가
   } = useStore();
-  
+
+  const { chatRooms, setChatRooms } = chat;
+
   const { name: userName, department, id: memberId } = user || {};
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showAllNotificationsModal, setShowAllNotificationsModal] = useState(false);
   const notificationRef = useRef(null);
 
- const recentNotifications = notifications
+  const recentNotifications = notifications
     .filter(n => isAdminMode ? n.targetRole === "ADMIN" : n.targetRole === "USER")
     .slice(0, 5); // 최근 5개 표시
 
@@ -124,13 +142,13 @@ const Header = () => {
     // Header.jsx 내 SSE 수신 부분
     console.log(`${memberId}번 유저 SSE 구독 시작`);
 
-  eventSource.addEventListener("notification", (event) => {
-    const data = JSON.parse(event.data);
-    console.log("실제 받은 데이터:", data);
-  // 현재 헤더의 관리자 모드 여부와 알림의 타겟 롤을 비교
-  // 예: 관리자 모드인데 알림이 ADMIN용이면 알림창에서 더 강조하거나 별도 처리
+    eventSource.addEventListener("notification", (event) => {
+      const data = JSON.parse(event.data);
+      console.log("실제 받은 데이터:", data);
+      // 현재 헤더의 관리자 모드 여부와 알림의 타겟 롤을 비교
+      // 예: 관리자 모드인데 알림이 ADMIN용이면 알림창에서 더 강조하거나 별도 처리
 
-   addNotification({
+      addNotification({
         id: data.id,
         title: data.title,
         message: data.content,
@@ -138,7 +156,7 @@ const Header = () => {
         read: data.status === "Y",
         redirectUrl: data.redirectUrl,
         // ⭐ 백엔드에서 온 targetRole을 그대로 저장
-        targetRole: data.targetRole, 
+        targetRole: data.targetRole,
         type: data.targetRole === "ADMIN" ? "alert" : "success"
       });
     });
@@ -152,6 +170,22 @@ const Header = () => {
       eventSource.close();
     };
   }, [memberId, isAdminMode, fetchNotifications, addNotification]);
+
+  // [추가] 채팅방 목록 초기 로딩 (안 읽은 메시지 배지 표시용)
+  useEffect(() => {
+    if (memberId) {
+      axios.get('/chat/rooms')
+        .then(res => {
+          if (res.data) {
+            setChatRooms(res.data);
+          }
+        })
+        .catch(err => console.error("Failed to fetch chat rooms in Header:", err));
+    }
+  }, [memberId, setChatRooms]);
+
+  // 전체 안 읽은 메시지 수 계산
+  const totalUnreadChatCount = chatRooms.reduce((sum, room) => sum + (room.unreadCount || 0), 0);
 
   // 클릭 외부 감지 (유지)
   useEffect(() => {
@@ -226,11 +260,25 @@ const Header = () => {
                 </S.ProfileButton>
 
                 <S.ActionDivider $isAdminMode={isAdminMode}>
+                  {/* 채팅 버튼 */}
+                  <S.IconButton
+                    onClick={() => navigate("/app/chat")}
+                    $isAdminMode={isAdminMode}
+                  >
+                    <MessageCircle size={20} />
+                    {totalUnreadChatCount > 0 && (
+                      <S.UnreadCountBadge $isAdminMode={isAdminMode}>
+                        {totalUnreadChatCount > 99 ? "99+" : totalUnreadChatCount}
+                      </S.UnreadCountBadge>
+                    )}
+                  </S.IconButton>
+
+                  {/* 알림 버튼 및 팝업 */}
                   <div style={{ position: "relative" }} ref={notificationRef}>
                     <S.IconButton onClick={() => setShowNotifications(!showNotifications)} $active={showNotifications} $isAdminMode={isAdminMode}>
                       <Bell size={20} />
-                     {notifications.some(n => 
-                      !n.read && (isAdminMode ? n.targetRole === "ADMIN" : n.targetRole === "USER")
+                      {notifications.some(n =>
+                        !n.read && (isAdminMode ? n.targetRole === "ADMIN" : n.targetRole === "USER")
                       ) && <S.NotiDot />}
                     </S.IconButton>
 
@@ -242,20 +290,20 @@ const Header = () => {
                         </S.NotiHeader>
                         <S.NotiList>
                           {recentNotifications.map((notif) => (
-                            <S.NotiItem 
-                                key={notif.id} 
-                                read={notif.read} 
-                                onClick={() => {
-                                  // 1. 읽음 처리
-                                  markAsRead(notif.id);
-                                  
-                                  // 2. 경로가 있다면 해당 페이지로 이동
-                                  if (notif.redirectUrl) {
-                                    navigate(notif.redirectUrl);
-                                    setShowNotifications(false); // 알림 팝업 닫기
-                                  }
-                                }}
-                              >
+                            <S.NotiItem
+                              key={notif.id}
+                              read={notif.read}
+                              onClick={() => {
+                                // 1. 읽음 처리
+                                markAsRead(notif.id);
+
+                                // 2. 경로가 있다면 해당 페이지로 이동
+                                if (notif.redirectUrl) {
+                                  navigate(notif.redirectUrl);
+                                  setShowNotifications(false); // 알림 팝업 닫기
+                                }
+                              }}
+                            >
                               <S.NotiItemHeader>
                                 <span>{notif.title}</span>
                                 <span>{notif.time}</span>

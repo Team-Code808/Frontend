@@ -1028,3 +1028,59 @@ export const AddDeptSubmitButton = styled.button`
     transform: scale(0.98);
   }
 `;
+
+/* Pagination */
+export const Pagination = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+`;
+
+export const PageButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid #334155;
+  background-color: #1e293b;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background-color: #334155;
+    border-color: #6366f1;
+    color: white;
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+`;
+
+export const PageNumber = styled.span`
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #94a3b8;
+
+  strong {
+    color: #818cf8;
+    font-weight: 900;
+  }
+`;
+
+export const PaginationInfo = styled.p`
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+
+  strong {
+    color: #e2e8f0;
+  }
+`;

@@ -4,8 +4,10 @@ import apiClient from './axios';
  * 팀원관리 API (관리자 - 로그인한 사용자와 같은 회사 소속만 조회)
  */
 export const teamApi = {
-  getMembers: async () => {
-    const response = await apiClient.get('/admin/team/members');
+  getMembers: async (page = 0, size = 10) => {
+    const response = await apiClient.get('/admin/team/members', {
+      params: { page, size },
+    });
     return response.data;
   },
 

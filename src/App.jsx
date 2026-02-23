@@ -22,6 +22,7 @@ import AdminTeamManagement from "./pages/admin/TeamManagement/TeamManagement";
 import LandingPage from "./pages/common/Landing/Landing";
 import FeatureDetails from "./pages/common/FeatureDetails/FeatureDetails";
 import NotFound from "./pages/common/NotFound/NotFound";
+import ChatPage from "./pages/common/Chat/ChatPage";
 
 // 인증 페이지 (Auth Pages)
 import AuthPage from "./pages/auth/Login/Login";
@@ -91,6 +92,9 @@ function App() {
           email: payload?.sub,
           role: payload?.role,
           memberId: payload?.memberId,
+          id: payload?.memberId, // 호환성을 위해 id 값도 함께 설정
+          name: payload?.name,
+          department: payload?.departmentName,
         });
       } catch (error) {
         tokenManager.clearAccessToken();
@@ -179,6 +183,7 @@ function App() {
                         element={<AdminApplications />}
                       />
                       <Route path="mypage/*" element={<AdminMyPage />} />
+                      <Route path="chat" element={<ChatPage />} />
                     </>
                   )}
 
@@ -191,6 +196,7 @@ function App() {
                       <Route path="pointmall" element={<PointMall />} />
                       <Route path="dashboard" element={<Dashboard />} />
                       <Route path="mypage/*" element={<MyPage />} />
+                      <Route path="chat" element={<ChatPage />} />
                       <Route
                         path="*"
                         element={<Navigate to="/app/dashboard" replace />}

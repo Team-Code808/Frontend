@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTeamMembers } from './hooks/useTeamMembers';
 import { teamApi } from '../../../api/teamApi';
+import apiClient from '../../../api/axios';
+import useStore from '../../../store/useStore';
 import SummaryCards from './components/SummaryCards';
 import TeamSearchBar from './components/TeamSearchBar';
 import MemberCard from './components/MemberCard';
@@ -29,7 +33,10 @@ const emptyMessageStyle = {
 };
 
 const AdminTeamManagement = () => {
-  const { teamMembers, teamList, loading, error } = useTeamMembers();
+  const navigate = useNavigate();
+  const { user } = useStore();
+  const { setCurrentRoomId } = useStore(state => state.chat);
+  const { teamMembers, teamList, loading, error, pagination, handlePageChange } = useTeamMembers();
 
   const [selectedDept, setSelectedDept] = useState('전체');
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,6 +71,22 @@ const AdminTeamManagement = () => {
     } catch (err) {
       const message = err.response?.data?.message || err.message || '부서 추가에 실패했습니다.';
       alert(message);
+    }
+  };
+
+  const handleChatStart = async (member) => {
+    if (!member.id) {
+      console.error("Member ID not found", member);
+      return;
+    }
+    try {
+      const response = await apiClient.post('/chat/room', { targetMemberId: member.id });
+      const roomId = response.data;
+      // setCurrentRoomId(roomId); // ChatPage에서 처리하도록 변경
+      navigate('/app/chat', { state: { roomId } });
+    } catch (error) {
+      console.error("Failed to start chat", error);
+      alert("채팅방 생성에 실패했습니다.");
     }
   };
 
@@ -105,9 +128,40 @@ const AdminTeamManagement = () => {
           </p>
         )}
         {filteredTeam.map((member) => (
-          <MemberCard key={member.id} member={member} onClick={setSelectedMember} />
+          <MemberCard
+            key={member.id}
+            member={member}
+            onClick={setSelectedMember}
+            onChatClick={user?.memberId !== member.id ? handleChatStart : undefined}
+          />
         ))}
       </S.MemberList>
+
+      {pagination.totalPages > 1 && (
+        <S.Pagination>
+          <S.PageButton
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={pagination.currentPage === 0}
+          >
+            <ChevronLeft size={20} />
+          </S.PageButton>
+          <S.PageNumber>
+            <strong>{pagination.currentPage + 1}</strong> / {pagination.totalPages}
+          </S.PageNumber>
+          <S.PageButton
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={pagination.currentPage === pagination.totalPages - 1}
+          >
+            <ChevronRight size={20} />
+          </S.PageButton>
+        </S.Pagination>
+      )}
+
+      {pagination.totalElements > 0 && (
+        <S.PaginationInfo>
+          전체 <strong>{pagination.totalElements}명</strong> 중 현재 페이지
+        </S.PaginationInfo>
+      )}
 
       {selectedMember && (
         <MemberDetailModal member={selectedMember} onClose={() => setSelectedMember(null)} />

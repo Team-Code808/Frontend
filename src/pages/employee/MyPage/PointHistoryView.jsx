@@ -19,7 +19,11 @@ const PointHistoryView = () => {
   const [history, setHistory] = useState([]);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const PAGE_SIZE = 10;
 
   const getMemberId = () => {
     if (!user || !user.id) return 1;
@@ -34,11 +38,14 @@ const PointHistoryView = () => {
         setLoading(true);
         setError(null);
         const [pointsRes, profileRes] = await Promise.all([
-          mypageApi.getPointHistory(memberId),
+          mypageApi.getPointHistory(memberId, 0, PAGE_SIZE),
           mypageApi.getProfile(memberId),
         ]);
         if (pointsRes.success && pointsRes.data) {
-          setHistory(Array.isArray(pointsRes.data) ? pointsRes.data : []);
+          const pageData = pointsRes.data;
+          setHistory(Array.isArray(pageData.content) ? pageData.content : (Array.isArray(pageData) ? pageData : []));
+          setTotalPages(pageData.totalPages ?? 1);
+          setPage(0);
         } else {
           setHistory([]);
         }
@@ -55,6 +62,25 @@ const PointHistoryView = () => {
     };
     fetchData();
   }, [memberId]);
+
+  const handleLoadMore = async () => {
+    if (loadingMore || page + 1 >= totalPages) return;
+    try {
+      setLoadingMore(true);
+      const nextPage = page + 1;
+      const res = await mypageApi.getPointHistory(memberId, nextPage, PAGE_SIZE);
+      if (res.success && res.data) {
+        const pageData = res.data;
+        const newItems = Array.isArray(pageData.content) ? pageData.content : [];
+        setHistory((prev) => [...prev, ...newItems]);
+        setPage(nextPage);
+      }
+    } catch (err) {
+      console.error('추가 내역 로딩 실패:', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const filteredHistory = history.filter(
     (item) => filter === 'ALL' || (item.type && item.type.toUpperCase() === filter)
@@ -231,8 +257,10 @@ const PointHistoryView = () => {
             </div>
           )}
         </S.HistoryList>
-        {filteredHistory.length > 0 && (
-          <S.LoadMoreButton type="button">더 보기</S.LoadMoreButton>
+        {page + 1 < totalPages && (
+          <S.LoadMoreButton type="button" onClick={handleLoadMore} disabled={loadingMore}>
+            {loadingMore ? '로딩 중...' : '더 보기'}
+          </S.LoadMoreButton>
         )}
       </S.HistoryContainer>
     </S.SubPageContainer>

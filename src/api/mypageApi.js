@@ -26,9 +26,9 @@ export const mypageApi = {
   },
 
   // 포인트 내역 조회
-  getPointHistory: async (memberId) => {
+  getPointHistory: async (memberId, page = 0, size = 10) => {
     const response = await apiClient.get('/mypage/points', {
-      params: { memberId },
+      params: { memberId, page, size },
     });
     return response.data;
   },
@@ -71,8 +71,10 @@ export const adminMypageApi = {
   },
 
   // 포인트 내역 조회
-  getPointHistory: async (memberId) => {
-    const response = await apiClient.get(`/admin/mypage/${memberId}/points`);
+  getPointHistory: async (memberId, page = 0, size = 10) => {
+    const response = await apiClient.get(`/admin/mypage/${memberId}/points`, {
+      params: { page, size },
+    });
     return response.data;
   },
 
