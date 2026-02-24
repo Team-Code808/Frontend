@@ -145,7 +145,10 @@ const useWebSocket = () => {
 
         console.log(`Subscribing to user topic: ${user.email}`);
         let userSubscription;
-        const { updateChatList } = useStore.getState().chat;
+        let shopSubscription; // 상점 업데이트용 추가
+
+        // Zustand 스토어는 평탄화되어 있으므로 직접 추출합니다.
+        const { updateChatList, updateShopItems, setItems } = useStore.getState();
 
         try {
             userSubscription = stompClient.subscribe(
@@ -159,15 +162,35 @@ const useWebSocket = () => {
                     }
                 }
             );
+
+            // 💡 상점 업데이트 채널 구독 (/sub/shop/company/{companyId})
+            if (user.companyId) {
+                const companyId = parseInt(String(user.companyId).split(':')[0], 10);
+                console.log(`Subscribing to shop topic: /sub/shop/company/${companyId}`);
+                shopSubscription = stompClient.subscribe(
+                    `/sub/shop/company/${companyId}`,
+                    (message) => {
+                        try {
+                            const items = JSON.parse(message.body);
+                            console.log('📦 Shop Update Received via WebSocket:', items);
+
+                            // 1. 직원용 포인트몰 데이터 갱신
+                            if (updateShopItems) updateShopItems(items);
+                            // 2. 관리자용 기프티콘 관리 데이터 갱신
+                            if (setItems) setItems(items);
+                        } catch (e) {
+                            console.error('JSON Parse Error in shop topic:', e);
+                        }
+                    }
+                );
+            }
         } catch (error) {
-            console.error("User Subscription failed:", error);
+            console.error("Subscription failed:", error);
         }
 
         return () => {
             if (userSubscription) userSubscription.unsubscribe();
-        };
-        return () => {
-            if (userSubscription) userSubscription.unsubscribe();
+            if (shopSubscription) shopSubscription.unsubscribe();
         };
     }, [isConnected, stompClient, user?.email]);
 

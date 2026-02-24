@@ -15,12 +15,12 @@ export const createAdminShopSlice = (set, get) => ({
   items: [],
   purchaseHistory: [],
 
-    // 1. 초기 데이터 로드: 백엔드에서 모든 아이템 가져오기
-    fetchItems: async (companyId) => {
-        // 1. 아직 로그인 로직이 없으므로, 전달받은 id가 없으면 가상의 1번을 사용
-       const rawId = companyId || get().user?.companyId || 444;
-       const targetId = parseInt(String(rawId).split(':')[0], 10);
-       console.log("요청하는 Company ID:", targetId);
+  // 1. 초기 데이터 로드: 백엔드에서 모든 아이템 가져오기
+  fetchItems: async (companyId) => {
+    // 1. 아직 로그인 로직이 없으므로, 전달받은 id가 없으면 가상의 1번을 사용
+    const rawId = companyId || get().user?.companyId || 444;
+    const targetId = parseInt(String(rawId).split(':')[0], 10);
+    console.log("요청하는 Company ID:", targetId);
 
     set({ isLoading: true });
     try {
@@ -29,10 +29,17 @@ export const createAdminShopSlice = (set, get) => ({
         params: { companyId: targetId }// axios의 params 옵션을 쓰면 ?companyId=11 로 자동 변환됨
       });
 
-    //   console.log("📡 서버 응답 전체:", res);
-    //   console.log("📦 실제 데이터 배열:", res.data);
+      //   console.log("📡 서버 응답 전체:", res);
+      //   console.log("📦 실제 데이터 배열:", res.data);
       console.log(`✅ 회사 ID [${targetId}] 기프티콘 로드 완료:`, res.data);
-      set({ items: Array.isArray(res.data) ? res.data : [], isLoading: false });
+
+      // 💡 백엔드 isActive를 프론트 active로 매핑
+      const mappedItems = (Array.isArray(res.data) ? res.data : []).map(item => ({
+        ...item,
+        active: item.active ?? item.isActive
+      }));
+
+      set({ items: mappedItems, isLoading: false });
     } catch (error) {
       console.error("❌ 데이터 로드 실패:", error);
       set({ items: [], isLoading: false });
@@ -41,19 +48,24 @@ export const createAdminShopSlice = (set, get) => ({
 
   // 2. 개별 아이템 활성 상태 토글
   toggleItemStatus: async (id) => {
+    const previousItems = get().items;
+
+    // 로컬 상태 즉시 반영 (Optimistic Update)
+    set((state) => ({
+      items: state.items.map((item) =>
+        item.id === id ? { ...item, active: !(item.active ?? item.isActive) } : item
+      ),
+    }));
+
     try {
       await apiClient.patch(
         `/admin/shop/items/${id}/toggle`,
         {}
       );
-
-      set((state) => ({
-        items: state.items.map((item) =>
-          item.id === id ? { ...item, active: !item.active } : item
-        ),
-      }));
+      // 성공 시 백엔드에서 WebSocket으로 전체 리스트를 보내줄 것이므로 추가 작업 불필요
     } catch (error) {
       console.error("상태 변경 실패:", error);
+      set({ items: previousItems }); // 원복
       alert("상태를 변경하지 못했습니다.");
     }
   },
@@ -71,8 +83,8 @@ export const createAdminShopSlice = (set, get) => ({
         `/admin/shop/items/activate-all`,
         {},
         {
-        params: { companyId: targetId },
-      });
+          params: { companyId: targetId },
+        });
     } catch (error) {
       set({ items: previousItems });
       alert("전체 활성화 실패!");
@@ -93,7 +105,7 @@ export const createAdminShopSlice = (set, get) => ({
         `/admin/shop/items/deactivate-all`,
         {},
         {
-         params: { companyId: targetId },
+          params: { companyId: targetId },
         });
     } catch (error) {
       set({ items: previousItems });
@@ -128,5 +140,15 @@ export const createAdminShopSlice = (set, get) => ({
         }
       }
     }, 500);
+  },
+
+  // 6. 실시간 상점 아이템 업데이트 (WebSocket/SSE용)
+  setItems: (items) => {
+    // 💡 백엔드의 필드명(active 또는 isActive)을 프론트의 active로 안전하게 매핑
+    const mappedItems = (Array.isArray(items) ? items : []).map(item => ({
+      ...item,
+      active: item.active ?? item.isActive
+    }));
+    set({ items: mappedItems });
   },
 });

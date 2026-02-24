@@ -16,33 +16,33 @@ export const createEmployeeShop = (set, get) => ({
 
   purchaseHistory: [],
 
- purchasePagination: {
-        currentPage: 0,
-        totalPages: 0,
-        totalElements: 0,
-        isLast: true,
-    },
+  purchasePagination: {
+    currentPage: 0,
+    totalPages: 0,
+    totalElements: 0,
+    isLast: true,
+  },
   // 1. 포인트몰 데이터 로드 로그 추가
   fetchPointMallData: async (userId) => {
     try {
       set({ loading: true });
 
-            const user = get().user;
-            const companyId = user?.companyId;
+      const user = get().user;
+      const companyId = user?.companyId;
 
 
-            const url = `/employee/shop/${userId}`;
+      const url = `/employee/shop/${userId}`;
 
       // 요청 정보 로깅
       console.log(
         `%c🚀 GET 요청 시도: ${url}`,
         "color: #2196F3; font-weight: bold"
       );
-      
+
 
       const response = await apiClient.get(url, {
-              params: { companyId: companyId } // ?companyId=11 형태로 전송됨
-             });
+        params: { companyId: companyId } // ?companyId=11 형태로 전송됨
+      });
 
       console.log(
         "%c✅ 데이터 로드 성공:",
@@ -178,43 +178,53 @@ export const createEmployeeShop = (set, get) => ({
     }
   },
 
-    // createEmployeeShop.js
-   fetchAllPurchaseHistory: async (page = 0, size = 6) => {
+  // createEmployeeShop.js
+  fetchAllPurchaseHistory: async (page = 0, size = 6) => {
     try {
-        set({ loading: true });
+      set({ loading: true });
 
-        const user = get().user;
-        const companyId = user?.companyId;
-       
-       const url = `/admin/shop/history/all`;
+      const user = get().user;
+      const companyId = user?.companyId;
 
-        console.log(`%c🌐 회사[${companyId}] 내역 요청 (Page: ${page})`, 'color: #009688; font-weight: bold');
+      const url = `/admin/shop/history/all`;
 
-        const response = await apiClient.get(url, {
-            params: {
-                companyId: companyId,
-                page: page,   // 현재 요청 페이지
-                size: size,   // 한 페이지당 개수
-                sort: 'createDate,desc' // 최신순 정렬 명시 (선택)
-            }
-        });
+      console.log(`%c🌐 회사[${companyId}] 내역 요청 (Page: ${page})`, 'color: #009688; font-weight: bold');
 
-        // 중요: Spring Page 객체는 실제 데이터를 'content' 필드에 담고 있습니다.
-        set({
-            purchaseHistory: response.data.content, // 배열 데이터만 추출
-            purchasePagination: {                           // 페이징 정보 저장
-                currentPage: response.data.number,
-                totalPages: response.data.totalPages,
-                totalElements: response.data.totalElements,
-                isLast: response.data.last
-            }
-        });
+      const response = await apiClient.get(url, {
+        params: {
+          companyId: companyId,
+          page: page,   // 현재 요청 페이지
+          size: size,   // 한 페이지당 개수
+          sort: 'createDate,desc' // 최신순 정렬 명시 (선택)
+        }
+      });
 
-        console.log('✅ 내역 로드 성공:', response.data.content.length, '건');
+      // 중요: Spring Page 객체는 실제 데이터를 'content' 필드에 담고 있습니다.
+      set({
+        purchaseHistory: response.data.content, // 배열 데이터만 추출
+        purchasePagination: {                           // 페이징 정보 저장
+          currentPage: response.data.number,
+          totalPages: response.data.totalPages,
+          totalElements: response.data.totalElements,
+          isLast: response.data.last
+        }
+      });
+
+      console.log('✅ 내역 로드 성공:', response.data.content.length, '건');
     } catch (error) {
-        console.error("❌ 내역 로드 실패:", error);
+      console.error("❌ 내역 로드 실패:", error);
     } finally {
-        set({ loading: false });
+      set({ loading: false });
     }
-},
+  },
+
+  // 7. 실시간 상점 아이템 업데이트 (WebSocket/SSE용)
+  updateShopItems: (items) => {
+    set((state) => ({
+      mallData: {
+        ...state.mallData,
+        shopItems: items
+      }
+    }));
+  },
 });
