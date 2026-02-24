@@ -168,8 +168,8 @@ export const TrendText = styled.p`
   font-weight: 700;
   margin-top: 0.25rem;
 
-  ${(props) => props.trendType === "up" && "color: #60a5fa;"}
-  ${(props) => props.trendType === "down" && "color: #fb7185;"}
+  ${(props) => props.trendType === "good" && "color: #60a5fa;"}
+  ${(props) => props.trendType === "danger" && "color: #fb7185;"}
   ${(props) => props.trendType === "neutral" && "color: #64748b;"}
 `;
 
@@ -1057,6 +1057,13 @@ export const WeekDay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+`;
+
+export const YesterdayText = styled.div`
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 0.25rem;
 `;
 
 export const DayCell = styled.div`
