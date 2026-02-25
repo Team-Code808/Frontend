@@ -29,6 +29,14 @@ const Department = () => {
   // 2. Data State
   const [departmentInfo, setDepartmentInfo] = useState(null);
   const [members, setMembers] = useState([]);
+  const [page, setPage] = useState(0);
+  const [pageInfo, setPageInfo] = useState({
+    totalPages: 0,
+    totalElements: 0,
+    number: 0,
+    first: true,
+    last: true
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -42,11 +50,27 @@ const Department = () => {
         // 부서 정보와 팀원 목록을 병렬로 조회 (직접 axios 호출)
         const [infoResponse, membersResponse] = await Promise.all([
           apiClient.get(`/departments/${myDepartmentId}`),
-          apiClient.get(`/departments/${myDepartmentId}/members`)
+          apiClient.get(`/departments/${myDepartmentId}/members`, {
+            params: { page, size: 5 }
+          })
         ]);
 
         setDepartmentInfo(infoResponse.data);
-        setMembers(membersResponse.data);
+
+        // Page 객체 처리
+        const data = membersResponse.data;
+        if (data && data.content) {
+          setMembers(data.content);
+          setPageInfo({
+            totalPages: data.totalPages,
+            totalElements: data.totalElements,
+            number: data.number,
+            first: data.first,
+            last: data.last
+          });
+        } else {
+          setMembers(Array.isArray(data) ? data : []);
+        }
       } catch (err) {
         console.error("데이터 로딩 실패:", err);
         setError("부서 정보를 불러오는데 실패했습니다.");
@@ -58,7 +82,7 @@ const Department = () => {
     if (myDepartmentId) {
       fetchData();
     }
-  }, [myDepartmentId]);
+  }, [myDepartmentId, page]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -221,6 +245,34 @@ const Department = () => {
             </S.EmptyState>
           )}
         </S.MemberList>
+
+        {!isLoading && pageInfo.totalPages > 1 && (
+          <S.PaginationContainer>
+            <S.PageNavButton
+              disabled={pageInfo.first}
+              onClick={() => setPage(prev => prev - 1)}
+            >
+              이전
+            </S.PageNavButton>
+
+            {[...Array(pageInfo.totalPages)].map((_, i) => (
+              <S.PageButton
+                key={i}
+                $active={page === i}
+                onClick={() => setPage(i)}
+              >
+                {i + 1}
+              </S.PageButton>
+            ))}
+
+            <S.PageNavButton
+              disabled={pageInfo.last}
+              onClick={() => setPage(prev => prev + 1)}
+            >
+              다음
+            </S.PageNavButton>
+          </S.PaginationContainer>
+        )}
       </S.TeamSection>
     </S.Container>
   );

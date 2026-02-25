@@ -166,9 +166,6 @@ const useWebSocket = () => {
         return () => {
             if (userSubscription) userSubscription.unsubscribe();
         };
-        return () => {
-            if (userSubscription) userSubscription.unsubscribe();
-        };
     }, [isConnected, stompClient, user?.email]);
 
     return stompClient;
