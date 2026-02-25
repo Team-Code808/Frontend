@@ -44,6 +44,7 @@ const AdminTeamManagement = () => {
   const [showAddDeptModal, setShowAddDeptModal] = useState(false);
   const [newDeptName, setNewDeptName] = useState('');
   const [departments, setDepartments] = useState(['전체']);
+  const [stats, setStats] = useState({ total: 0, danger: 0, caution: 0 });
 
   const fetchDepartments = async () => {
     try {
@@ -54,8 +55,18 @@ const AdminTeamManagement = () => {
     }
   };
 
+  const fetchStats = async () => {
+    try {
+      const data = await teamApi.getTeamStats();
+      setStats({ total: data.total ?? 0, danger: data.danger ?? 0, caution: data.caution ?? 0 });
+    } catch {
+      // 실패 시 기존 값 유지
+    }
+  };
+
   useEffect(() => {
     fetchDepartments();
+    fetchStats();
   }, []);
 
   const handleAddDepartment = async () => {
@@ -97,11 +108,6 @@ const AdminTeamManagement = () => {
     return matchesDept && matchesSearch;
   });
 
-  const stats = {
-    total: teamList.length,
-    danger: teamList.filter((m) => m.stress >= 80).length,
-    caution: teamList.filter((m) => m.stress >= 70 && m.stress < 80).length,
-  };
 
   return (
     <S.Container>
