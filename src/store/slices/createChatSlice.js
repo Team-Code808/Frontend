@@ -123,41 +123,55 @@ export const createChatSlice = (set, get) => ({
             }
         })),
         updateChatList: (message) => set((state) => {
+            // 날짜 처리 헬퍼 (배열/문자열 모두 대응)
+            const parseDate = (d) => {
+                if (Array.isArray(d)) return new Date(d[0], d[1] - 1, d[2], d[3], d[4], d[5]);
+                return new Date(d);
+            };
+
             const roomExists = state.chat.chatRooms.some(r => r.roomId === message.roomId);
 
-            // 목록에 없는 방의 메시지가 왔다면, 서버에서 목록을 새로고침
+            let updatedRooms;
             if (!roomExists) {
-                console.log(`[updateChatList] Room ${message.roomId} not found. Triggering fetchChatRooms...`);
+                console.log(`[updateChatList] New room detected: ${message.roomId}. Adding to state...`);
                 get().chat.fetchChatRooms();
-                return state; // fetch 후 다시 업데이트 되므로 현재는 그대로 반환
-            }
 
-            const updatedRooms = state.chat.chatRooms.map(room => {
-                if (room.roomId !== message.roomId) return room;
-
-                const isMe = String(state.user?.memberId || state.user?.id) === String(message.senderId);
-                const isCurrentRoom = state.chat.currentRoomId === message.roomId;
-
-                // TALK 타입이고, 내가 보낸 게 아니며, 현재 보고 있는 방이 아닐 때만 카운트 증가
-                const shouldIncrement = message.messageType === 'TALK' && !isMe && !isCurrentRoom;
-                const newUnreadCount = shouldIncrement ? (room.unreadCount || 0) + 1 : (room.unreadCount || 0);
-
-                console.log(`[updateChatList] Room: ${room.roomId}, isMe: ${isMe}, isCurrent: ${isCurrentRoom}, oldUnread: ${room.unreadCount}, newUnread: ${newUnreadCount}`);
-
-                const isNewerOrSame = !room.lastMessageTime || new Date(message.createdDate) >= new Date(room.lastMessageTime);
-
-                return {
-                    ...room,
-                    lastMessageContent: isNewerOrSame ? message.content : room.lastMessageContent,
-                    lastMessageTime: isNewerOrSame ? message.createdDate : room.lastMessageTime,
-                    unreadCount: newUnreadCount
+                const newRoom = {
+                    roomId: message.roomId,
+                    name: message.roomName || `Room ${message.roomId}`,
+                    lastMessageContent: message.content,
+                    lastMessageTime: message.createdDate,
+                    unreadCount: message.messageType === 'TALK' ? 1 : 0
                 };
-            }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
+                updatedRooms = [newRoom, ...state.chat.chatRooms];
+            } else {
+                updatedRooms = state.chat.chatRooms.map(room => {
+                    if (room.roomId !== message.roomId) return room;
+
+                    const myId = String(state.user?.memberId || state.user?.id || "");
+                    const isMe = myId === String(message.senderId);
+                    const isCurrentRoom = state.chat.currentRoomId === message.roomId;
+
+                    const shouldIncrement = message.messageType === 'TALK' && !isMe && !isCurrentRoom;
+                    const newUnreadCount = shouldIncrement ? (room.unreadCount || 0) + 1 : (room.unreadCount || 0);
+
+                    const msgDate = parseDate(message.createdDate);
+                    const roomDate = parseDate(room.lastMessageTime);
+                    const isNewerOrSame = !room.lastMessageTime || msgDate >= roomDate;
+
+                    return {
+                        ...room,
+                        lastMessageContent: isNewerOrSame ? message.content : room.lastMessageContent,
+                        lastMessageTime: isNewerOrSame ? message.createdDate : room.lastMessageTime,
+                        unreadCount: newUnreadCount
+                    };
+                });
+            }
 
             return {
                 chat: {
                     ...state.chat,
-                    chatRooms: updatedRooms
+                    chatRooms: updatedRooms.sort((a, b) => parseDate(b.lastMessageTime) - parseDate(a.lastMessageTime))
                 }
             };
         }),

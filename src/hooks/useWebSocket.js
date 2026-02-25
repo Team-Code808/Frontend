@@ -148,17 +148,21 @@ const useWebSocket = () => {
         let shopSubscription; // 상점 업데이트용 추가
 
         // Zustand 스토어는 평탄화되어 있으므로 직접 추출합니다.
-        const { updateChatList, updateShopItems, setItems } = useStore.getState();
+        const { updateShopItems, setItems } = useStore.getState();
 
         try {
-            console.log(`[useWebSocket] Subscribing to user topic: /sub/chat/user/${user.email}`);
             userSubscription = stompClient.subscribe(
                 `/sub/chat/user/${user.email}`,
                 (message) => {
                     console.log('[useWebSocket] User Topic Message Received:', message.body);
                     try {
                         const receivedMsg = JSON.parse(message.body);
-                        updateChatList(receivedMsg);
+                        const { updateChatList } = useStore.getState().chat;
+                        if (updateChatList) {
+                            updateChatList(receivedMsg);
+                        } else {
+                            console.error('[useWebSocket] updateChatList function not found in store');
+                        }
                     } catch (e) {
                         console.error('JSON Parse Error in user topic:', e);
                     }
