@@ -34,6 +34,9 @@ const Attendance = () => {
 
   const [selectedDay, setSelectedDay] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [historyPage, setHistoryPage] = useState(0);
+
+  const HISTORY_PAGE_SIZE = 10;
 
   // API 데이터 상태
   const [summary, setSummary] = useState(null);
@@ -130,6 +133,11 @@ const Attendance = () => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year, month, memberId]);
+
+  // 연/월 변경 시 타임라인 페이지 초기화
+  useEffect(() => {
+    setHistoryPage(0);
+  }, [year, month]);
 
   // 날짜 범위가 겹치는지 확인하는 함수
   const checkDateOverlap = (startDate1, endDate1, startDate2, endDate2) => {
@@ -835,19 +843,42 @@ const Attendance = () => {
                 </tr>
               </thead>
               <tbody>
-                {attendanceHistory.map((item) => (
-                  <tr key={item.id}>
-                    <td><b>{item.date}</b></td>
-                    <td>{item.clockIn}</td>
-                    <td>{item.clockOut}</td>
-                    <td>{item.duration}</td>
-                    <td>
-                      <S.TableStatus $status={item.status}>{item.status}</S.TableStatus>
-                    </td>
-                  </tr>
-                ))}
+                {attendanceHistory
+                  .slice(historyPage * HISTORY_PAGE_SIZE, (historyPage + 1) * HISTORY_PAGE_SIZE)
+                  .map((item) => (
+                    <tr key={item.id}>
+                      <td><b>{item.date}</b></td>
+                      <td>{item.clockIn}</td>
+                      <td>{item.clockOut}</td>
+                      <td>{item.duration}</td>
+                      <td>
+                        <S.TableStatus $status={item.status}>{item.status}</S.TableStatus>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </S.Table>
+            {attendanceHistory.length > HISTORY_PAGE_SIZE && (
+              <S.Pagination>
+                <button
+                  type="button"
+                  disabled={historyPage <= 0}
+                  onClick={() => setHistoryPage((p) => p - 1)}
+                >
+                  이전
+                </button>
+                <span>
+                  {historyPage + 1} / {Math.ceil(attendanceHistory.length / HISTORY_PAGE_SIZE)}
+                </span>
+                <button
+                  type="button"
+                  disabled={historyPage >= Math.ceil(attendanceHistory.length / HISTORY_PAGE_SIZE) - 1}
+                  onClick={() => setHistoryPage((p) => p + 1)}
+                >
+                  다음
+                </button>
+              </S.Pagination>
+            )}
           </S.TableContainer>
         </S.HistoryColumn>
 

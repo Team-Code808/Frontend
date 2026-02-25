@@ -34,6 +34,8 @@ import Attendance from "./pages/employee/Attendance/Attendance";
 import Consultation from "./pages/employee/Consultation/Consultation";
 import Dashboard from "./pages/employee/Dashboard/Dashboard";
 import PointMall from "./pages/employee/PointMall/PointMall";
+import CallRecords from "./pages/employee/CallRecords/CallRecords";
+import Call from "./pages/employee/Call/Call";
 
 import { ShieldAlert, Clock } from "lucide-react";
 import * as S from "./App.styles";
@@ -193,6 +195,8 @@ function App() {
                       <Route path="department" element={<Department />} />
                       <Route path="attendance" element={<Attendance />} />
                       <Route path="consultation" element={<Consultation />} />
+                      <Route path="callrecords" element={<CallRecords />} />
+                      <Route path="call" element={<Call />} />
                       <Route path="pointmall" element={<PointMall />} />
                       <Route path="dashboard" element={<Dashboard />} />
                       <Route path="mypage/*" element={<MyPage />} />

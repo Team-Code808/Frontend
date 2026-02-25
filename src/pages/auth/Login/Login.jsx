@@ -121,7 +121,7 @@ const AuthPage = () => {
               <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
                 <S.LinkButton
                   type="button"
-                  onClick={() => setStep("SIGNUP_BASIC")}
+                  onClick={() => setStep("SIGNUP_METHOD")}
                 >
                   아직 계정이 없으신가요? 회원가입
                 </S.LinkButton>
