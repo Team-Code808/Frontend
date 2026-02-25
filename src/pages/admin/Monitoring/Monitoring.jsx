@@ -28,7 +28,7 @@ import {
   Pie
 } from 'recharts';
 import * as S from './Monitoring.styles';
-import { fetchMonitoringData } from '../../../api/adminMonitoringApi';
+import { fetchMonitoringData, downloadMonitoringExcel } from '../../../api/adminMonitoringApi';
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
@@ -69,6 +69,7 @@ const AdminMonitoring = () => {
   const [activeMetric, setActiveMetric] = useState('ALL'); // 'ALL', 'consultation', 'stress', 'cooldown'
   const [activeStressLevel, setActiveStressLevel] = useState('ALL'); // 'ALL' 또는 스트레스 단계 명
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
   const [data, setData] = useState({
     stats: {
       totalEmployees: '0명',
@@ -113,6 +114,18 @@ const AdminMonitoring = () => {
       console.error("Failed to fetch monitoring data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadExcel = async () => {
+    try {
+      setDownloading(true);
+      await downloadMonitoringExcel(selectedPeriod, selectedYear);
+    } catch (error) {
+      console.error('엑셀 다운로드 실패:', error);
+      alert('엑셀 파일 다운로드에 실패했습니다.');
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -192,7 +205,9 @@ const AdminMonitoring = () => {
               </S.DropdownMenu>
             )}
           </S.PeriodDropdownContainer>
-          <S.PrintButton>분석 보고서 출력</S.PrintButton>
+          <S.PrintButton onClick={handleDownloadExcel} disabled={downloading}>
+            {downloading ? '다운로드 중...' : '분석 보고서 출력'}
+          </S.PrintButton>
         </S.HeaderControls>
       </S.Header>
 
