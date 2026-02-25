@@ -109,18 +109,25 @@ export const createChatSlice = (set, get) => ({
         updateChatList: (message) => set((state) => ({
             chat: {
                 ...state.chat,
-                chatRooms: state.chat.chatRooms.map(room =>
-                    room.roomId === message.roomId
-                        ? {
-                            ...room,
-                            lastMessageContent: message.content,
-                            lastMessageTime: message.createdDate,
-                            unreadCount: state.chat.currentRoomId !== message.roomId
-                                ? (room.unreadCount || 0) + 1
-                                : 0
-                        }
-                        : room
-                ).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime))
+                chatRooms: state.chat.chatRooms.map(room => {
+                    if (room.roomId !== message.roomId) return room;
+
+                    // 메시지 타입에 따른 안 읽은 개수 처리
+                    // TALK(신규 메시지)이고 현재 보고 있는 방이 아닐 때만 카운트 증가
+                    const newUnreadCount = state.chat.currentRoomId === message.roomId
+                        ? 0
+                        : (message.messageType === 'TALK' ? (room.unreadCount || 0) + 1 : (room.unreadCount || 0));
+
+                    // 수정/삭제된 메시지가 현재 목록에 표시된 마지막 메시지보다 최신이거나 같은 경우에만 요약 정보 업데이트
+                    const isNewerOrSame = !room.lastMessageTime || new Date(message.createdDate) >= new Date(room.lastMessageTime);
+
+                    return {
+                        ...room,
+                        lastMessageContent: isNewerOrSame ? message.content : room.lastMessageContent,
+                        lastMessageTime: isNewerOrSame ? message.createdDate : room.lastMessageTime,
+                        unreadCount: newUnreadCount
+                    };
+                }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime))
             }
         })),
     }

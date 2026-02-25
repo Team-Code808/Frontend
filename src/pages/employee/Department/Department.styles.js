@@ -408,3 +408,47 @@ export const EmptyState = styled.div`
 
 
 
+
+/* Pagination */
+export const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  padding: 1rem;
+`;
+
+export const PageButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  background-color: ${props => props.$active ? '#2563eb' : 'white'};
+  color: ${props => props.$active ? 'white' : '#64748b'};
+  border: 1px solid ${props => props.$active ? '#2563eb' : '#e2e8f0'};
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: all 0.2s;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  &:hover:not(:disabled) {
+    border-color: #2563eb;
+    background-color: ${props => props.$active ? '#2563eb' : '#f8fafc'};
+    color: ${props => props.$active ? 'white' : '#2563eb'};
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+`;
+
+export const PageNavButton = styled(PageButton)`
+  width: auto;
+  padding: 0 1rem;
+  gap: 0.5rem;
+`;
