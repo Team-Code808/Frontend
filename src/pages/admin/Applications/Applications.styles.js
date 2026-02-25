@@ -495,6 +495,39 @@ export const EmptyList = styled.div`
   font-weight: 500;
 `;
 
+export const Pagination = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(51, 65, 85, 0.5);
+
+  button {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    border-radius: 0.375rem;
+    background: #0f172a;
+    color: #94a3b8;
+    font-size: 0.875rem;
+    cursor: pointer;
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    &:hover:not(:disabled) {
+      color: #cbd5e1;
+    }
+  }
+
+  span {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    font-weight: 700;
+  }
+`;
+
 /* Modal Styles */
 export const ModalOverlay = styled.div`
   position: fixed;

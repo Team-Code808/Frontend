@@ -683,6 +683,28 @@ export const TableStatus = styled.span`
     : 'background-color: #fef2f2; color: #dc2626;'}
 `;
 
+export const Pagination = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #f1f5f9;
+
+  button {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    background: white;
+    font-size: 0.875rem;
+    cursor: pointer;
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+`;
+
 /* Leave Request Section */
 export const LeaveColumn = styled.div`
   display: flex;

@@ -2,6 +2,16 @@ import axios from "axios";
 import { API_URL } from "../../../../Config.jsx";
 import apiClient from "../../../../api/axios";
 
+/** 회원가입 시 명함 이미지 추출 (비로그인 허용) */
+export const extractBusinessCard = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await axios.post(`${API_URL}/api/business-card/extract`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+};
+
 export const basicSignup = async (data) => {
   try {
     const response = await axios.post(`${API_URL}/api/auth/signup`, {

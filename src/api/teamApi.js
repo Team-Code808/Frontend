@@ -25,6 +25,12 @@ export const teamApi = {
     return response.data;
   },
 
+    /** 회사 소속 부서 목록 (departmentId, departmentName) - 명함 등록 팀 선택용 */
+  getDepartmentsList: async () => {
+    const response = await apiClient.get('/admin/team/departments-list');
+    return response.data;
+  },
+
   /** 회사에 부서 추가 */
   createDepartment: async (departmentName) => {
     await apiClient.post('/admin/team/departments', { departmentName });
