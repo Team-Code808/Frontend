@@ -94,7 +94,10 @@ const StressTopList = ({
         )}
       </S.AgentList>
 
-      <S.DetailButton onClick={() => navigate("/app/admin/monitoring")}>
+      <S.DetailButton onClick={() => {
+        navigate("/app/monitoring");
+        onClose()
+      }}>
         상세 모니터링 이동
       </S.DetailButton>
     </S.TopListSection>

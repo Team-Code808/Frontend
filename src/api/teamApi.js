@@ -17,6 +17,13 @@ export const teamApi = {
     return response.data;
   },
 
+  getAllMembers: async () => {
+    const response = await apiClient.get('/admin/team/members', {
+      params: { page: 0, size: 1000 },
+    });
+    return response.data;
+  },
+
   /** 팀원 월별 근태 현황 (일 -> 출근/지각/결근/휴가/휴가예정) */
   getMemberAttendance: async (memberId, year, month) => {
     const response = await apiClient.get(`/admin/team/members/${memberId}/attendance`, {

@@ -17,8 +17,9 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchMembers = async () => {
       try {
-        const members = await teamApi.getMembers();
-        setAllMembers(members);
+        const response = await teamApi.getAllMembers();
+        console.log("response:", response);
+        setAllMembers(response.content || []);
       } catch (err) {
         console.error("팀원 데이터 로드 실패:", err);
       }
@@ -68,6 +69,7 @@ const AdminDashboard = () => {
 
   const handleSelectMember = (member) => {
     console.log("member : ", member);
+    console.log("allMembers : ", allMembers);
 
     const fullData = allMembers.find((m) => m.memberId === member.memberId);
 
@@ -75,6 +77,7 @@ const AdminDashboard = () => {
       const adaptedMember = {
         id: fullData.memberId,
         name: fullData.name,
+        avatar: '👤',
         dept: fullData.departmentName,
         stress: member.stressPercentage || fullData.stress,
         role: fullData.rankName || "-",
@@ -128,7 +131,12 @@ const AdminDashboard = () => {
           onSelectMember={handleSelectMember}
         />
       </S.MainGrid>
-      ...
+      {selectedMember && (
+        <MemberDetailModal
+          member={selectedMember}
+          onClose={() => setSelectedMember(null)}
+        />
+      )}
     </S.Container>
   );
 };
