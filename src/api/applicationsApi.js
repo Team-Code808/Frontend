@@ -54,4 +54,10 @@ export const applicationsApi = {
   rejectJoin: async (memberId) => {
     await apiClient.put(`/admin/joins/${memberId}/reject`);
   },
+
+    /** 직급 목록 (명함 입사 신청 시 선택용) */
+  getRanks: async () => {
+    const response = await apiClient.get('/admin/joins/ranks');
+    return response.data;
+  },
 };

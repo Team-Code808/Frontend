@@ -13,7 +13,7 @@ export const useSignup = (onLogin) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const currentStep = searchParams.get("step") || "SIGNUP_BASIC";
+  const currentStep = searchParams.get("step") || "SIGNUP_METHOD";
 
   const [formData, setFormData] = useState({
     email: "",
@@ -21,6 +21,7 @@ export const useSignup = (onLogin) => {
     name: "",
     phone: "",
     companyName: "",
+    departmentName: "",
     companyCode: "",
     category: "",
     minValue: "",

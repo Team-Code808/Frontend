@@ -18,6 +18,7 @@ import {
   AlertCircle,
   Info,
   MessageCircle,
+  Phone,
 } from "lucide-react";
 import { NavItemType } from "../constants/types";
 import Logo from "./Logo";
@@ -211,6 +212,7 @@ const Header = () => {
     { id: NavItemType.DEPARTMENT, label: "부서정보", icon: Users, path: "/app/department" },
     { id: NavItemType.ATTENDANCE, label: "근태관리", icon: CalendarCheck, path: "/app/attendance" },
     { id: NavItemType.CONSULTATION, label: "상담신청", icon: MessageSquareHeart, path: "/app/consultation" },
+    {id: NavItemType.CALL_RECORDS,label: "통화기록",icon: Phone,path: "/app/callrecords",},
     { id: NavItemType.POINT_MALL, label: "포인트몰", icon: Coins, path: "/app/pointmall" },
   ];
   const adminNavItems = [

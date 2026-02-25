@@ -33,6 +33,9 @@ const AdminApplications = () => {
   const [joinRequests, setJoinRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [listPage, setListPage] = useState(0);
+
+  const LIST_PAGE_SIZE = 10;
 
   const fetchLeaves = useCallback(async () => {
     try {
@@ -124,6 +127,10 @@ const AdminApplications = () => {
     loadAll();
   }, [loadAll]);
 
+  useEffect(() => {
+    setListPage(0);
+  }, [statusFilter, activeSubTab]);
+
   const handleLeaveAction = async (vacationId, action) => {
     if (vacationId == null || vacationId === undefined) {
       setError('휴가 ID가 없습니다. 목록을 새로고침 후 다시 시도해주세요.');
@@ -192,6 +199,13 @@ const AdminApplications = () => {
     }
     return list.filter(req => req.status === statusFilter);
   }, [activeSubTab, statusFilter, leaveRequests, consultationRequests, joinRequests]);
+
+  const paginatedList = useMemo(() => {
+    const start = listPage * LIST_PAGE_SIZE;
+    return filteredList.slice(start, start + LIST_PAGE_SIZE);
+  }, [filteredList, listPage]);
+
+  const listTotalPages = Math.ceil(filteredList.length / LIST_PAGE_SIZE);
 
   const calendarGrid = useMemo(() => {
     const year = calendarDate.getFullYear();
@@ -419,7 +433,7 @@ const AdminApplications = () => {
             </S.ListHeader>
 
             <S.ScrollList>
-              {filteredList.map((req, idx) => (
+              {paginatedList.map((req, idx) => (
                 <S.ListItem
                   key={req.id || idx}
                   onClick={() => setSelectedRequest(req)}
@@ -442,12 +456,33 @@ const AdminApplications = () => {
                       자세히 <ChevronRight size={12} />
                     </button>
                   </S.ItemBottom>
-                </S.ListItem>
+                  </S.ListItem>
               ))}
               {filteredList.length === 0 && (
                 <S.EmptyList>내역이 없습니다.</S.EmptyList>
               )}
             </S.ScrollList>
+            {filteredList.length > LIST_PAGE_SIZE && (
+              <S.Pagination>
+                <button
+                  type="button"
+                  disabled={listPage <= 0}
+                  onClick={() => setListPage((p) => p - 1)}
+                >
+                  이전
+                </button>
+                <span>
+                  {listPage + 1} / {listTotalPages}
+                </span>
+                <button
+                  type="button"
+                  disabled={listPage >= listTotalPages - 1}
+                  onClick={() => setListPage((p) => p + 1)}
+                >
+                  다음
+                </button>
+              </S.Pagination>
+            )}
           </S.ListCard>
         </S.RightColumn>
       </S.MainGrid>

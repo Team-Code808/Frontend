@@ -4,6 +4,8 @@ import BasicInfo from "./steps/BasicInfo";
 import SignupType from "./steps/SignupType";
 import AdminSignup from "./steps/AdminSignup";
 import StaffSignup from "./steps/StaffSignup";
+import SignupMethod from "./steps/SignupMethod";
+import BusinessCardUpload from "./steps/BusinessCardUpload";
 
 const SignupContainer = ({ onLogin }) => {
   const {
@@ -24,6 +26,28 @@ const SignupContainer = ({ onLogin }) => {
 
   const renderStep = () => {
     switch (currentStep) {
+      case "SIGNUP_METHOD":
+        return (
+          <SignupMethod
+            onSelect={(method) => {
+              if (method === "MANUAL") setStep("SIGNUP_BASIC");
+              else setStep("SIGNUP_BY_CARD");
+            }}
+          />
+        );
+      case "SIGNUP_BY_CARD":
+        return (
+          <BusinessCardUpload
+            onExtracted={(filled) => {
+              setFormData((prev) => ({
+                ...prev,
+                ...filled,
+              }));
+              setStep("SIGNUP_BASIC");
+            }}
+            onBack={() => setStep("SIGNUP_METHOD")}
+          />
+        );
       case "SIGNUP_BASIC":
         return (
           <BasicInfo
@@ -76,16 +100,10 @@ const SignupContainer = ({ onLogin }) => {
         );
       default:
         return (
-          <BasicInfo
-            formData={formData}
-            onChange={handleChange}
-            onNext={async () => {
-              try {
-                await handleBasicSignup();
-                setStep("SIGNUP_TYPE");
-              } catch (err) {
-                console.error("기본 회원가입 실패:", err);
-              }
+          <SignupMethod
+            onSelect={(method) => {
+              if (method === "MANUAL") setStep("SIGNUP_BASIC");
+              else setStep("SIGNUP_BY_CARD");
             }}
           />
         );
