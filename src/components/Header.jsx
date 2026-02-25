@@ -117,15 +117,23 @@ const AllNotificationsModal = ({ onClose }) => {
 
 // --- 2. 메인 헤더 컴포넌트 ---
 const Header = () => {
-  const {
-    isAdminMode, setIsAdminMode, logout, user,
-    notifications, addNotification, markAsRead, markAllAsRead, fetchNotifications,
-    chat // chat 스토어 추가
-  } = useStore();
+  // 스토어에서 필요한 데이터만 개별적으로 가져오도록 수정 (반응성 향상)
+  const isAdminMode = useStore(state => state.isAdminMode);
+  const setIsAdminMode = useStore(state => state.setIsAdminMode);
+  const logout = useStore(state => state.logout);
+  const user = useStore(state => state.user);
+  const notifications = useStore(state => state.notifications);
+  const addNotification = useStore(state => state.addNotification);
+  const markAsRead = useStore(state => state.markAsRead);
+  const markAllAsRead = useStore(state => state.markAllAsRead);
+  const fetchNotifications = useStore(state => state.fetchNotifications);
 
-  const { chatRooms, setChatRooms } = chat;
+  const chatRooms = useStore(state => state.chat.chatRooms || []);
+  const setChatRooms = useStore(state => state.chat.setChatRooms);
 
-  const { name: userName, department, id: memberId } = user || {};
+  console.log("[Header] Current chatRooms for unread count:", chatRooms.map(r => `${r.roomId}: ${r.unreadCount}`).join(', '));
+
+  const { name: userName, department, memberId } = user || {};
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -212,7 +220,7 @@ const Header = () => {
     { id: NavItemType.DEPARTMENT, label: "부서정보", icon: Users, path: "/app/department" },
     { id: NavItemType.ATTENDANCE, label: "근태관리", icon: CalendarCheck, path: "/app/attendance" },
     { id: NavItemType.CONSULTATION, label: "상담신청", icon: MessageSquareHeart, path: "/app/consultation" },
-    {id: NavItemType.CALL_RECORDS,label: "통화기록",icon: Phone,path: "/app/callrecords",},
+    { id: NavItemType.CALL_RECORDS, label: "통화기록", icon: Phone, path: "/app/callrecords", },
     { id: NavItemType.POINT_MALL, label: "포인트몰", icon: Coins, path: "/app/pointmall" },
   ];
   const adminNavItems = [

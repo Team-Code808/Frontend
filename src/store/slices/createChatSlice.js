@@ -1,3 +1,5 @@
+import axios from '../../api/axios';
+
 export const createChatSlice = (set, get) => ({
     chat: {
         chatRooms: [],
@@ -10,6 +12,20 @@ export const createChatSlice = (set, get) => ({
         setChatRooms: (rooms) => set((state) => ({
             chat: { ...state.chat, chatRooms: rooms }
         })),
+
+        // 채팅방 목록 서버에서 새로고침
+        fetchChatRooms: async () => {
+            try {
+                const response = await axios.get('/chat/rooms');
+                set((state) => ({
+                    chat: { ...state.chat, chatRooms: response.data }
+                }));
+                console.log('[fetchChatRooms] Chat rooms refreshed from server.');
+            } catch (error) {
+                console.error('[fetchChatRooms] Failed to refresh chat rooms:', error);
+            }
+        },
+
         setCurrentRoomId: (roomId) => set((state) => ({
             chat: { ...state.chat, currentRoomId: roomId }
         })),
@@ -106,29 +122,44 @@ export const createChatSlice = (set, get) => ({
                 )
             }
         })),
-        updateChatList: (message) => set((state) => ({
-            chat: {
-                ...state.chat,
-                chatRooms: state.chat.chatRooms.map(room => {
-                    if (room.roomId !== message.roomId) return room;
+        updateChatList: (message) => set((state) => {
+            const roomExists = state.chat.chatRooms.some(r => r.roomId === message.roomId);
 
-                    // 메시지 타입에 따른 안 읽은 개수 처리
-                    // TALK(신규 메시지)이고 현재 보고 있는 방이 아닐 때만 카운트 증가
-                    const newUnreadCount = state.chat.currentRoomId === message.roomId
-                        ? 0
-                        : (message.messageType === 'TALK' ? (room.unreadCount || 0) + 1 : (room.unreadCount || 0));
-
-                    // 수정/삭제된 메시지가 현재 목록에 표시된 마지막 메시지보다 최신이거나 같은 경우에만 요약 정보 업데이트
-                    const isNewerOrSame = !room.lastMessageTime || new Date(message.createdDate) >= new Date(room.lastMessageTime);
-
-                    return {
-                        ...room,
-                        lastMessageContent: isNewerOrSame ? message.content : room.lastMessageContent,
-                        lastMessageTime: isNewerOrSame ? message.createdDate : room.lastMessageTime,
-                        unreadCount: newUnreadCount
-                    };
-                }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime))
+            // 목록에 없는 방의 메시지가 왔다면, 서버에서 목록을 새로고침
+            if (!roomExists) {
+                console.log(`[updateChatList] Room ${message.roomId} not found. Triggering fetchChatRooms...`);
+                get().chat.fetchChatRooms();
+                return state; // fetch 후 다시 업데이트 되므로 현재는 그대로 반환
             }
-        })),
+
+            const updatedRooms = state.chat.chatRooms.map(room => {
+                if (room.roomId !== message.roomId) return room;
+
+                const isMe = String(state.user?.memberId || state.user?.id) === String(message.senderId);
+                const isCurrentRoom = state.chat.currentRoomId === message.roomId;
+
+                // TALK 타입이고, 내가 보낸 게 아니며, 현재 보고 있는 방이 아닐 때만 카운트 증가
+                const shouldIncrement = message.messageType === 'TALK' && !isMe && !isCurrentRoom;
+                const newUnreadCount = shouldIncrement ? (room.unreadCount || 0) + 1 : (room.unreadCount || 0);
+
+                console.log(`[updateChatList] Room: ${room.roomId}, isMe: ${isMe}, isCurrent: ${isCurrentRoom}, oldUnread: ${room.unreadCount}, newUnread: ${newUnreadCount}`);
+
+                const isNewerOrSame = !room.lastMessageTime || new Date(message.createdDate) >= new Date(room.lastMessageTime);
+
+                return {
+                    ...room,
+                    lastMessageContent: isNewerOrSame ? message.content : room.lastMessageContent,
+                    lastMessageTime: isNewerOrSame ? message.createdDate : room.lastMessageTime,
+                    unreadCount: newUnreadCount
+                };
+            }).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
+
+            return {
+                chat: {
+                    ...state.chat,
+                    chatRooms: updatedRooms
+                }
+            };
+        }),
     }
 });
