@@ -104,35 +104,6 @@ export const RoleBadge = styled.span`
   color: inherit;
 `;
 
-export const ModeToggleButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid;
-  font-size: 0.6875rem; /* 11px */
-  font-weight: 900;
-  transition: all 0.2s;
-  
-  ${props => props.$isAdminMode ? css`
-    background-color: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: white;
-    &:hover { background-color: rgba(255, 255, 255, 0.2); }
-  ` : css`
-    background-color: #1e293b;
-    border-color: #1e293b;
-    color: white;
-    &:hover { background-color: #0f172a; }
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  `}
-
-  svg {
-    width: 0.875rem; 
-    height: 0.875rem;
-  }
-`;
 
 /* Center Navigation */
 export const CenterNav = styled.nav`

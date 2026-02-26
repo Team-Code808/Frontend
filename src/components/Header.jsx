@@ -250,9 +250,6 @@ const Header = () => {
                     <S.RoleBadge>{isAdminMode ? "ADMIN" : "STAFF"}</S.RoleBadge>
                   </S.BrandText>
                 </S.LogoBox>
-                <S.ModeToggleButton $isAdminMode={isAdminMode} onClick={() => { setIsAdminMode(!isAdminMode); navigate("/app/dashboard"); }}>
-                  {isAdminMode ? <><ArrowLeftRight /> 직원 모드 복귀</> : <><ShieldCheck /> 관리자 전환</>}
-                </S.ModeToggleButton>
               </S.BrandGroup>
             </S.LeftSection>
 
