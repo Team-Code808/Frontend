@@ -9,6 +9,7 @@ export const tokenManager = {
   getAccessToken: () => accessToken,
 
   setAccessToken: (token) => {
+    // console.log("accessToken :", token);
     accessToken = token;
     if (token) {
       const decoded = decodeToken(token);
