@@ -35,8 +35,10 @@ const Attendance = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [historyPage, setHistoryPage] = useState(0);
+  const [leavePage, setLeavePage] = useState(0);
 
   const HISTORY_PAGE_SIZE = 10;
+  const LEAVE_PAGE_SIZE = 3;
 
   // API 데이터 상태
   const [summary, setSummary] = useState(null);
@@ -121,6 +123,12 @@ const Attendance = () => {
       setConsultationRequests([]);
     }
   };
+
+  // 휴가 목록 변경 시 페이지 범위 초과하면 첫 페이지로
+  useEffect(() => {
+    const maxPage = Math.max(0, Math.ceil(leaveRequests.length / LEAVE_PAGE_SIZE) - 1);
+    if (leavePage > maxPage) setLeavePage(0);
+  }, [leaveRequests.length, leavePage]);
 
   // 데이터 로딩
   useEffect(() => {
@@ -894,21 +902,44 @@ const Attendance = () => {
             </S.RequestButton>
           </S.SectionTitle>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {leaveRequests.map((leave) => (
-              <S.LeaveCard key={leave.id}>
-                <S.LeaveCardHeader>
-                  <span>{leave.type} 신청</span>
-                  <S.LeaveStatusBadge $status={leave.status}>{leave.status}</S.LeaveStatusBadge>
-                </S.LeaveCardHeader>
-                <S.LeavePeriod>{leave.period}</S.LeavePeriod>
-                <S.LeaveCardFooter>
-                  <span>사용: <span>{leave.days}</span></span>
-                  {leave.status === '승인대기' && (
-                    <button onClick={() => handleCancelVacation(leave.id)}>취소</button>
-                  )}
-                </S.LeaveCardFooter>
-              </S.LeaveCard>
-            ))}
+            {leaveRequests
+              .slice(leavePage * LEAVE_PAGE_SIZE, (leavePage + 1) * LEAVE_PAGE_SIZE)
+              .map((leave) => (
+                <S.LeaveCard key={leave.id}>
+                  <S.LeaveCardHeader>
+                    <span>{leave.type} 신청</span>
+                    <S.LeaveStatusBadge $status={leave.status}>{leave.status}</S.LeaveStatusBadge>
+                  </S.LeaveCardHeader>
+                  <S.LeavePeriod>{leave.period}</S.LeavePeriod>
+                  <S.LeaveCardFooter>
+                    <span>사용: <span>{leave.days}</span></span>
+                    {leave.status === '승인대기' && (
+                      <button onClick={() => handleCancelVacation(leave.id)}>취소</button>
+                    )}
+                  </S.LeaveCardFooter>
+                </S.LeaveCard>
+              ))}
+            {leaveRequests.length > LEAVE_PAGE_SIZE && (
+              <S.Pagination>
+                <button
+                  type="button"
+                  disabled={leavePage <= 0}
+                  onClick={() => setLeavePage((p) => p - 1)}
+                >
+                  이전
+                </button>
+                <span>
+                  {leavePage + 1} / {Math.ceil(leaveRequests.length / LEAVE_PAGE_SIZE)}
+                </span>
+                <button
+                  type="button"
+                  disabled={leavePage >= Math.ceil(leaveRequests.length / LEAVE_PAGE_SIZE) - 1}
+                  onClick={() => setLeavePage((p) => p + 1)}
+                >
+                  다음
+                </button>
+              </S.Pagination>
+            )}
           </div>
         </S.LeaveColumn>
       </S.HistorySection>
