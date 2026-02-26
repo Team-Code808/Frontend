@@ -3,16 +3,24 @@ export const createAttendanceSlice = (set) => ({
         isClockedIn: false,
         isAway: false,
         isCoolDown: false,
-        coolDownStartTime: null,
+        coolDownStartTime: null, 
     },
 
-    setClockIn: (status) => set((state) => ({ attendance: { ...state.attendance, isClockedIn: status } })),
-    setAway: (status) => set((state) => ({ attendance: { ...state.attendance, isAway: status } })),
+    setClockIn: (status) => set((state) => ({ 
+        attendance: { ...state.attendance, isClockedIn: status } 
+    })),
+    
+    setAway: (status) => set((state) => ({ 
+        attendance: { ...state.attendance, isAway: status } 
+    })),
+
     setCoolDown: (status, startTime) => set((state) => ({
         attendance: {
             ...state.attendance,
             isCoolDown: status,
-            coolDownStartTime: status ? (startTime ? new Date(startTime).getTime() : Date.now()) : null
+            coolDownStartTime: startTime === null 
+                ? null 
+                : (startTime ? new Date(startTime).getTime() : state.attendance.coolDownStartTime)
         }
     })),
 });
